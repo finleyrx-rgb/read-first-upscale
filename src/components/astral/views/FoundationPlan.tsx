@@ -1,3 +1,4 @@
+import React from "react";
 // Foundation plan — ported from drawFoundation() in public/astral.html.
 
 import { useAstral } from "@/lib/astral/store";

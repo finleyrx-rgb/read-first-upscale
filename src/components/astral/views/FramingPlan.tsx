@@ -1,3 +1,4 @@
+import React from "react";
 // Framing plan — ported from drawFraming() in public/astral.html.
 
 import { useAstral } from "@/lib/astral/store";

@@ -1,3 +1,4 @@
+import React from "react";
 // Section view — ported from drawSection() in public/astral.html.
 
 import { useAstral } from "@/lib/astral/store";
@@ -56,12 +57,12 @@ export function SectionView() {
   const seenWalls = cut === "cross" ? ["N", "S"] : ["W", "E"];
   const projected = S.openings.filter((o) => seenWalls.indexOf(o.wall) >= 0);
 
-  const earthHatch: JSX.Element[] = [];
+  const earthHatch: React.ReactElement[] = [];
   for (let xx = x0 - 30; xx < x0 + w + 30; xx += 8) {
     earthHatch.push(<line key={xx} x1={xx} y1={base + (slabT + footing) * sc} x2={xx + 5} y2={base + (slabT + footing) * sc + 5} stroke="#7a6f57" strokeWidth={0.4} />);
   }
 
-  const trusses: JSX.Element[] = [];
+  const trusses: React.ReactElement[] = [];
   if (S.roof !== "Flat" && cut === "long") {
     const tspx = 900 * sc; let i = 0;
     for (let x = x0 + tspx; x < x0 + w; x += tspx) {

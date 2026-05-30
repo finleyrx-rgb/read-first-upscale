@@ -1,3 +1,4 @@
+import React from "react";
 // Elevation view — ported from drawElev() in public/astral.html.
 // Honors layer toggle: envelope (arch), framing, concrete (foundation).
 
@@ -117,7 +118,7 @@ function FramingLayer({ S, pts, x0, w, eave, base, sc, ows, facedOpenings, longF
   });
   const inZone = (x: number) => zones.find((z) => x > z.x1 - 2 && x < z.x2 + 2);
   const spx = S.spacing * sc;
-  const studLines: JSX.Element[] = [];
+  const studLines: React.ReactElement[] = [];
   for (let x = x0 + spx; x < x0 + w - 1; x += spx) {
     const z = inZone(x);
     if (!z) {
@@ -128,12 +129,12 @@ function FramingLayer({ S, pts, x0, w, eave, base, sc, ows, facedOpenings, longF
     }
   }
   const rows = nogRows(S.studH);
-  const nogLines: JSX.Element[] = [];
+  const nogLines: React.ReactElement[] = [];
   for (let r = 1; r <= rows; r++) {
     const ny = eave + 5 + ((base - 3) - (eave + 5)) * (r / (rows + 1));
     nogLines.push(<line key={`n${r}`} x1={x0} y1={ny} x2={x0 + w} y2={ny} stroke="#a89a78" strokeWidth={0.5} strokeDasharray="10 4" />);
   }
-  const trusses: JSX.Element[] = [];
+  const trusses: React.ReactElement[] = [];
   if (longFace) {
     const tspx = 900 * sc;
     let i = 0;
@@ -255,7 +256,7 @@ function ArchLayer({ S, pts, x0, w, eave, eh, ows, facedOpenings, base }: ElevPr
 }
 
 function CladTexture({ x, y, w, h, kind, color }: { x: number; y: number; w: number; h: number; kind: string; color: string }) {
-  const lines: JSX.Element[] = [];
+  const lines: React.ReactElement[] = [];
   if (kind === "Weatherboard") {
     for (let yy = y + 6; yy < y + h; yy += 6) lines.push(<line key={yy} x1={x} y1={yy} x2={x + w} y2={yy} stroke="#00000022" strokeWidth={0.6} />);
   } else if (kind === "Ply + batten") {
@@ -270,7 +271,7 @@ function RoofTexture({ pts, color, cover }: { pts: [number, number][]; color: st
   const xs = pts.map((p) => p[0]), ys = pts.map((p) => p[1]);
   const minx = Math.min(...xs), maxx = Math.max(...xs), miny = Math.min(...ys), maxy = Math.max(...ys);
   const step = cover.indexOf("corrugate") > -1 ? 7 : cover.indexOf("tray") > -1 ? 16 : 0;
-  const lines: JSX.Element[] = [];
+  const lines: React.ReactElement[] = [];
   if (step) for (let xx = minx + step; xx < maxx; xx += step) lines.push(<line key={xx} x1={xx} y1={miny} x2={xx} y2={maxy} stroke="#ffffff22" strokeWidth={0.6} />);
   return (
     <g>

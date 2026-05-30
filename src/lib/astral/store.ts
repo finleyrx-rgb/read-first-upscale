@@ -6,6 +6,7 @@ import type {
   CutKey, FaceKey, LayerKey, UnitKey, ViewKey, WallKey,
 } from "./constants";
 import { TEMPLATES } from "./constants";
+import { DEFAULT_WALL_TYPES, type WallType } from "./wallTypes";
 
 export type Opening = {
   id: number;

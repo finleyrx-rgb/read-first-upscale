@@ -180,6 +180,27 @@ export function ElevationCallouts() {
       )}
       <CalloutBubble bx={ox - 30} by={oy + oh + 8} tx={ox + 8} ty={oy + oh - 4}
         k="detail_slab" nodeId="slab" />
+      {/* wall body — mid-height, opposite side */}
+      <CalloutBubble bx={ox - 30} by={oy + oh * 0.45}
+        tx={ox + 12} ty={oy + oh * 0.55} k="detail_wall" nodeId={`wall-${wallKey}`} />
+    </g>
+  );
+}
+
+/** Roof / wall / slab callouts for the SectionView (§7.2 cross-references). */
+export function SectionCallouts({
+  x0, w, base, eave, apex,
+}: {
+  x0: number; w: number; base: number; eave: number; apex: number;
+}) {
+  return (
+    <g>
+      <CalloutBubble bx={x0 + w + 34} by={apex - 6}
+        tx={x0 + w / 2 + 6} ty={apex + 4} k="detail_roof" nodeId="roof" />
+      <CalloutBubble bx={x0 - 34} by={(eave + base) / 2}
+        tx={x0 + 4} ty={(eave + base) / 2} k="detail_wall" nodeId="wall-S" />
+      <CalloutBubble bx={x0 - 34} by={base + 26}
+        tx={x0 + 6} ty={base - 4} k="detail_slab" nodeId="slab" />
     </g>
   );
 }

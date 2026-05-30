@@ -5,6 +5,8 @@ import { useShallow } from "zustand/react/shallow";
 import { WALLNAME, type WallKey } from "@/lib/astral/constants";
 import { KIND_COL, cladHex, openPlace, planGeom, wallLen } from "@/lib/astral/geom";
 import { ClickLayer } from "./ClickLayer";
+import { SheetFrame } from "../SheetFrame";
+import { PlanDimensions } from "./PlanDimensions";
 
 export function PlanView() {
   const S = useAstral(useShallow((s) => ({
@@ -86,6 +88,8 @@ export function PlanView() {
             </text>
           );
         })}
+        <PlanDimensions />
+        <SheetFrame />
       </svg>
       <ScaleChip label={`plan ≈1:${Math.round(1000 / sc)}`} />
     </ClickLayer>

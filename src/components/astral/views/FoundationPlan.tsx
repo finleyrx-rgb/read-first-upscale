@@ -6,6 +6,7 @@ import { useShallow } from "zustand/react/shallow";
 import { openPlace, planGeom } from "@/lib/astral/geom";
 import { ClickLayer } from "./ClickLayer";
 import { ScaleChip } from "./PlanView";
+import { SheetFrame } from "../SheetFrame";
 
 export function FoundationPlan() {
   const S = useAstral(useShallow((s) => ({ L: s.L, W: s.W, openings: s.openings })));
@@ -47,6 +48,7 @@ export function FoundationPlan() {
         <text x={x0 + w / 2} y={y0 - 16} fill="#3c4a47" fontSize={10} fontFamily="IBM Plex Mono" textAnchor="middle">
           FOUNDATION — slab, thickened edge, bearing pads
         </text>
+        <SheetFrame />
       </svg>
       <ScaleChip label="foundation / slab plan" />
     </ClickLayer>

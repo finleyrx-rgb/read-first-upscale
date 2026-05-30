@@ -8,6 +8,7 @@ import { useShallow } from "zustand/react/shallow";
 import { FACE_LABEL, FACE_WALL, KIND_COL, braceLayout, cladHex, lintelDepthMM, nogRows, openFrac, roofHex } from "@/lib/astral/geom";
 import { ClickLayer } from "./ClickLayer";
 import { ScaleChip } from "./PlanView";
+import { SheetFrame } from "../SheetFrame";
 
 const VW = 600, VH = 440, m = 70;
 
@@ -79,6 +80,7 @@ export function ElevationView() {
           fill="#3c4a47" fontSize={11} fontFamily="IBM Plex Mono" textAnchor="middle">
           {fName} · {S.roof} {S.pitch}° · {S.layer === "framing" ? "framing" : S.layer === "foundation" ? "concrete" : `${S.cladCol} / ${S.roofCol}`}
         </text>
+        <SheetFrame />
       </svg>
       <ScaleChip label={`${fName.toLowerCase()} elevation · ${lName} · indicative`} />
     </ClickLayer>

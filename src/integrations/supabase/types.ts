@@ -14,6 +14,47 @@ export type Database = {
   }
   public: {
     Tables: {
+      project_renders: {
+        Row: {
+          caption: string | null
+          created_at: string
+          id: string
+          kind: string
+          meta: Json
+          project_id: string
+          storage_path: string | null
+          user_id: string
+        }
+        Insert: {
+          caption?: string | null
+          created_at?: string
+          id?: string
+          kind: string
+          meta?: Json
+          project_id: string
+          storage_path?: string | null
+          user_id: string
+        }
+        Update: {
+          caption?: string | null
+          created_at?: string
+          id?: string
+          kind?: string
+          meta?: Json
+          project_id?: string
+          storage_path?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_renders_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       projects: {
         Row: {
           address: string | null

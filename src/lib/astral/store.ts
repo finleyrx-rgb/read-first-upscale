@@ -103,6 +103,13 @@ export type AstralState = {
   units: 1 | 2 | 3;
   parapet: boolean;
 
+  /** Number of habitable storeys (§7.10). 1 = single, 2 = two-storey. */
+  storeys: 1 | 2;
+  /** Subfloor clearance above ground (mm). Only meaningful when found = "Timber piles". */
+  subfloor: number;
+  /** Inter-storey floor build-up (mm) — joist + flooring depth. */
+  floorDepth: number;
+
   /** Wall construction type, per perimeter wall (§7.1 wall-type legend). */
   wallTypes: Record<WallKey, WallType>;
 

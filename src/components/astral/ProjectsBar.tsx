@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { useAuth, signOut } from "@/hooks/use-auth";
 import { useAstral } from "@/lib/astral/store";
+import { useProjectSession } from "@/lib/astral/projectSession";
 import {
   createProject, updateProject, listProjects, loadProject,
   deleteProject, setProjectShared, shareUrlFor,

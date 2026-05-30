@@ -29,7 +29,7 @@ const VIEWS: Pill<ViewKey> = [
   ["plan", "Plan"], ["elevation", "Elevation"], ["section", "Section"], ["detail", "Detail"],
 ] as const;
 const LAYERS: Pill<LayerKey> = [
-  ["arch", "Architectural"], ["framing", "Framing"], ["foundation", "Concrete"],
+  ["arch", "Architectural"], ["framing", "Framing"], ["foundation", "Concrete"], ["services", "Services"],
 ] as const;
 const FACES: Pill<FaceKey> = [
   ["front", "Front"], ["back", "Back"], ["left", "Left"], ["right", "Right"],

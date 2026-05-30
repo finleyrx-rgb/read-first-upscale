@@ -11,6 +11,7 @@ import { FoundationPlan } from "./views/FoundationPlan";
 import { ElevationView } from "./views/ElevationView";
 import { SectionView } from "./views/SectionView";
 import { DetailView } from "./views/DetailView";
+import { ServicesPlan } from "./views/ServicesPlan";
 
 function Chips() {
   const S = useAstral(useShallow((s) => ({
@@ -40,6 +41,7 @@ export function Canvas() {
   else if (view === "elevation") body = <ElevationView />;
   else if (layer === "framing") body = <FramingPlan />;
   else if (layer === "foundation") body = <FoundationPlan />;
+  else if (layer === "services") body = <ServicesPlan />;
   else body = <PlanView />;
 
   return (

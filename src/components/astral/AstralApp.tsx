@@ -1,13 +1,22 @@
 // Composition root for the Astral configurator.
 
+import { useEffect } from "react";
 import "@/styles/astral.css";
 import { Canvas } from "./Canvas";
 import { ControlBar } from "./ControlBar";
 import { SectionPanel } from "./SectionPanel";
 import { Inspector } from "./Inspector";
 import { ExportBar } from "./ExportBar";
+import { useAstral, readStoredUnit } from "@/lib/astral/store";
 
 export function AstralApp() {
+  // Hydrate the unit preference post-mount so SSR HTML matches initial render.
+  const setUnit = useAstral((s) => s.set);
+  useEffect(() => {
+    const stored = readStoredUnit();
+    if (stored !== useAstral.getState().unit) setUnit("unit", stored);
+  }, [setUnit]);
+
   return (
     <div className="astral-root">
       <header className="astral-top">

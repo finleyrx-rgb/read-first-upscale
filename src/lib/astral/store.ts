@@ -149,6 +149,8 @@ export const INITIAL_STATE: AstralState = {
   face: "front",
   cut: "cross",
   unit: loadUnit(),
+  units: 1,
+  parapet: false,
   openings: [
     { id: 1, kind: "Garage", wall: "W", off: 4000, width: 5000 },
     { id: 2, kind: "Door", wall: "S", off: 2000, width: 810 },

@@ -3,27 +3,40 @@ import { createFileRoute } from "@tanstack/react-router";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Your App" },
-      { name: "description", content: "Replace this with a one-sentence description of your app." },
-      { property: "og:title", content: "Your App" },
-      { property: "og:description", content: "Replace this with a one-sentence description of your app." },
+      { title: "Project Astral · Build Flow" },
+      {
+        name: "description",
+        content:
+          "Project Astral — NZ construction configurator. One hierarchical model, many projections (plans, elevations, sections, details).",
+      },
+      { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
+      { property: "og:title", content: "Project Astral · Build Flow" },
+      {
+        property: "og:description",
+        content: "Model-first NZ construction configurator.",
+      },
     ],
   }),
   component: Index,
 });
 
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
 function Index() {
+  // Phase 0: serve the existing single-file Astral app at the project root URL
+  // so it runs as the app (not as a sandboxed /documents/ file). React component
+  // decomposition (Canvas, ControlBar, SectionPanel, Inspector, Zustand store)
+  // is the work of Phase 0b onwards.
   return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
-    </div>
+    <iframe
+      src="/astral.html"
+      title="Project Astral"
+      style={{
+        position: "fixed",
+        inset: 0,
+        width: "100vw",
+        height: "100vh",
+        border: "none",
+        background: "#f3efe6",
+      }}
+    />
   );
 }

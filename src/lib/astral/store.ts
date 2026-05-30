@@ -118,6 +118,11 @@ export type AstralState = {
 
 const UNIT_KEY = "astral.unit";
 function loadUnit(): UnitKey {
+  // Deterministic SSR + initial-render value. Client hydration restores the
+  // saved preference via the useAstralUnitHydration() hook below.
+  return "m";
+}
+export function readStoredUnit(): UnitKey {
   if (typeof window === "undefined") return "m";
   try {
     const v = window.localStorage.getItem(UNIT_KEY);

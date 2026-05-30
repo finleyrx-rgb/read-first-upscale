@@ -95,6 +95,8 @@ export type AstralState = {
   layer: LayerKey;
   face: FaceKey;
   cut: CutKey;
+  /** Cut-line position along the perpendicular axis (0..1). 0.5 = centre. */
+  cutPos: number;
   unit: UnitKey;
 
   // multi-unit / advanced roof
@@ -152,6 +154,7 @@ export const INITIAL_STATE: AstralState = {
   layer: "arch",
   face: "front",
   cut: "cross",
+  cutPos: 0.5,
   unit: loadUnit(),
   units: 1,
   parapet: false,

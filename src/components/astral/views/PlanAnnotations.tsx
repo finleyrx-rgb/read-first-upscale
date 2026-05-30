@@ -103,6 +103,16 @@ function PlanCallouts() {
       out.push(<CalloutBubble key="lintel" bx={bx} by={by} tx={pl.cx} ty={pl.cy}
         k="detail_opening" nodeId={`opening-${bigOp.id}`} />);
     }
+    // Partition junction callouts — first 2 partitions only to avoid clutter.
+    S.parts.slice(0, 2).forEach((p, i) => {
+      const across = p.dir === "Across width";
+      const px = across ? x0 + (p.off / S.L) * w : x0 + ((p.start + p.len / 2) / S.L) * w;
+      const py = across ? y0 + ((p.start + p.len / 2) / S.W) * h : y0 + (p.off / S.W) * h;
+      const bx = x0 - 36;
+      const by = y0 + h * (0.25 + i * 0.35);
+      out.push(<CalloutBubble key={`part-${p.id}`} bx={bx} by={by} tx={px} ty={py}
+        k="detail_wall" nodeId={`part-${p.id}`} />);
+    });
   } else {
     out.push(<CalloutBubble key="slab1" bx={x0 + w + 34} by={y0 + h + 18}
       tx={x0 + w - 6} ty={y0 + h - 6} k="detail_slab" nodeId="slab" />);

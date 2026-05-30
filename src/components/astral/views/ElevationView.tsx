@@ -1,0 +1,283 @@
+import React from "react";
+// Elevation view — ported from drawElev() in public/astral.html.
+// Honors layer toggle: envelope (arch), framing, concrete (foundation).
+
+import { useMemo } from "react";
+import { useAstral } from "@/lib/astral/store";
+import { useShallow } from "zustand/react/shallow";
+import { FACE_LABEL, FACE_WALL, KIND_COL, braceLayout, cladHex, lintelDepthMM, nogRows, openFrac, roofHex } from "@/lib/astral/geom";
+import { ClickLayer } from "./ClickLayer";
+import { ScaleChip } from "./PlanView";
+
+const VW = 600, VH = 440, m = 70;
+
+export function ElevationView() {
+  const S = useAstral(useShallow((s) => ({
+    L: s.L, W: s.W, studH: s.studH, spacing: s.spacing,
+    roof: s.roof, pitch: s.pitch, cover: s.cover,
+    clad: s.clad, cladCol: s.cladCol, roofCol: s.roofCol,
+    openings: s.openings, face: s.face, layer: s.layer,
+  })));
+
+  const data = useMemo(() => {
+    const longFace = S.face === "front" || S.face === "back";
+    const wall = FACE_WALL[S.face];
+    const widmm = longFace ? S.L : S.W;
+    const apexmm = (S.W / 2) * Math.tan((S.pitch * Math.PI) / 180);
+    const totH = S.studH + (S.roof === "Flat" ? 200 : apexmm);
+    const sc = Math.min((VW - 2 * m) / widmm, (VH - 2 * m) / totH);
+    const w = widmm * sc, eh = S.studH * sc;
+    const x0 = (VW - w) / 2, base = VH - m, eave = base - eh, apexP = apexmm * sc;
+    return { longFace, wall, widmm, sc, w, eh, x0, base, eave, apexP };
+  }, [S.L, S.W, S.studH, S.roof, S.pitch, S.face]);
+
+  const { longFace, wall, widmm, sc, w, x0, base, eave, apexP } = data;
+
+  let pts: [number, number][];
+  if (S.roof === "Flat") {
+    pts = [[x0 - 6, eave - 4], [x0 + w + 6, eave - 2], [x0 + w + 6, eave + 2], [x0 - 6, eave + 2]];
+  } else if (S.roof === "Mono") {
+    const r = widmm * Math.tan((S.pitch * Math.PI) / 180) * sc;
+    pts = !longFace
+      ? [[x0, eave - Math.min(r, apexP * 2)], [x0 + w, eave], [x0 + w, eave + 2], [x0, eave + 2]]
+      : [[x0, eave - apexP], [x0 + w, eave - apexP], [x0 + w, eave], [x0, eave]];
+  } else if (!longFace) {
+    pts = [[x0, eave], [x0 + w / 2, eave - apexP], [x0 + w, eave]];
+  } else {
+    const ridge = S.roof === "Hip" ? (S.W / 2) * sc : S.roof === "Gable" ? 4 : (S.W / 2) * sc;
+    pts = [[x0, eave], [x0 + ridge, eave - apexP], [x0 + w - ridge, eave - apexP], [x0 + w, eave]];
+  }
+
+  const ows = (o: typeof S.openings[number]) => {
+    const owid = Math.min(o.width, widmm * 0.95) * sc;
+    const cxp = x0 + Math.max(owid / 2, Math.min(w - owid / 2, openFrac(S, o) * w));
+    const oh = (o.kind === "Window" ? 1000 : (o.kind === "Garage" ? Math.min(S.studH - 200, 2400) : 1980)) * sc;
+    const sill = (o.kind === "Window" ? 1000 : 0) * sc;
+    return { owid, cxp, oh, sill };
+  };
+
+  const facedOpenings = S.openings.filter((o) => o.wall === wall);
+  const lName = S.layer === "framing" ? "framing" : S.layer === "foundation" ? "concrete" : "envelope";
+  const fName = FACE_LABEL[S.face];
+
+  return (
+    <ClickLayer>
+      <svg viewBox="-14 -14 628 540" preserveAspectRatio="xMidYMid meet">
+        <line x1={x0 - 34} y1={base} x2={x0 + w + 34} y2={base} stroke="#3c4a47" strokeWidth={2} />
+
+        {S.layer === "foundation" && <FoundationLayer x0={x0} w={w} eave={eave} eh={data.eh} base={base} />}
+        {S.layer === "framing" && (
+          <FramingLayer S={S} pts={pts} x0={x0} w={w} eave={eave} base={base} sc={sc} ows={ows}
+            facedOpenings={facedOpenings} longFace={longFace} apexP={apexP} wall={wall} widmm={widmm} />
+        )}
+        {S.layer === "arch" && (
+          <ArchLayer S={S} pts={pts} x0={x0} w={w} eave={eave} eh={data.eh} base={base}
+            ows={ows} facedOpenings={facedOpenings} />
+        )}
+
+        <text x={x0 + w / 2} y={base + (S.layer === "foundation" ? 36 : 18)}
+          fill="#3c4a47" fontSize={11} fontFamily="IBM Plex Mono" textAnchor="middle">
+          {fName} · {S.roof} {S.pitch}° · {S.layer === "framing" ? "framing" : S.layer === "foundation" ? "concrete" : `${S.cladCol} / ${S.roofCol}`}
+        </text>
+      </svg>
+      <ScaleChip label={`${fName.toLowerCase()} elevation · ${lName} · indicative`} />
+    </ClickLayer>
+  );
+}
+
+function FoundationLayer({ x0, w, eave, eh, base }: { x0: number; w: number; eave: number; eh: number; base: number }) {
+  return (
+    <g>
+      <rect x={x0} y={eave} width={w} height={eh} fill="none" stroke="#cfc6b4" strokeWidth={1} strokeDasharray="4 3" />
+      <line x1={x0 - 22} y1={base} x2={x0 + w + 22} y2={base} stroke="#1d2a2a" strokeWidth={1.4} />
+      <text x={x0 + w + 26} y={base + 3} fill="#3c4a47" fontSize={9} fontFamily="IBM Plex Mono">FFL 0</text>
+      <rect x={x0} y={base} width={w} height={11} fill="#efeadd" stroke="#1d2a2a" strokeWidth={1.1}
+        data-node-id="slab" data-node-type="Slab" />
+      <rect x={x0 - 2} y={base + 11} width={15} height={15} fill="#efeadd" stroke="#1d2a2a" strokeWidth={1} />
+      <rect x={x0 + w - 13} y={base + 11} width={15} height={15} fill="#efeadd" stroke="#1d2a2a" strokeWidth={1} />
+      <text x={x0 + w / 2} y={base + 22} fill="#7a6f57" fontSize={9} fontFamily="IBM Plex Mono" textAnchor="middle">
+        100 slab · thickened edge (SED)
+      </text>
+    </g>
+  );
+}
+
+type ElevProps = {
+  S: { L: number; W: number; studH: number; spacing: number; roof: string; pitch: number; cover: string; clad: string; cladCol: string; roofCol: string; openings: ReturnType<typeof useAstral.getState>["openings"]; face: ReturnType<typeof useAstral.getState>["face"]; layer: ReturnType<typeof useAstral.getState>["layer"]; };
+  pts: [number, number][];
+  x0: number; w: number; eave: number; base: number;
+  ows: (o: ElevProps["S"]["openings"][number]) => { owid: number; cxp: number; oh: number; sill: number };
+  facedOpenings: ElevProps["S"]["openings"];
+};
+
+function FramingLayer({ S, pts, x0, w, eave, base, sc, ows, facedOpenings, longFace, apexP, wall, widmm }:
+  ElevProps & { sc: number; longFace: boolean; apexP: number; wall: string; widmm: number }) {
+  const zones = facedOpenings.map((o) => {
+    const a = ows(o);
+    return { x1: a.cxp - a.owid / 2, x2: a.cxp + a.owid / 2, head: base - a.sill - a.oh, sillY: base - a.sill, kind: o.kind, owid: a.owid, cxp: a.cxp, id: o.id };
+  });
+  const inZone = (x: number) => zones.find((z) => x > z.x1 - 2 && x < z.x2 + 2);
+  const spx = S.spacing * sc;
+  const studLines: React.ReactElement[] = [];
+  for (let x = x0 + spx; x < x0 + w - 1; x += spx) {
+    const z = inZone(x);
+    if (!z) {
+      studLines.push(<line key={`s${x}`} x1={x} y1={eave + 5} x2={x} y2={base - 3} stroke="#8a7c5e" strokeWidth={0.7} />);
+    } else {
+      studLines.push(<line key={`sa${x}`} x1={x} y1={eave + 5} x2={x} y2={z.head} stroke="#8a7c5e" strokeWidth={0.45} />);
+      if (z.kind === "Window") studLines.push(<line key={`sb${x}`} x1={x} y1={z.sillY} x2={x} y2={base - 3} stroke="#8a7c5e" strokeWidth={0.45} />);
+    }
+  }
+  const rows = nogRows(S.studH);
+  const nogLines: React.ReactElement[] = [];
+  for (let r = 1; r <= rows; r++) {
+    const ny = eave + 5 + ((base - 3) - (eave + 5)) * (r / (rows + 1));
+    nogLines.push(<line key={`n${r}`} x1={x0} y1={ny} x2={x0 + w} y2={ny} stroke="#a89a78" strokeWidth={0.5} strokeDasharray="10 4" />);
+  }
+  const trusses: React.ReactElement[] = [];
+  if (longFace) {
+    const tspx = 900 * sc;
+    let i = 0;
+    for (let x = x0 + tspx; x < x0 + w; x += tspx) {
+      trusses.push(<line key={`t${i++}`} x1={x} y1={eave} x2={x} y2={eave - apexP * 0.16} stroke="#c8975a" strokeWidth={0.5} />);
+    }
+  }
+
+  return (
+    <g>
+      <rect x={x0} y={eave} width={w} height={base - 3 - eave} fill="none" stroke="#1d2a2a" strokeWidth={1}
+        data-node-id="building" data-node-type="Building" />
+      <line x1={x0} y1={eave + 2} x2={x0 + w} y2={eave + 2} stroke="#8a7c5e" strokeWidth={1.1} />
+      <line x1={x0} y1={eave + 5} x2={x0 + w} y2={eave + 5} stroke="#8a7c5e" strokeWidth={1.1} />
+      <line x1={x0} y1={base - 3} x2={x0 + w} y2={base - 3} stroke="#8a7c5e" strokeWidth={1.4} />
+      {studLines}
+      {nogLines}
+      {[x0, x0 + w].map((cv) => {
+        const d = cv === x0 ? 1 : -1;
+        return (
+          <g key={cv}>
+            <line x1={cv + 2 * d} y1={eave + 5} x2={cv + 2 * d} y2={base - 3} stroke="#1d2a2a" strokeWidth={1} />
+            <line x1={cv + 5 * d} y1={eave + 5} x2={cv + 5 * d} y2={base - 3} stroke="#8a7c5e" strokeWidth={0.8} />
+          </g>
+        );
+      })}
+      {zones.map((z) => {
+        const widthMM = Math.round(z.owid / sc);
+        const ld = Math.max(4, lintelDepthMM(widthMM) * sc);
+        return (
+          <g key={z.id}>
+            {[z.x1, z.x2].map((jx) => {
+              const d = jx === z.x1 ? -1 : 1;
+              return (
+                <g key={jx}>
+                  <line x1={jx} y1={eave + 5} x2={jx} y2={base - 3} stroke="#1d2a2a" strokeWidth={1} />
+                  <line x1={jx + 3 * d} y1={z.head} x2={jx + 3 * d} y2={base - 3} stroke="#8a7c5e" strokeWidth={0.7} />
+                </g>
+              );
+            })}
+            <rect x={z.x1 - 3} y={z.head - ld} width={(z.x2 - z.x1) + 6} height={ld}
+              fill="#f0e3cf" stroke="#b4472d" strokeWidth={1.1}
+              data-node-id={`opening-${z.id}`} data-node-type="Opening" />
+            {z.kind === "Window" && (
+              <rect x={z.x1} y={z.sillY} width={z.x2 - z.x1} height={3} fill="#a89a78" />
+            )}
+            {widthMM > 3000 && (
+              <text x={z.cxp} y={z.head - ld - 3} fill="#b4472d" fontSize={8} fontFamily="IBM Plex Mono" textAnchor="middle">
+                ENG. HEAD (SED)
+              </text>
+            )}
+          </g>
+        );
+      })}
+      {braceLayout(S, wall as "N" | "S" | "E" | "W").map((bp, i) => {
+        const bx1 = x0 + (bp.start / widmm) * w;
+        const bx2 = x0 + ((bp.start + bp.len) / widmm) * w;
+        return (
+          <g key={`b${i}`}>
+            <rect x={bx1} y={eave + 5} width={bx2 - bx1} height={(base - 3) - (eave + 5)}
+              fill="rgba(63,125,84,0.07)" stroke="#3f7d54" strokeWidth={0.8} />
+            <line x1={bx1} y1={base - 3} x2={bx2} y2={eave + 5} stroke="#3f7d54" strokeWidth={0.8} />
+            <line x1={bx1} y1={eave + 5} x2={bx2} y2={base - 3} stroke="#3f7d54" strokeWidth={0.8} />
+            <text x={(bx1 + bx2) / 2} y={base - 7} fill="#3f7d54" fontSize={7} fontFamily="IBM Plex Mono" textAnchor="middle">BL</text>
+          </g>
+        );
+      })}
+      <polyline points={pts.map((p) => p.join(",")).join(" ")} fill="none" stroke="#1d2a2a" strokeWidth={1} />
+      {!longFace ? (
+        <g>
+          <line x1={x0} y1={eave} x2={x0 + w} y2={eave} stroke="#8a7c5e" strokeWidth={0.7} />
+          <line x1={x0 + w / 2} y1={eave} x2={x0 + w / 2} y2={eave - apexP} stroke="#8a7c5e" strokeWidth={0.6} />
+          <line x1={x0 + w * 0.25} y1={eave} x2={x0 + w * 0.42} y2={eave - apexP * 0.55} stroke="#8a7c5e" strokeWidth={0.5} />
+          <line x1={x0 + w * 0.75} y1={eave} x2={x0 + w * 0.58} y2={eave - apexP * 0.55} stroke="#8a7c5e" strokeWidth={0.5} />
+        </g>
+      ) : trusses}
+      <text x={x0 + w / 2} y={eave - 6} fill="#3f7d54" fontSize={8} fontFamily="IBM Plex Mono" textAnchor="middle">
+        bracing (green) indicative — confirm BU demand
+      </text>
+    </g>
+  );
+}
+
+function ArchLayer({ S, pts, x0, w, eave, eh, ows, facedOpenings, base }: ElevProps & { eh: number }) {
+  const cHex = cladHex(S.cladCol);
+  const rHex = roofHex(S.roofCol);
+  return (
+    <g>
+      <CladTexture x={x0} y={eave} w={w} h={eh} kind={S.clad} color={cHex} />
+      <rect x={x0} y={eave} width={w} height={eh} fill="none" stroke="#1d2a2a" strokeWidth={1.4}
+        data-node-id="building" data-node-type="Building" />
+      <RoofTexture pts={pts} color={rHex} cover={S.cover} />
+      <line x1={x0 - 8} y1={eave} x2={x0} y2={eave} stroke="#1d2a2a" strokeWidth={1} />
+      <line x1={x0 + w} y1={eave} x2={x0 + w + 8} y2={eave} stroke="#1d2a2a" strokeWidth={1} />
+      {facedOpenings.map((o) => {
+        const { owid, cxp, oh, sill } = ows(o);
+        const col = KIND_COL[o.kind];
+        return (
+          <g key={o.id}>
+            <rect x={cxp - owid / 2} y={base - sill - oh} width={owid} height={oh}
+              fill="#ffffff" opacity={0.55} stroke={col} strokeWidth={o.kind === "Garage" ? 2.4 : 1.6}
+              data-node-id={`opening-${o.id}`} data-node-type="Opening" />
+            {o.kind === "Window" && (
+              <>
+                <line x1={cxp} y1={base - sill - oh} x2={cxp} y2={base - sill} stroke={col} strokeWidth={0.8} />
+                <line x1={cxp - owid / 2} y1={base - sill - oh / 2} x2={cxp + owid / 2} y2={base - sill - oh / 2} stroke={col} strokeWidth={0.8} />
+              </>
+            )}
+            {o.kind === "Garage" && o.width > 3000 && (
+              <text x={cxp} y={base - oh - 4} fill="#b4472d" fontSize={9} fontFamily="IBM Plex Mono" textAnchor="middle">
+                ENG. HEAD
+              </text>
+            )}
+          </g>
+        );
+      })}
+    </g>
+  );
+}
+
+function CladTexture({ x, y, w, h, kind, color }: { x: number; y: number; w: number; h: number; kind: string; color: string }) {
+  const lines: React.ReactElement[] = [];
+  if (kind === "Weatherboard") {
+    for (let yy = y + 6; yy < y + h; yy += 6) lines.push(<line key={yy} x1={x} y1={yy} x2={x + w} y2={yy} stroke="#00000022" strokeWidth={0.6} />);
+  } else if (kind === "Ply + batten") {
+    for (let xx = x + 10; xx < x + w; xx += 20) lines.push(<line key={xx} x1={xx} y1={y} x2={xx} y2={y + h} stroke="#00000022" strokeWidth={0.8} />);
+  } else if (kind === "Fibre-cement") {
+    for (let xx = x + 24; xx < x + w; xx += 24) lines.push(<line key={xx} x1={xx} y1={y} x2={xx} y2={y + h} stroke="#00000018" strokeWidth={0.5} />);
+  }
+  return <g><rect x={x} y={y} width={w} height={h} fill={color} />{lines}</g>;
+}
+
+function RoofTexture({ pts, color, cover }: { pts: [number, number][]; color: string; cover: string }) {
+  const xs = pts.map((p) => p[0]), ys = pts.map((p) => p[1]);
+  const minx = Math.min(...xs), maxx = Math.max(...xs), miny = Math.min(...ys), maxy = Math.max(...ys);
+  const step = cover.indexOf("corrugate") > -1 ? 7 : cover.indexOf("tray") > -1 ? 16 : 0;
+  const lines: React.ReactElement[] = [];
+  if (step) for (let xx = minx + step; xx < maxx; xx += step) lines.push(<line key={xx} x1={xx} y1={miny} x2={xx} y2={maxy} stroke="#ffffff22" strokeWidth={0.6} />);
+  return (
+    <g>
+      <polygon points={pts.map((p) => p.join(",")).join(" ")} fill={color} stroke="#1d2a2a" strokeWidth={1}
+        data-node-id="roof" data-node-type="RoofSystem" />
+      {lines}
+    </g>
+  );
+}

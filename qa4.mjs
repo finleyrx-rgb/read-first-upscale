@@ -11,7 +11,7 @@ await p.evaluate(()=>{S.cut='long';render();});await new Promise(r=>setTimeout(r
 await p.screenshot({path:'/tmp/sec_long.png'});
 await p.evaluate(()=>{S.view='plan';S.layer='arch';render();});await new Promise(r=>setTimeout(r,200));
 await p.screenshot({path:'/tmp/plan_markers.png'});
-const box=await p.evaluate(()=>{const g=document.querySelector('[data-section-cut="cross"]');const b=g.getBoundingClientRect();return{x:b.x+b.width/2,y:b.y+b.height/2};});
+const box=await p.evaluate(()=>{const g=document.querySelector('[data-section-cut="long"]');const b=g.getBoundingClientRect();return{x:b.x+b.width/2,y:b.y+b.height/2};});
 console.log('marker',box);await p.mouse.click(box.x,box.y);await new Promise(r=>setTimeout(r,200));
 console.log('after click',await p.evaluate(()=>({view:S.view,cut:S.cut})));
 await p.screenshot({path:'/tmp/after_click.png'});

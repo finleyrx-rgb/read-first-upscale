@@ -8,6 +8,7 @@ import { WALLNAME, ROOF_FORMS, type WallKey } from "@/lib/astral/constants";
 import { defaultHead, defaultSill, overlappingOpeningIds } from "@/lib/astral/store";
 import { maxHead, openingHead, openingSill } from "@/lib/astral/geom";
 import { WALL_TYPES, WALL_TYPE_STYLES } from "@/lib/astral/wallTypes";
+import { useAgent } from "@/lib/astral/agent/client";
 
 export function Inspector() {
   const S = useAstral((s) => s);

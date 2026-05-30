@@ -48,6 +48,10 @@ function StepFootprint() {
   const W = useAstral((s) => s.W);
   const studH = useAstral((s) => s.studH);
   const spacing = useAstral((s) => s.spacing);
+  const storeys = useAstral((s) => s.storeys);
+  const floorDepth = useAstral((s) => s.floorDepth);
+  const found = useAstral((s) => s.found);
+  const subfloor = useAstral((s) => s.subfloor);
   const set = useAstral((s) => s.set);
   return (
     <>
@@ -58,6 +62,14 @@ function StepFootprint() {
       <DimInput label="Stud height" getMM={() => studH} setMM={(v) => set("studH", v)} minMM={2400} maxMM={3600} />
       <OptRow label="Stud spacing (c/c)" values={[400, 600] as const} current={spacing}
         onPick={(v) => set("spacing", v)} />
+      <OptRow label="Storeys" values={[1, 2] as const} current={storeys}
+        onPick={(v) => set("storeys", v)} />
+      {storeys > 1 && (
+        <DimInput label="Inter-floor depth" getMM={() => floorDepth} setMM={(v) => set("floorDepth", v)} minMM={200} maxMM={500} />
+      )}
+      {found === "Timber piles" && (
+        <DimInput label="Subfloor clearance" getMM={() => subfloor} setMM={(v) => set("subfloor", v)} minMM={300} maxMM={1500} />
+      )}
     </>
   );
 }

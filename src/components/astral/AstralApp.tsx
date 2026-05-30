@@ -47,6 +47,7 @@ export function AstralApp() {
         <SectionPanel />
         <MaterialsPanel />
       </div>
+      <AstralDrawer projectKey="local" />
     </div>
   );
 }

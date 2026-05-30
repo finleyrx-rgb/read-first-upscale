@@ -14,7 +14,7 @@ import { WallLegend, WallStrips } from "./WallLegend";
 export function PlanView() {
   const S = useAstral(useShallow((s) => ({
     L: s.L, W: s.W, eave: s.eave, openings: s.openings, parts: s.parts,
-    cladCol: s.cladCol,
+    cladCol: s.cladCol, wallTypes: s.wallTypes,
   })));
 
   const g = planGeom(S);

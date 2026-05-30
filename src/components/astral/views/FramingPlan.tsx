@@ -9,6 +9,7 @@ import { ClickLayer } from "./ClickLayer";
 import { ScaleChip } from "./PlanView";
 import { SheetFrame } from "../SheetFrame";
 import { PlanDimensions } from "./PlanDimensions";
+import { PlanAnnotations } from "./PlanAnnotations";
 
 export function FramingPlan() {
   const S = useAstral(useShallow((s) => ({
@@ -113,6 +114,7 @@ export function FramingPlan() {
           bracing panels indicative — confirm BU demand &amp; layout
         </text>
         <PlanDimensions />
+        <PlanAnnotations />
         <SheetFrame />
       </svg>
       <ScaleChip label={`framing plan · studs @${S.spacing} · trusses @900`} />

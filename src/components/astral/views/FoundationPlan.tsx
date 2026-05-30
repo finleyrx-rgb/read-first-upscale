@@ -8,6 +8,7 @@ import { ClickLayer } from "./ClickLayer";
 import { ScaleChip } from "./PlanView";
 import { SheetFrame } from "../SheetFrame";
 import { PlanDimensions } from "./PlanDimensions";
+import { PlanAnnotations } from "./PlanAnnotations";
 
 export function FoundationPlan() {
   const S = useAstral(useShallow((s) => ({ L: s.L, W: s.W, openings: s.openings })));
@@ -50,6 +51,7 @@ export function FoundationPlan() {
           FOUNDATION — slab, thickened edge, bearing pads
         </text>
         <PlanDimensions />
+        <PlanAnnotations />
         <SheetFrame />
       </svg>
       <ScaleChip label="foundation / slab plan" />

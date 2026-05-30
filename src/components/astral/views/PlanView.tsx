@@ -7,6 +7,7 @@ import { KIND_COL, cladHex, openPlace, planGeom, wallLen } from "@/lib/astral/ge
 import { ClickLayer } from "./ClickLayer";
 import { SheetFrame } from "../SheetFrame";
 import { PlanDimensions } from "./PlanDimensions";
+import { PlanAnnotations } from "./PlanAnnotations";
 
 export function PlanView() {
   const S = useAstral(useShallow((s) => ({
@@ -89,6 +90,7 @@ export function PlanView() {
           );
         })}
         <PlanDimensions />
+        <PlanAnnotations />
         <SheetFrame />
       </svg>
       <ScaleChip label={`plan ≈1:${Math.round(1000 / sc)}`} />

@@ -9,6 +9,7 @@ import { FACE_LABEL, FACE_WALL, KIND_COL, braceLayout, cladHex, lintelDepthMM, n
 import { ClickLayer } from "./ClickLayer";
 import { ScaleChip } from "./PlanView";
 import { SheetFrame } from "../SheetFrame";
+import { ElevationCallouts } from "./PlanAnnotations";
 
 const VW = 600, VH = 440, m = 70;
 
@@ -83,6 +84,7 @@ export function ElevationView() {
           fill="#3c4a47" fontSize={11} fontFamily="IBM Plex Mono" textAnchor="middle">
           {fName} · {S.roof} {S.pitch}° · {S.layer === "framing" ? "framing" : S.layer === "foundation" ? "concrete" : `${S.cladCol} / ${S.roofCol}`}
         </text>
+        <ElevationCallouts />
         <SheetFrame />
       </svg>
       <ScaleChip label={`${fName.toLowerCase()} elevation · ${lName} · indicative`} />

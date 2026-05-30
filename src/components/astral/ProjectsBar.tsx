@@ -25,7 +25,8 @@ const BTN: React.CSSProperties = {
 
 export function ProjectsBar() {
   const { user, loading } = useAuth();
-  const [currentId, setCurrentId] = useState<string | null>(null);
+  const currentId = useProjectSession((s) => s.currentProjectId);
+  const setCurrentId = useProjectSession((s) => s.setCurrentProjectId);
   const [currentMeta, setCurrentMeta] = useState<ProjectMetaInput>({ name: "Untitled project" });
   const [list, setList] = useState<ProjectMeta[]>([]);
   const [open, setOpen] = useState<"none" | "list" | "meta" | "share">("none");

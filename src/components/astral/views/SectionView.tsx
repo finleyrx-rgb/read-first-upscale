@@ -150,6 +150,7 @@ export function SectionView() {
           fontFamily="IBM Plex Mono" textAnchor="middle">
           SECTION {tag}–{tag} · {cut === "cross" ? "across width" : "along length"} · {S.roof} {S.pitch}°
         </text>
+        <SectionCallouts x0={x0} w={w} base={base} eave={eave} apex={eave - apexP} />
         <SheetFrame />
       </svg>
       <ScaleChip label={`section ${tag}–${tag} · ${cut === "cross" ? "cross (across width)" : "longitudinal (along length)"} · indicative`} />

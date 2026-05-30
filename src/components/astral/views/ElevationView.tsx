@@ -140,17 +140,64 @@ export function ElevationView() {
 }
 
 function FoundationLayer({ x0, w, eave, eh, base }: { x0: number; w: number; eave: number; eh: number; base: number }) {
+  // §7.3 elevation concrete layer — edge beam profile, DPC, hardfill,
+  // anchor bolts, control-joint marks on slab edge, FGL.
+  const slabH = 11;
+  const edgeBeamH = 18;
+  const fgl = base + slabH + 4;       // finished ground level
+  const hatch: React.ReactElement[] = [];
+  for (let xx = x0 - 18; xx < x0 + w + 18; xx += 9) {
+    hatch.push(<line key={`hf${xx}`} x1={xx} y1={fgl} x2={xx - 5} y2={fgl + 10}
+      stroke="#8a7c5e" strokeWidth={0.4} />);
+  }
+  // anchor bolts ~ every 900mm
+  const anchors: React.ReactElement[] = [];
+  for (let i = 1; i < 8; i++) {
+    const ax = x0 + (i / 8) * w;
+    anchors.push(<g key={`a${i}`}>
+      <circle cx={ax} cy={base + 4} r={1.4} fill="#1d2a2a" />
+      <line x1={ax} y1={base} x2={ax} y2={base + slabH - 1} stroke="#1d2a2a" strokeWidth={0.5} />
+    </g>);
+  }
+  // control joints on slab edge (top face)
+  const cj: React.ReactElement[] = [];
+  for (let i = 1; i <= 2; i++) {
+    const cx = x0 + (i / 3) * w;
+    cj.push(<g key={`cj${i}`}>
+      <line x1={cx} y1={base} x2={cx} y2={base + 4} stroke="#1d2a2a" strokeWidth={0.7} strokeDasharray="2 1" />
+      <text x={cx} y={base - 3} fill="#3c4a47" fontSize={6.5} fontFamily="IBM Plex Mono" textAnchor="middle">CJ</text>
+    </g>);
+  }
   return (
     <g>
       <rect x={x0} y={eave} width={w} height={eh} fill="none" stroke="#cfc6b4" strokeWidth={1} strokeDasharray="4 3" />
+      {/* FFL line + label */}
       <line x1={x0 - 22} y1={base} x2={x0 + w + 22} y2={base} stroke="#1d2a2a" strokeWidth={1.4} />
       <text x={x0 + w + 26} y={base + 3} fill="#3c4a47" fontSize={9} fontFamily="IBM Plex Mono">FFL 0</text>
-      <rect x={x0} y={base} width={w} height={11} fill="#efeadd" stroke="#1d2a2a" strokeWidth={1.1}
+      {/* slab body */}
+      <rect x={x0} y={base} width={w} height={slabH} fill="#efeadd" stroke="#1d2a2a" strokeWidth={1.1}
         data-node-id="slab" data-node-type="Slab" />
-      <rect x={x0 - 2} y={base + 11} width={15} height={15} fill="#efeadd" stroke="#1d2a2a" strokeWidth={1} />
-      <rect x={x0 + w - 13} y={base + 11} width={15} height={15} fill="#efeadd" stroke="#1d2a2a" strokeWidth={1} />
-      <text x={x0 + w / 2} y={base + 22} fill="#7a6f57" fontSize={9} fontFamily="IBM Plex Mono" textAnchor="middle">
-        100 slab · thickened edge (SED)
+      {/* DPC line under bottom plate */}
+      <line x1={x0} y1={base - 1.2} x2={x0 + w} y2={base - 1.2} stroke="#2f6f7e" strokeWidth={0.8} />
+      {/* mesh indicator inside slab */}
+      <line x1={x0 + 4} y1={base + slabH / 2} x2={x0 + w - 4} y2={base + slabH / 2}
+        stroke="#2f6f7e" strokeWidth={0.4} strokeDasharray="2 2" />
+      {/* edge-beam thickening at each end */}
+      <rect x={x0 - 2} y={base + slabH} width={20} height={edgeBeamH} fill="#efeadd" stroke="#1d2a2a" strokeWidth={1} />
+      <rect x={x0 + w - 18} y={base + slabH} width={20} height={edgeBeamH} fill="#efeadd" stroke="#1d2a2a" strokeWidth={1} />
+      {/* edge bars (top + bottom) */}
+      <circle cx={x0 + 4} cy={base + slabH + 4} r={1.4} fill="none" stroke="#1d2a2a" strokeWidth={0.6} />
+      <circle cx={x0 + 4} cy={base + slabH + edgeBeamH - 4} r={1.4} fill="none" stroke="#1d2a2a" strokeWidth={0.6} />
+      <circle cx={x0 + w - 4} cy={base + slabH + 4} r={1.4} fill="none" stroke="#1d2a2a" strokeWidth={0.6} />
+      <circle cx={x0 + w - 4} cy={base + slabH + edgeBeamH - 4} r={1.4} fill="none" stroke="#1d2a2a" strokeWidth={0.6} />
+      {/* FGL + hardfill hatch */}
+      <line x1={x0 - 22} y1={fgl} x2={x0 + w + 22} y2={fgl} stroke="#8a7c5e" strokeWidth={0.6} />
+      <text x={x0 + w + 26} y={fgl + 3} fill="#7a6f57" fontSize={8} fontFamily="IBM Plex Mono">FGL</text>
+      {hatch}
+      {anchors}
+      {cj}
+      <text x={x0 + w / 2} y={base + slabH + edgeBeamH + 18} fill="#7a6f57" fontSize={9} fontFamily="IBM Plex Mono" textAnchor="middle">
+        100 slab · SE82 mesh · DPC · 300 thickened edge (SED) · anchors @900 · CJ ≤6m
       </text>
     </g>
   );

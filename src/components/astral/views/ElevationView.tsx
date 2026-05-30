@@ -18,7 +18,7 @@ export function ElevationView() {
     L: s.L, W: s.W, studH: s.studH, spacing: s.spacing,
     roof: s.roof, pitch: s.pitch, cover: s.cover,
     clad: s.clad, cladCol: s.cladCol, roofCol: s.roofCol,
-    eave: s.eave,
+    eave: s.eave, parapet: s.parapet, units: s.units,
     openings: s.openings, face: s.face, layer: s.layer,
   })));
 
@@ -39,12 +39,49 @@ export function ElevationView() {
   const eo = (S.eave || 0) * sc;
   let pts: [number, number][];
   if (S.roof === "Flat") {
-    pts = [[x0 - 6 - eo, eave - 4], [x0 + w + 6 + eo, eave - 2], [x0 + w + 6 + eo, eave + 2], [x0 - 6 - eo, eave + 2]];
+    if (S.parapet) {
+      const cap = Math.max(8, 300 * sc);
+      pts = [[x0 - 6 - eo, eave - cap], [x0 + w + 6 + eo, eave - cap], [x0 + w + 6 + eo, eave + 2], [x0 - 6 - eo, eave + 2]];
+    } else {
+      pts = [[x0 - 6 - eo, eave - 4], [x0 + w + 6 + eo, eave - 2], [x0 + w + 6 + eo, eave + 2], [x0 - 6 - eo, eave + 2]];
+    }
   } else if (S.roof === "Mono") {
     const r = widmm * Math.tan((S.pitch * Math.PI) / 180) * sc;
     pts = !longFace
       ? [[x0 - eo, eave - Math.min(r, apexP * 2)], [x0 + w + eo, eave], [x0 + w + eo, eave + 2], [x0 - eo, eave + 2]]
       : [[x0 - eo, eave - apexP], [x0 + w + eo, eave - apexP], [x0 + w + eo, eave], [x0 - eo, eave]];
+  } else if (S.roof === "Gambrel") {
+    if (!longFace) {
+      const kneeY = eave - apexP * 0.4;
+      const kneeX = w * 0.22;
+      pts = [
+        [x0 - eo, eave],
+        [x0, eave],
+        [x0 + kneeX, kneeY],
+        [x0 + w / 2, eave - apexP],
+        [x0 + w - kneeX, kneeY],
+        [x0 + w, eave],
+        [x0 + w + eo, eave],
+      ];
+    } else {
+      const ridgeY = eave - apexP;
+      pts = [[x0 - eo, ridgeY], [x0 + w + eo, ridgeY], [x0 + w + eo, eave], [x0 - eo, eave]];
+    }
+  } else if (S.roof === "Dutch Gable") {
+    if (!longFace) {
+      const hipTop = eave - apexP * 0.55;
+      const gableTopX = w * 0.32;
+      pts = [
+        [x0 - eo, eave],
+        [x0 + gableTopX, hipTop],
+        [x0 + w / 2, eave - apexP],
+        [x0 + w - gableTopX, hipTop],
+        [x0 + w + eo, eave],
+      ];
+    } else {
+      const ridge = (S.W / 2) * sc;
+      pts = [[x0 - eo, eave], [x0 + ridge, eave - apexP], [x0 + w - ridge, eave - apexP], [x0 + w + eo, eave]];
+    }
   } else if (!longFace) {
     // Gable end seen — extend eaves out beyond the wall ends along the rake.
     pts = [[x0 - eo, eave + (eo * apexP) / (w / 2 || 1)], [x0 + w / 2, eave - apexP], [x0 + w + eo, eave + (eo * apexP) / (w / 2 || 1)]];
@@ -80,9 +117,19 @@ export function ElevationView() {
             ows={ows} facedOpenings={facedOpenings} />
         )}
 
+        {longFace && S.units > 1 && Array.from({ length: S.units - 1 }).map((_, i) => {
+          const px = x0 + ((i + 1) / S.units) * w;
+          return (
+            <g key={`pwe${i}`}>
+              <line x1={px} y1={eave} x2={px} y2={base} stroke="#7a4a16" strokeWidth={1.2} strokeDasharray="6 3" />
+              <text x={px} y={eave - 4} fill="#7a4a16" fontSize={8} fontFamily="IBM Plex Mono" textAnchor="middle">party wall</text>
+            </g>
+          );
+        })}
+
         <text x={x0 + w / 2} y={base + (S.layer === "foundation" ? 36 : 18)}
           fill="#3c4a47" fontSize={11} fontFamily="IBM Plex Mono" textAnchor="middle">
-          {fName} · {S.roof} {S.pitch}° · {S.layer === "framing" ? "framing" : S.layer === "foundation" ? "concrete" : `${S.cladCol} / ${S.roofCol}`}
+          {fName} · {S.roof}{S.roof === "Flat" && S.parapet ? " + parapet" : ""} {S.pitch}° · {S.layer === "framing" ? "framing" : S.layer === "foundation" ? "concrete" : `${S.cladCol} / ${S.roofCol}`}
         </text>
         <ElevationCallouts />
         <SheetFrame />

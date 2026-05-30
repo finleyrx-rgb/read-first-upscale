@@ -96,6 +96,10 @@ export type AstralState = {
   cut: CutKey;
   unit: UnitKey;
 
+  // multi-unit / advanced roof
+  units: 1 | 2 | 3;
+  parapet: boolean;
+
   // model collections
   openings: Opening[];
   parts: Partition[];
@@ -145,6 +149,8 @@ export const INITIAL_STATE: AstralState = {
   face: "front",
   cut: "cross",
   unit: loadUnit(),
+  units: 1,
+  parapet: false,
   openings: [
     { id: 1, kind: "Garage", wall: "W", off: 4000, width: 5000 },
     { id: 2, kind: "Door", wall: "S", off: 2000, width: 810 },
@@ -251,6 +257,8 @@ export const useAstral = create<AstralStore>((set, get) => ({
         id: nid++, kind: o[0] as Opening["kind"], wall: o[1] as WallKey, off: o[2] as number, width: o[3] as number,
       })),
       parts: [],
+      units: ("units" in tp ? (tp as { units: 1 | 2 | 3 }).units : 1),
+      parapet: false,
       sel: null, detailFor: null,
       view: get().view === "detail" ? "plan" : get().view,
     });

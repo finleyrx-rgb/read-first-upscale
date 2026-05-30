@@ -128,7 +128,38 @@ export const TEMPLATES = [
       ] as const,
     },
   },
+  {
+    n: "Duplex 12×6",
+    s: {
+      type: "Duplex", L: 12000, W: 6000, studH: 2700,
+      roof: "Gable", pitch: 15, struct: "Prefab trusses",
+      clad: "Weatherboard", cover: "Colorsteel corrugate",
+      ops: [
+        ["Door", "S", 2000, 900], ["Window", "S", 4000, 1500],
+        ["Door", "S", 8000, 900], ["Window", "S", 10000, 1500],
+        ["Window", "N", 3000, 1200], ["Window", "N", 9000, 1200],
+      ] as const,
+      units: 2,
+    },
+  },
+  {
+    n: "Triplex 18×6",
+    s: {
+      type: "Triplex", L: 18000, W: 6000, studH: 2700,
+      roof: "Gable", pitch: 15, struct: "Prefab trusses",
+      clad: "Plaster system", cover: "Colorsteel tray",
+      ops: [
+        ["Door", "S", 2000, 900], ["Window", "S", 4500, 1500],
+        ["Door", "S", 8000, 900], ["Window", "S", 10500, 1500],
+        ["Door", "S", 14000, 900], ["Window", "S", 16500, 1500],
+      ] as const,
+      units: 3,
+    },
+  },
 ] as const;
+
+export const ROOF_FORMS = ["Gable", "Hip", "Mono", "Flat", "Gambrel", "Dutch Gable"] as const;
+export type RoofForm = typeof ROOF_FORMS[number];
 
 export type WallKey = "N" | "S" | "E" | "W";
 export type ViewKey = "plan" | "elevation" | "section" | "detail";

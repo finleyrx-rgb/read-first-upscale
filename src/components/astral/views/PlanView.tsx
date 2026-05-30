@@ -8,6 +8,7 @@ import { ClickLayer } from "./ClickLayer";
 import { SheetFrame } from "../SheetFrame";
 import { PlanDimensions } from "./PlanDimensions";
 import { PlanAnnotations } from "./PlanAnnotations";
+import { PartyWalls } from "./PartyWalls";
 
 export function PlanView() {
   const S = useAstral(useShallow((s) => ({
@@ -89,6 +90,7 @@ export function PlanView() {
             </text>
           );
         })}
+        <PartyWalls />
         <PlanDimensions />
         <PlanAnnotations />
         <SheetFrame />

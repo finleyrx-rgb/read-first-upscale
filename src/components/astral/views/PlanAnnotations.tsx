@@ -5,7 +5,6 @@
 import { useAstral } from "@/lib/astral/store";
 import { useShallow } from "zustand/react/shallow";
 import { openPlace, planGeom } from "@/lib/astral/geom";
-import { WALLTYPES } from "@/lib/astral/constants";
 import { SHEET_INDEX } from "@/lib/astral/sheet";
 
 const MONO = "IBM Plex Mono";

@@ -14,7 +14,8 @@ export function Inspector() {
   const S = useAstral((s) => s);
   const sel = S.sel;
   const M = useMemo(() => buildModel(S), [S]);
-  const askAstral = useAgent((s) => { return { toggle: s.toggle, setDraft: s.setDraft }; });
+  const agentToggle = useAgent((s) => s.toggle);
+  const agentSetDraft = useAgent((s) => s.setDraft);
   if (!sel || !M.byId[sel]) return null;
   const n = M.byId[sel];
 

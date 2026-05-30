@@ -95,6 +95,8 @@ export type AstralState = {
   layer: LayerKey;
   face: FaceKey;
   cut: CutKey;
+  /** Cut-line position along the perpendicular axis (0..1). 0.5 = centre. */
+  cutPos: number;
   unit: UnitKey;
 
   // multi-unit / advanced roof
@@ -152,6 +154,7 @@ export const INITIAL_STATE: AstralState = {
   layer: "arch",
   face: "front",
   cut: "cross",
+  cutPos: 0.5,
   unit: loadUnit(),
   units: 1,
   parapet: false,
@@ -330,7 +333,7 @@ export const useAstral = create<AstralStore>((set, get) => ({
 
 // Autosave: debounced write of the current project to localStorage. Skips UI fields.
 if (typeof window !== "undefined") {
-  const UI_KEYS = new Set(["view", "layer", "face", "cut", "step", "sel", "detailFor", "unit"]);
+  const UI_KEYS = new Set(["view", "layer", "face", "cut", "cutPos", "step", "sel", "detailFor", "unit"]);
   let t: number | null = null;
   useAstral.subscribe((s) => {
     if (t) window.clearTimeout(t);

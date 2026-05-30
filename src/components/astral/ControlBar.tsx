@@ -43,9 +43,14 @@ export function ControlBar() {
   const layer = useAstral((s) => s.layer);
   const face = useAstral((s) => s.face);
   const cut = useAstral((s) => s.cut);
+  const cutPos = useAstral((s) => s.cutPos);
   const unit = useAstral((s) => s.unit);
+  const L = useAstral((s) => s.L);
+  const W = useAstral((s) => s.W);
   const set = useAstral((s) => s.set);
   const patch = useAstral((s) => s.patch);
+  const cutAxisMM = cut === "cross" ? L : W;
+  const cutAtMM = Math.round(cutPos * cutAxisMM);
 
   return (
     <div className="bar">
@@ -71,10 +76,27 @@ export function ControlBar() {
           <PillRow items={FACES} current={face} onPick={(k) => patch({ face: k })} small />
         </div>
       )}
-      {view === "section" && (
+      {(view === "section" || view === "plan") && (
         <div className="astral-ctrlrow">
           <span className="astral-ctrllab">cut</span>
           <PillRow items={CUTS} current={cut} onPick={(k) => patch({ cut: k })} small />
+        </div>
+      )}
+      {(view === "section" || view === "plan") && (
+        <div className="astral-ctrlrow" style={{ alignItems: "center", gap: 8 }}>
+          <span className="astral-ctrllab">cut at</span>
+          <input
+            type="range"
+            min={5}
+            max={95}
+            step={1}
+            value={Math.round(cutPos * 100)}
+            onChange={(e) => set("cutPos", Number(e.target.value) / 100)}
+            style={{ flex: 1, accentColor: "#1d2a2a" }}
+          />
+          <span style={{ fontSize: 11, fontFamily: "IBM Plex Mono", color: "#3c4a47", minWidth: 56, textAlign: "right" }}>
+            {cutAtMM}mm
+          </span>
         </div>
       )}
     </div>

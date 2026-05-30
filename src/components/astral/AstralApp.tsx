@@ -8,6 +8,7 @@ import { SectionPanel } from "./SectionPanel";
 import { Inspector } from "./Inspector";
 import { ExportBar } from "./ExportBar";
 import { MaterialsPanel } from "./MaterialsPanel";
+import { ProjectsBar } from "./ProjectsBar";
 import { useAstral, readStoredUnit } from "@/lib/astral/store";
 
 export function AstralApp() {
@@ -29,6 +30,7 @@ export function AstralApp() {
           Concept configurator · sizes to NZS 3604 where in scope · SED items flagged, not designed
         </div>
       </header>
+      <ProjectsBar />
       <ExportBar />
       <div className="astral-wrap">
         <div className="astral-stage">

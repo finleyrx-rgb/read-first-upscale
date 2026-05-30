@@ -13,7 +13,23 @@ export type Opening = {
   wall: WallKey;
   off: number;
   width: number;
+  /** Top of opening above FFL (mm). Optional — falls back to defaultHead(kind, studH). */
+  head?: number;
+  /** Bottom of opening above FFL (mm). Optional — falls back to defaultSill(kind). */
+  sill?: number;
 };
+
+/** Default head height (top of opening above FFL) for an opening kind. */
+export function defaultHead(kind: Opening["kind"], studH: number): number {
+  if (kind === "Garage") return Math.min(studH - 200, 2400);
+  if (kind === "Door") return 1980;
+  return 2000; // Window
+}
+
+/** Default sill height (bottom of opening above FFL) for an opening kind. */
+export function defaultSill(kind: Opening["kind"]): number {
+  return kind === "Window" ? 900 : 0;
+}
 
 export type Partition = {
   id: number;

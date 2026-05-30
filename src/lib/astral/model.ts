@@ -64,7 +64,10 @@ export function bracingRule(S: AstralState): RuleResult {
     const tot = S.openings.filter((o) => o.wall === w).reduce((a, o) => a + o.width, 0);
     if (tot > 0.45 * wallLen(S, w)) gov = w;
   });
-  if (gov) return { v: `Engineered portal at ${WALLNAME[gov].toLowerCase()}`, sed: true, n: "Opening(s) leave little wall on that line → governing" };
+  if (gov !== null) {
+    const g = gov as "N" | "S" | "E" | "W";
+    return { v: `Engineered portal at ${WALLNAME[g].toLowerCase()}`, sed: true, n: "Opening(s) leave little wall on that line → governing" };
+  }
   const area = (S.L * S.W) / 1e6;
   const f = ({ Medium: 0.7, High: 1.0, "Very High": 1.3, "Extra High": 1.6, "Cyclonic (SED)": 2.0 } as Record<string, number>)[S.wind] || 1.6;
   return { v: `~${Math.round(area * 55 * f)} BUs each way (indicative)`, sed: false, n: "Achieved via P21 panels — confirm" };

@@ -96,6 +96,10 @@ export type AstralState = {
   cut: CutKey;
   unit: UnitKey;
 
+  // multi-unit / advanced roof
+  units: 1 | 2 | 3;
+  parapet: boolean;
+
   // model collections
   openings: Opening[];
   parts: Partition[];

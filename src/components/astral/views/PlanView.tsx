@@ -9,6 +9,7 @@ import { SheetFrame } from "../SheetFrame";
 import { PlanDimensions } from "./PlanDimensions";
 import { PlanAnnotations } from "./PlanAnnotations";
 import { PartyWalls } from "./PartyWalls";
+import { WallLegend, WallStrips } from "./WallLegend";
 
 export function PlanView() {
   const S = useAstral(useShallow((s) => ({

@@ -5,6 +5,8 @@ import { buildModel } from "@/lib/astral/model";
 import { useMemo } from "react";
 import { DimInput, OptRow } from "./form-primitives";
 import { WALLNAME, type WallKey } from "@/lib/astral/constants";
+import { defaultHead, defaultSill } from "@/lib/astral/store";
+import { maxHead, openingHead, openingSill } from "@/lib/astral/geom";
 
 export function Inspector() {
   const S = useAstral((s) => s);
@@ -54,10 +56,20 @@ export function Inspector() {
       {n.type === "Opening" && (() => {
         const o = S.openings.find((z) => `opening-${z.id}` === sel);
         if (!o) return null;
+        const head = openingHead(o, S.studH);
+        const sill = openingSill(o);
+        const hMax = maxHead(o.width, S.studH);
+        const headOver = head > hMax;
+        const sillOver = sill >= head - 200;
         return (
           <>
             <OptRow label="Type" values={["Garage", "Door", "Window"] as const}
-              current={o.kind} onPick={(v) => S.updateOpening(o.id, { kind: v })} />
+              current={o.kind}
+              onPick={(v) => S.updateOpening(o.id, {
+                kind: v,
+                head: defaultHead(v, S.studH),
+                sill: defaultSill(v),
+              })} />
             <OptRow label="Wall" values={(["S", "N", "W", "E"] as const).map((w) => WALLNAME[w])}
               current={WALLNAME[o.wall]}
               onPick={(v) => {
@@ -66,6 +78,20 @@ export function Inspector() {
               }} />
             <DimInput label="Width" getMM={() => o.width} setMM={(v) => S.updateOpening(o.id, { width: v })} minMM={400} maxMM={7000} />
             <DimInput label="Set-out to centre" getMM={() => o.off} setMM={(v) => S.updateOpening(o.id, { off: v })} minMM={0} maxMM={20000} />
+            <DimInput label="Head (top AFFL)" getMM={() => head}
+              setMM={(v) => S.updateOpening(o.id, { head: v })}
+              minMM={600} maxMM={Math.max(600, S.studH - 90)} />
+            {o.kind === "Window" && (
+              <DimInput label="Sill (bottom AFFL)" getMM={() => sill}
+                setMM={(v) => S.updateOpening(o.id, { sill: v })}
+                minMM={0} maxMM={Math.max(0, head - 200)} />
+            )}
+            {(headOver || sillOver) && (
+              <div className="astral-muted" style={{ fontSize: 11, color: "#b4472d", marginTop: 4 }}>
+                {headOver && <>⚠ Head {head} exceeds {hMax} (studH − lintel − top plate). Lower head or use engineered design.<br /></>}
+                {sillOver && <>⚠ Sill must sit at least 200mm below the head.</>}
+              </div>
+            )}
           </>
         );
       })()}

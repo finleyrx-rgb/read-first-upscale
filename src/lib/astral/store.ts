@@ -13,7 +13,23 @@ export type Opening = {
   wall: WallKey;
   off: number;
   width: number;
+  /** Top of opening above FFL (mm). Optional — falls back to defaultHead(kind, studH). */
+  head?: number;
+  /** Bottom of opening above FFL (mm). Optional — falls back to defaultSill(kind). */
+  sill?: number;
 };
+
+/** Default head height (top of opening above FFL) for an opening kind. */
+export function defaultHead(kind: Opening["kind"], studH: number): number {
+  if (kind === "Garage") return Math.min(studH - 200, 2400);
+  if (kind === "Door") return 1980;
+  return 2000; // Window
+}
+
+/** Default sill height (bottom of opening above FFL) for an opening kind. */
+export function defaultSill(kind: Opening["kind"]): number {
+  return kind === "Window" ? 900 : 0;
+}
 
 export type Partition = {
   id: number;
@@ -138,7 +154,10 @@ export const useAstral = create<AstralStore>((set, get) => ({
   patch: (p) => set(p),
 
   addOpening: () => set((s) => ({
-    openings: [...s.openings, { id: nid++, kind: "Window", wall: "N", off: Math.round(s.L / 2), width: 1200 }],
+    openings: [...s.openings, {
+      id: nid++, kind: "Window", wall: "N", off: Math.round(s.L / 2), width: 1200,
+      head: defaultHead("Window", s.studH), sill: defaultSill("Window"),
+    }],
   })),
   updateOpening: (id, patch) => set((s) => ({
     openings: s.openings.map((o) => (o.id === id ? { ...o, ...patch } : o)),

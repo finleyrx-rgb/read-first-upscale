@@ -5,7 +5,7 @@ import React from "react";
 import { useMemo } from "react";
 import { useAstral } from "@/lib/astral/store";
 import { useShallow } from "zustand/react/shallow";
-import { FACE_LABEL, FACE_WALL, KIND_COL, braceLayout, cladHex, lintelDepthMM, nogRows, openFrac, roofHex } from "@/lib/astral/geom";
+import { FACE_LABEL, FACE_WALL, KIND_COL, braceLayout, cladHex, lintelDepthMM, nogRows, openFrac, openingOH, openingSill, roofHex } from "@/lib/astral/geom";
 import { ClickLayer } from "./ClickLayer";
 import { ScaleChip } from "./PlanView";
 import { SheetFrame } from "../SheetFrame";
@@ -52,8 +52,8 @@ export function ElevationView() {
   const ows = (o: typeof S.openings[number]) => {
     const owid = Math.min(o.width, widmm * 0.95) * sc;
     const cxp = x0 + Math.max(owid / 2, Math.min(w - owid / 2, openFrac(S, o) * w));
-    const oh = (o.kind === "Window" ? 1000 : (o.kind === "Garage" ? Math.min(S.studH - 200, 2400) : 1980)) * sc;
-    const sill = (o.kind === "Window" ? 1000 : 0) * sc;
+    const oh = openingOH(o, S.studH) * sc;
+    const sill = openingSill(o) * sc;
     return { owid, cxp, oh, sill };
   };
 

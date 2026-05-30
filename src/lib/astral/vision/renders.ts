@@ -69,7 +69,7 @@ export async function uploadRender(opts: {
       kind: opts.kind,
       storage_path: path,
       caption: opts.caption ?? null,
-      meta: opts.meta ?? {},
+      meta: (opts.meta ?? {}) as never,
     })
     .select("*")
     .single();

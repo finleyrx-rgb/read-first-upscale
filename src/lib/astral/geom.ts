@@ -3,7 +3,24 @@
 // lintelDepthMM, nogRows, cladHex, roofHex).
 
 import { CLAD, ROOFC, type WallKey } from "./constants";
-import type { AstralState, Opening } from "./store";
+import { defaultHead, defaultSill, type AstralState, type Opening } from "./store";
+
+/** Resolved head height (mm above FFL) for an opening, honoring per-opening overrides. */
+export function openingHead(o: Opening, studH: number): number {
+  return o.head ?? defaultHead(o.kind, studH);
+}
+/** Resolved sill height (mm above FFL) for an opening. */
+export function openingSill(o: Opening): number {
+  return o.sill ?? defaultSill(o.kind);
+}
+/** Resolved opening height (mm) = head − sill, clamped ≥ 0. */
+export function openingOH(o: Opening, studH: number): number {
+  return Math.max(0, openingHead(o, studH) - openingSill(o));
+}
+/** Maximum allowed head height = studH − lintel depth − top-plate allowance (90mm). */
+export function maxHead(width: number, studH: number): number {
+  return Math.max(0, studH - lintelDepthMM(width) - 90);
+}
 
 export const VW = 600;
 export const VH = 440;

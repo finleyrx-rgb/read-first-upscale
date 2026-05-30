@@ -208,8 +208,32 @@ let nid = 100;
 
 const dimKeys = new Set(["L", "W"]);
 
+// Compute initial state from URL share (?p=...) or localStorage, falling back
+// to INITIAL_STATE. Kept defensive: ignored on SSR or any parse failure.
+function bootstrapInitial(): AstralState {
+  if (typeof window === "undefined") return INITIAL_STATE;
+  try {
+    const url = new URL(window.location.href);
+    const token = url.searchParams.get("p");
+    if (token) {
+      const json = (() => {
+        const pad = token.length % 4 === 0 ? "" : "=".repeat(4 - (token.length % 4));
+        const raw = atob(token.replace(/-/g, "+").replace(/_/g, "/") + pad);
+        return JSON.parse(decodeURIComponent(escape(raw))) as Partial<AstralState>;
+      })();
+      return { ...INITIAL_STATE, ...json, unit: INITIAL_STATE.unit, view: INITIAL_STATE.view };
+    }
+    const ls = window.localStorage.getItem("astral.project.v1");
+    if (ls) {
+      const json = JSON.parse(ls) as Partial<AstralState>;
+      return { ...INITIAL_STATE, ...json, unit: INITIAL_STATE.unit, view: INITIAL_STATE.view };
+    }
+  } catch { /* noop */ }
+  return INITIAL_STATE;
+}
+
 export const useAstral = create<AstralStore>((set, get) => ({
-  ...INITIAL_STATE,
+  ...bootstrapInitial(),
 
   set: (key, value) => {
     if (key === "unit") saveUnit(value as UnitKey);

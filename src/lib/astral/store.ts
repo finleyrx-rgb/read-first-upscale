@@ -312,3 +312,33 @@ export const useAstral = create<AstralStore>((set, get) => ({
   setSel: (id) => set({ sel: id }),
   setDetailFor: (id) => set({ detailFor: id }),
 }));
+
+// Bump the local ID counter past anything we just loaded.
+{
+  const s = useAstral.getState();
+  const maxOpen = s.openings.reduce((m, o) => Math.max(m, o.id), 0);
+  const maxPart = s.parts.reduce((m, p) => Math.max(m, p.id), 0);
+  if (maxOpen + 1 > nid) nid = maxOpen + 1;
+  if (maxPart + 1 > nid) nid = maxPart + 1;
+}
+
+// Autosave: debounced write of the current project to localStorage. Skips UI fields.
+if (typeof window !== "undefined") {
+  const UI_KEYS = new Set(["view", "layer", "face", "cut", "step", "sel", "detailFor", "unit"]);
+  let t: number | null = null;
+  useAstral.subscribe((s) => {
+    if (t) window.clearTimeout(t);
+    t = window.setTimeout(() => {
+      try {
+        const out: Record<string, unknown> = {};
+        Object.entries(s).forEach(([k, v]) => {
+          if (typeof v === "function") return;
+          if (UI_KEYS.has(k)) return;
+          out[k] = v;
+        });
+        window.localStorage.setItem("astral.project.v1", JSON.stringify(out));
+      } catch { /* noop */ }
+    }, 400);
+  });
+}
+

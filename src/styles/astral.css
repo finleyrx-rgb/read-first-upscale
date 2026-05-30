@@ -1,0 +1,125 @@
+/* Project Astral — palette + control styles (ported from public/astral.html) */
+:root {
+  --astral-paper: #f3efe6;
+  --astral-paper2: #ece6d8;
+  --astral-ink: #1d2a2a;
+  --astral-ink2: #3c4a47;
+  --astral-line: #cfc6b4;
+  --astral-ochre: #bf6b2c;
+  --astral-ochre2: #e0a35a;
+  --astral-blue: #2f6f7e;
+  --astral-good: #3f7d54;
+  --astral-warn: #b4472d;
+  --astral-card: #fbf9f3;
+  --astral-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --astral-ui: "Archivo", system-ui, sans-serif;
+  --astral-disp: "Fraunces", Georgia, serif;
+}
+
+.astral-root {
+  min-height: 100vh;
+  background: var(--astral-paper);
+  color: var(--astral-ink);
+  font-family: var(--astral-ui);
+  background-image: radial-gradient(var(--astral-line) 0.5px, transparent 0.5px);
+  background-size: 22px 22px;
+  -webkit-font-smoothing: antialiased;
+}
+.astral-top {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 22px; border-bottom: 1px solid var(--astral-line);
+  background: rgba(243, 239, 230, 0.86); backdrop-filter: blur(6px);
+  position: sticky; top: 0; z-index: 20;
+}
+.astral-brand { display: flex; align-items: baseline; gap: 10px; }
+.astral-brand .mark { font-family: var(--astral-disp); font-weight: 700; font-size: 22px; }
+.astral-brand .mark em { color: var(--astral-ochre); font-style: normal; }
+.astral-brand .sub { font-family: var(--astral-mono); font-size: 10.5px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--astral-ink2); }
+.astral-topnote { font-family: var(--astral-mono); font-size: 10px; color: var(--astral-ink2); letter-spacing: 0.06em; text-align: right; max-width: 300px; line-height: 1.5; }
+
+.astral-wrap { display: grid; grid-template-columns: 1fr 452px; gap: 26px; max-width: 1240px; margin: 24px auto; padding: 0 22px; }
+@media (max-width: 920px) { .astral-wrap { grid-template-columns: 1fr; gap: 18px; } }
+
+.astral-stage { position: sticky; top: 78px; align-self: start; }
+@media (max-width: 920px) { .astral-stage { position: static; } }
+
+.astral-canvas { background: var(--astral-card); border: 1px solid var(--astral-line); border-radius: 14px; box-shadow: 0 24px 50px -34px rgba(29, 42, 42, 0.55); overflow: hidden; }
+.astral-canvas .bar { display: flex; flex-direction: column; gap: 8px; padding: 10px 14px; border-bottom: 1px solid var(--astral-line); }
+.astral-ctrlrow { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.astral-ctrllab { font-family: var(--astral-mono); font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--astral-ink2); min-width: 34px; }
+.astral-pillrow { display: flex; gap: 6px; flex-wrap: wrap; }
+.astral-tab { font-family: var(--astral-mono); font-size: 10.5px; letter-spacing: 0.06em; text-transform: uppercase; padding: 5px 11px; border: 1px solid var(--astral-line); border-radius: 20px; background: var(--astral-paper); cursor: pointer; color: var(--astral-ink); }
+.astral-tab.sm { font-size: 9.5px; padding: 4px 9px; }
+.astral-tab.on { background: var(--astral-ink); color: var(--astral-paper); border-color: var(--astral-ink); }
+.astral-tab.unit { margin-left: auto; border-style: dashed; color: var(--astral-ink2); }
+.astral-canvas svg { display: block; width: 100%; height: auto; background:
+  linear-gradient(rgba(47, 111, 126, 0.05) 1px, transparent 1px) 0 0/24px 24px,
+  linear-gradient(90deg, rgba(47, 111, 126, 0.05) 1px, transparent 1px) 0 0/24px 24px; }
+.astral-chips { display: flex; flex-wrap: wrap; gap: 8px; padding: 11px 14px; border-top: 1px solid var(--astral-line); }
+.astral-stat { font-family: var(--astral-mono); font-size: 11px; color: var(--astral-ink2); }
+.astral-stat b { color: var(--astral-ink); }
+.astral-pill { font-family: var(--astral-mono); font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; padding: 3px 9px; border-radius: 20px; border: 1px solid var(--astral-line); background: var(--astral-paper2); }
+
+.astral-panel { background: var(--astral-card); border: 1px solid var(--astral-line); border-radius: 14px; box-shadow: 0 24px 50px -38px rgba(29, 42, 42, 0.5); }
+.astral-rail { display: flex; gap: 6px; flex-wrap: wrap; padding: 14px 16px 4px; }
+.astral-rail .sct { font-family: var(--astral-mono); font-size: 10px; letter-spacing: 0.05em; text-transform: uppercase; padding: 5px 10px; border: 1px solid var(--astral-line); border-radius: 18px; background: var(--astral-paper); cursor: pointer; color: var(--astral-ink2); }
+.astral-rail .sct.on { background: var(--astral-ochre); color: #fff; border-color: var(--astral-ochre); }
+.astral-rail .sctgap { flex-basis: 100%; height: 0; }
+.astral-stephead { padding: 14px 20px 4px; }
+.astral-stephead .kx { font-family: var(--astral-mono); font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--astral-ochre); }
+.astral-stephead h2 { font-family: var(--astral-disp); font-weight: 600; font-size: 25px; margin: 4px 0 2px; line-height: 1.05; }
+.astral-stephead p { margin: 0; color: var(--astral-ink2); font-size: 13px; }
+.astral-body { padding: 10px 20px 6px; min-height: 240px; }
+.astral-q { margin: 14px 0; }
+.astral-q > label { display: block; font-family: var(--astral-mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--astral-ink2); margin-bottom: 7px; }
+.astral-opts { display: flex; flex-wrap: wrap; gap: 8px; }
+.astral-opt { font-size: 13px; font-weight: 500; padding: 9px 13px; border: 1px solid var(--astral-line); border-radius: 10px; background: var(--astral-paper); cursor: pointer; transition: 0.12s; color: var(--astral-ink); }
+.astral-opt:hover { border-color: var(--astral-ochre2); }
+.astral-opt.sel { background: var(--astral-ink); color: var(--astral-paper); border-color: var(--astral-ink); }
+.astral-num { display: flex; align-items: center; gap: 10px; }
+.astral-num input[type=number] { width: 120px; font-family: var(--astral-mono); font-size: 14px; padding: 8px 10px; border: 1px solid var(--astral-line); border-radius: 9px; background: var(--astral-paper); color: var(--astral-ink); }
+.astral-num input:focus { outline: none; border-color: var(--astral-ochre); }
+.astral-root input[type=range] { width: 100%; accent-color: var(--astral-ochre); }
+.astral-two { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.astral-swwrap { display: flex; flex-wrap: wrap; gap: 9px; margin-bottom: 14px; }
+.astral-swatch { width: 34px; height: 34px; border-radius: 8px; border: 2px solid var(--astral-line); cursor: pointer; position: relative; }
+.astral-swatch.sel { border-color: var(--astral-ink); box-shadow: 0 0 0 2px var(--astral-paper), 0 0 0 4px var(--astral-ink); }
+.astral-swatch span { position: absolute; bottom: -15px; left: 50%; transform: translateX(-50%); font-family: var(--astral-mono); font-size: 8px; color: var(--astral-ink2); white-space: nowrap; }
+.astral-openrow { border: 1px solid var(--astral-line); border-radius: 11px; padding: 10px 12px; margin-bottom: 10px; background: var(--astral-paper); }
+.astral-openrow .top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.astral-openrow .kind { display: flex; gap: 6px; }
+.astral-mini { font-size: 11px; font-weight: 600; padding: 5px 9px; border: 1px solid var(--astral-line); border-radius: 8px; background: var(--astral-card); cursor: pointer; color: var(--astral-ink); }
+.astral-mini.sel { background: var(--astral-ink); color: var(--astral-paper); border-color: var(--astral-ink); }
+.astral-rm { font-family: var(--astral-mono); font-size: 11px; color: var(--astral-warn); cursor: pointer; border: none; background: none; }
+.astral-addbtn { font-family: var(--astral-ui); font-weight: 600; font-size: 13px; padding: 9px 14px; border: 1px dashed var(--astral-ochre); color: var(--astral-ochre); border-radius: 10px; background: transparent; cursor: pointer; width: 100%; }
+.astral-lab { font-family: var(--astral-mono); font-size: 10px; color: var(--astral-ink2); margin: 6px 0 2px; text-transform: uppercase; letter-spacing: 0.06em; }
+.astral-foot { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 16px 20px; border-top: 1px solid var(--astral-line); }
+.astral-btn { font-weight: 600; font-size: 14px; padding: 11px 20px; border-radius: 11px; border: 1px solid var(--astral-ink); cursor: pointer; background: var(--astral-ink); color: var(--astral-paper); transition: 0.12s; }
+.astral-btn:hover { transform: translateY(-1px); }
+.astral-btn.ghost { background: transparent; color: var(--astral-ink); }
+.astral-res { border: 1px solid var(--astral-line); border-radius: 11px; padding: 12px 14px; margin: 10px 0; background: var(--astral-paper); }
+.astral-res .rh { display: flex; justify-content: space-between; font-family: var(--astral-mono); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--astral-ink2); }
+.astral-res .rv { font-family: var(--astral-disp); font-weight: 600; font-size: 16px; margin-top: 3px; }
+.astral-res .rn { font-size: 12px; color: var(--astral-ink2); margin-top: 3px; }
+.astral-tag { font-family: var(--astral-mono); font-size: 9.5px; letter-spacing: 0.06em; text-transform: uppercase; padding: 2px 7px; border-radius: 6px; }
+.astral-tag.sed { background: #f4dcc2; color: #9a4a16; }
+.astral-tag.ok { background: #d8e8dd; color: var(--astral-good); }
+.astral-bom { width: 100%; border-collapse: collapse; font-size: 12.5px; margin-top: 6px; }
+.astral-bom th, .astral-bom td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--astral-line); }
+.astral-bom th { font-family: var(--astral-mono); font-size: 10px; text-transform: uppercase; color: var(--astral-ink2); }
+.astral-bom td:last-child, .astral-bom th:last-child { text-align: right; font-family: var(--astral-mono); }
+.astral-check { display: flex; gap: 9px; padding: 7px 0; border-bottom: 1px dashed var(--astral-line); font-size: 12.5px; }
+.astral-check .bx { width: 15px; height: 15px; border: 1.5px solid var(--astral-ink2); border-radius: 4px; flex: none; margin-top: 1px; }
+.astral-sechead { font-family: var(--astral-disp); font-weight: 600; font-size: 18px; margin: 18px 0 6px; }
+.astral-muted { color: var(--astral-ink2); }
+.astral-insp { background: var(--astral-card); border: 1px solid var(--astral-line); border-radius: 14px; box-shadow: 0 24px 50px -38px rgba(29, 42, 42, 0.5); padding: 14px 16px; margin-top: 14px; }
+.astral-insp .ih { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+.astral-insp .ih .t { font-family: var(--astral-disp); font-weight: 600; font-size: 18px; line-height: 1.05; }
+.astral-insp .ih .ty { font-family: var(--astral-mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--astral-ochre); }
+.astral-insp .x { font-family: var(--astral-mono); font-size: 11px; color: var(--astral-ink2); cursor: pointer; border: 1px solid var(--astral-line); border-radius: 8px; padding: 5px 10px; background: var(--astral-paper); }
+.astral-insp .sub2 { font-family: var(--astral-mono); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--astral-ink2); margin: 12px 0 4px; }
+.astral-insp .drow { display: flex; justify-content: space-between; gap: 10px; font-size: 12.5px; padding: 4px 0; border-bottom: 1px dashed var(--astral-line); }
+.astral-insp .drow b { font-family: var(--astral-mono); font-weight: 500; }
+
+.astral-canvas .placeholder { padding: 28px 22px; font-family: var(--astral-mono); font-size: 12px; color: var(--astral-ink2); text-align: center; }
+.astral-canvas .placeholder a { color: var(--astral-ochre); text-decoration: none; border-bottom: 1px dashed var(--astral-ochre); }

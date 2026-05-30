@@ -117,9 +117,19 @@ export function ElevationView() {
             ows={ows} facedOpenings={facedOpenings} />
         )}
 
+        {longFace && S.units > 1 && Array.from({ length: S.units - 1 }).map((_, i) => {
+          const px = x0 + ((i + 1) / S.units) * w;
+          return (
+            <g key={`pwe${i}`}>
+              <line x1={px} y1={eave} x2={px} y2={base} stroke="#7a4a16" strokeWidth={1.2} strokeDasharray="6 3" />
+              <text x={px} y={eave - 4} fill="#7a4a16" fontSize={8} fontFamily="IBM Plex Mono" textAnchor="middle">party wall</text>
+            </g>
+          );
+        })}
+
         <text x={x0 + w / 2} y={base + (S.layer === "foundation" ? 36 : 18)}
           fill="#3c4a47" fontSize={11} fontFamily="IBM Plex Mono" textAnchor="middle">
-          {fName} · {S.roof} {S.pitch}° · {S.layer === "framing" ? "framing" : S.layer === "foundation" ? "concrete" : `${S.cladCol} / ${S.roofCol}`}
+          {fName} · {S.roof}{S.roof === "Flat" && S.parapet ? " + parapet" : ""} {S.pitch}° · {S.layer === "framing" ? "framing" : S.layer === "foundation" ? "concrete" : `${S.cladCol} / ${S.roofCol}`}
         </text>
         <ElevationCallouts />
         <SheetFrame />

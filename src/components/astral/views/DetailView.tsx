@@ -8,6 +8,7 @@ import { buildModel } from "@/lib/astral/model";
 import { lintelRule, studRule, tieRule } from "@/lib/astral/model";
 import { ClickLayer } from "./ClickLayer";
 import { ScaleChip } from "./PlanView";
+import { SheetFrame } from "../SheetFrame";
 
 const INK = "#1d2a2a";
 
@@ -63,6 +64,7 @@ export function DetailView() {
         {ty === "Opening" && <OpeningDetail S={S} node={node} />}
         {ty === "none" && T(300, 220, 'Select a wall, roof, slab or opening on a plan, then tap "Construction detail".', 9, "middle", "#8a7c5e")}
         {T(300, 420, "tap a plan / elevation tab to return", 8, "middle", "#8a7c5e")}
+        <SheetFrame />
       </svg>
       <ScaleChip label="construction detail · indicative, not to scale" />
     </ClickLayer>

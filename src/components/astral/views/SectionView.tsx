@@ -6,6 +6,7 @@ import { useShallow } from "zustand/react/shallow";
 import { KIND_COL, openFrac } from "@/lib/astral/geom";
 import { ClickLayer } from "./ClickLayer";
 import { ScaleChip } from "./PlanView";
+import { SheetFrame } from "../SheetFrame";
 
 const VW = 600, VH = 440, m = 70;
 
@@ -148,6 +149,7 @@ export function SectionView() {
           fontFamily="IBM Plex Mono" textAnchor="middle">
           SECTION {tag}–{tag} · {cut === "cross" ? "across width" : "along length"} · {S.roof} {S.pitch}°
         </text>
+        <SheetFrame />
       </svg>
       <ScaleChip label={`section ${tag}–${tag} · ${cut === "cross" ? "cross (across width)" : "longitudinal (along length)"} · indicative`} />
     </ClickLayer>

@@ -154,7 +154,10 @@ export const useAstral = create<AstralStore>((set, get) => ({
   patch: (p) => set(p),
 
   addOpening: () => set((s) => ({
-    openings: [...s.openings, { id: nid++, kind: "Window", wall: "N", off: Math.round(s.L / 2), width: 1200 }],
+    openings: [...s.openings, {
+      id: nid++, kind: "Window", wall: "N", off: Math.round(s.L / 2), width: 1200,
+      head: defaultHead("Window", s.studH), sill: defaultSill("Window"),
+    }],
   })),
   updateOpening: (id, patch) => set((s) => ({
     openings: s.openings.map((o) => (o.id === id ? { ...o, ...patch } : o)),

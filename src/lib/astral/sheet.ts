@@ -137,7 +137,7 @@ export function getSheetMeta(S: AstralState, detailType?: string): SheetMeta {
     location: PROJECT.location,
     wind: S.wind,
     dims: `${(S.L / 1000).toFixed(1)} × ${(S.W / 1000).toFixed(1)} m`,
-    date: new Date().toLocaleDateString("en-NZ"),
+    date: PROJECT.date,
     status: PROJECT.status,
     rev: PROJECT.rev,
   };

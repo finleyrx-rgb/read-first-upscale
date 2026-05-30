@@ -142,12 +142,10 @@ function DetailKey() {
 
 /** Composite annotations for any architectural/framing/foundation plan view. */
 export function PlanAnnotations() {
-  const layer = useAstral((s) => s.layer);
   return (
     <g>
       <SectionMarkers />
       <NorthPoint x={566} y={56} />
-      {layer === "arch" && <WallLegend />}
       <PlanCallouts />
       <DetailKey />
     </g>

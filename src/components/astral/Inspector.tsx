@@ -36,6 +36,14 @@ export function Inspector() {
         </button>
       )}
 
+      <button className="astral-insp-ask" type="button"
+        onClick={() => {
+          agentSetDraft(`About ${n.name || n.type} (${sel}): `);
+          agentToggle(true);
+        }}>
+        ✦ Ask Astral about this
+      </button>
+
       {n.type === "Building" && (
         <>
           <DimInput label="Length" getMM={() => S.L} setMM={(v) => S.set("L", v)} minMM={2000} maxMM={20000} />

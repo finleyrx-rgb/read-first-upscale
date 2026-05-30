@@ -33,20 +33,20 @@ export type AgentTurnResult = {
 
 // Build one AI SDK tool per discriminated-union variant of ActionSchema.
 function buildTools(collected: AgentAction[]) {
-  // Extract per-verb schemas
   const variants = ActionSchema.options;
-  const tools: Record<string, ReturnType<typeof tool>> = {};
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const tools: Record<string, any> = {};
   for (const variant of variants) {
-    // each variant is a ZodObject with a literal `verb`
     const shape = variant.shape as Record<string, z.ZodTypeAny>;
-    const verb = (shape.verb as z.ZodLiteral<string>).value;
-    // Build input schema without the `verb` discriminator (LLM doesn't need it)
+    const verb = (shape.verb as z.ZodLiteral<string>).value as string;
     const { verb: _omit, ...rest } = shape;
     const inputSchema = z.object(rest);
     tools[verb] = tool({
       description: `Mutate the model — verb '${verb}'. All distances in mm.`,
-      inputSchema,
-      execute: async (input) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      inputSchema: inputSchema as any,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      execute: async (input: any) => {
         const parsed = ActionSchema.safeParse({ verb, ...(input as object) });
         if (!parsed.success) {
           return { ok: false, error: parsed.error.message };

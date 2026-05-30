@@ -3,7 +3,7 @@ import React from "react";
 
 import { useAstral } from "@/lib/astral/store";
 import { useShallow } from "zustand/react/shallow";
-import { KIND_COL, openFrac } from "@/lib/astral/geom";
+import { KIND_COL, openFrac, openingOH, openingSill } from "@/lib/astral/geom";
 import { ClickLayer } from "./ClickLayer";
 import { ScaleChip } from "./PlanView";
 import { SheetFrame } from "../SheetFrame";

@@ -7,6 +7,7 @@ import { ControlBar } from "./ControlBar";
 import { SectionPanel } from "./SectionPanel";
 import { Inspector } from "./Inspector";
 import { ExportBar } from "./ExportBar";
+import { MaterialsPanel } from "./MaterialsPanel";
 import { useAstral, readStoredUnit } from "@/lib/astral/store";
 
 export function AstralApp() {
@@ -38,6 +39,7 @@ export function AstralApp() {
           <Inspector />
         </div>
         <SectionPanel />
+        <MaterialsPanel />
       </div>
     </div>
   );

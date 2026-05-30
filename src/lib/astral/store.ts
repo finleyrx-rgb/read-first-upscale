@@ -170,6 +170,9 @@ export const INITIAL_STATE: AstralState = {
   unit: loadUnit(),
   units: 1,
   parapet: false,
+  storeys: 1,
+  subfloor: 600,
+  floorDepth: 300,
   wallTypes: { ...DEFAULT_WALL_TYPES },
   openings: [
     { id: 1, kind: "Garage", wall: "W", off: 4000, width: 5000 },

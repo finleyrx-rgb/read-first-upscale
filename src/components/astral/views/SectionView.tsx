@@ -7,6 +7,7 @@ import { KIND_COL, openFrac, openingOH, openingSill } from "@/lib/astral/geom";
 import { ClickLayer } from "./ClickLayer";
 import { ScaleChip } from "./PlanView";
 import { SheetFrame } from "../SheetFrame";
+import { SectionCallouts } from "./PlanAnnotations";
 
 const VW = 600, VH = 440, m = 70;
 

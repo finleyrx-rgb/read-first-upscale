@@ -4,7 +4,7 @@ import { useAstral } from "@/lib/astral/store";
 import { buildModel } from "@/lib/astral/model";
 import { useMemo } from "react";
 import { DimInput, OptRow } from "./form-primitives";
-import { WALLNAME, type WallKey } from "@/lib/astral/constants";
+import { WALLNAME, ROOF_FORMS, type WallKey } from "@/lib/astral/constants";
 import { defaultHead, defaultSill, overlappingOpeningIds } from "@/lib/astral/store";
 import { maxHead, openingHead, openingSill } from "@/lib/astral/geom";
 
@@ -38,6 +38,13 @@ export function Inspector() {
           <DimInput label="Width" getMM={() => S.W} setMM={(v) => S.set("W", v)} minMM={2000} maxMM={12000} />
           <DimInput label="Stud height" getMM={() => S.studH} setMM={(v) => S.set("studH", v)} minMM={2400} maxMM={3600} />
           <OptRow label="Stud spacing" values={[400, 600] as const} current={S.spacing} onPick={(v) => S.set("spacing", v)} />
+          <OptRow label="Units" values={[1, 2, 3] as const} current={S.units}
+            onPick={(v) => S.set("units", v)} />
+          {S.units > 1 && (
+            <div className="astral-muted" style={{ fontSize: 11, marginTop: -4 }}>
+              Party walls split the footprint into {S.units} equal bays along the length. Each unit ≈ {Math.round(S.L / S.units)}mm.
+            </div>
+          )}
         </>
       )}
       {n.type === "Slab" && (
@@ -46,7 +53,12 @@ export function Inspector() {
       )}
       {n.type === "RoofSystem" && (
         <>
-          <OptRow label="Form" values={["Gable", "Hip", "Mono", "Flat"] as const} current={S.roof} onPick={(v) => S.set("roof", v)} />
+          <OptRow label="Form" values={ROOF_FORMS} current={S.roof} onPick={(v) => S.set("roof", v)} />
+          {S.roof === "Flat" && (
+            <OptRow label="Parapet" values={["No", "Yes"] as const}
+              current={S.parapet ? "Yes" : "No"}
+              onPick={(v) => S.set("parapet", v === "Yes")} />
+          )}
           <OptRow label="Covering" values={["Colorsteel corrugate", "Colorsteel tray", "Membrane", "Tile"] as const}
             current={S.cover} onPick={(v) => S.set("cover", v)} />
           <OptRow label="Structure" values={["Prefab trusses", "Cut roof"] as const}

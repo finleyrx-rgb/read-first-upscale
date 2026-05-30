@@ -101,6 +101,9 @@ export type AstralState = {
   units: 1 | 2 | 3;
   parapet: boolean;
 
+  /** Wall construction type, per perimeter wall (§7.1 wall-type legend). */
+  wallTypes: Record<WallKey, WallType>;
+
   // model collections
   openings: Opening[];
   parts: Partition[];

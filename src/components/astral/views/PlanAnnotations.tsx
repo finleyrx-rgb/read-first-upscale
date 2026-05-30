@@ -83,7 +83,7 @@ function CalloutBubble({ bx, by, tx, ty, k, nodeId }:
 
 function PlanCallouts() {
   const S = useAstral(useShallow((s) => ({
-    L: s.L, W: s.W, openings: s.openings, eave: s.eave, layer: s.layer,
+    L: s.L, W: s.W, openings: s.openings, parts: s.parts, eave: s.eave, layer: s.layer,
   })));
   const g = planGeom(S);
   const { w, h, x0, y0, sc } = g;

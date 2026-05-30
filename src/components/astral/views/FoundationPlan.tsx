@@ -23,6 +23,7 @@ const HATCH = "#8a7c5e";
 export function FoundationPlan() {
   const S = useAstral(useShallow((s) => ({
     L: s.L, W: s.W, openings: s.openings, units: s.units, found: s.found,
+    subfloor: s.subfloor, storeys: s.storeys,
   })));
   const g = planGeom(S);
   const { sc, w, h, x0, y0 } = g;
@@ -141,9 +142,30 @@ export function FoundationPlan() {
         </g>
 
         {piles && (
-          <text x={x0 + w / 2} y={y0 + h / 2 - 14} fill="#b4472d" fontSize={9} fontFamily={MONO} textAnchor="middle">
-            TIMBER PILE FOUNDATION — pad symbols indicate pile locations
-          </text>
+          <>
+            {/* pile grid — circles overlay on a 1.8m grid; bearers along long axis */}
+            {(() => {
+              const stepXmm = 1800, stepYmm = 1800;
+              const els: React.ReactElement[] = [];
+              for (let xm = 0; xm <= S.L + 1; xm += stepXmm) {
+                for (let ym = 0; ym <= S.W + 1; ym += stepYmm) {
+                  const px = x0 + (xm / S.L) * w;
+                  const py = y0 + (ym / S.W) * h;
+                  els.push(<circle key={`pl${xm}-${ym}`} cx={px} cy={py} r={3.5}
+                    fill="#fbf9f3" stroke="#b4472d" strokeWidth={0.9} pointerEvents="none" />);
+                }
+              }
+              for (let ym = 0; ym <= S.W + 1; ym += stepYmm) {
+                const py = y0 + (ym / S.W) * h;
+                els.push(<line key={`br${ym}`} x1={x0} y1={py} x2={x0 + w} y2={py}
+                  stroke="#b4472d" strokeWidth={0.5} strokeDasharray="6 3" pointerEvents="none" />);
+              }
+              return els;
+            })()}
+            <text x={x0 + w / 2} y={y0 + h / 2 - 14} fill="#b4472d" fontSize={9} fontFamily={MONO} textAnchor="middle">
+              TIMBER PILE FOUNDATION — {S.subfloor}mm subfloor · bearers @ 1.8m c/c · joists over
+            </text>
+          </>
         )}
         <text x={x0 + w / 2} y={y0 + h / 2} fill="#7a6f57" fontSize={9} fontFamily={MONO} textAnchor="middle">
           100 SLAB · SE82 MESH · 0.25 DPM · 300 THICKENED EDGE (SED)

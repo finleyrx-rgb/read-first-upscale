@@ -5,6 +5,7 @@ import { Canvas } from "./Canvas";
 import { ControlBar } from "./ControlBar";
 import { SectionPanel } from "./SectionPanel";
 import { Inspector } from "./Inspector";
+import { ExportBar } from "./ExportBar";
 
 export function AstralApp() {
   return (
@@ -18,6 +19,7 @@ export function AstralApp() {
           Concept configurator · sizes to NZS 3604 where in scope · SED items flagged, not designed
         </div>
       </header>
+      <ExportBar />
       <div className="astral-wrap">
         <div className="astral-stage">
           <div className="astral-canvas">

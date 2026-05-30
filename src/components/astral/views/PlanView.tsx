@@ -95,6 +95,7 @@ export function PlanView() {
         <PartyWalls />
         <PlanDimensions />
         <PlanAnnotations />
+        <WallLegend />
         <SheetFrame />
       </svg>
       <ScaleChip label={`plan ≈1:${Math.round(1000 / sc)}`} />

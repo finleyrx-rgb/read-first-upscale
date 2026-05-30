@@ -9,7 +9,9 @@ import { Inspector } from "./Inspector";
 import { ExportBar } from "./ExportBar";
 import { MaterialsPanel } from "./MaterialsPanel";
 import { ProjectsBar } from "./ProjectsBar";
+import { VisionPanel } from "./VisionPanel";
 import { useAstral, readStoredUnit, readBootstrap, INITIAL_STATE } from "@/lib/astral/store";
+import { useProjectSession } from "@/lib/astral/projectSession";
 import { AstralDrawer } from "./AstralDrawer";
 
 export function AstralApp() {
@@ -22,6 +24,8 @@ export function AstralApp() {
     if (boot) patch({ ...boot, unit: INITIAL_STATE.unit, view: INITIAL_STATE.view });
     if (stored !== useAstral.getState().unit) patch({ unit: stored });
   }, [patch]);
+
+  const currentProjectId = useProjectSession((s) => s.currentProjectId);
 
   return (
     <div className="astral-root">
@@ -46,8 +50,9 @@ export function AstralApp() {
         </div>
         <SectionPanel />
         <MaterialsPanel />
+        <VisionPanel projectId={currentProjectId} />
       </div>
-      <AstralDrawer projectKey="local" />
+      <AstralDrawer projectKey={currentProjectId ?? "local"} />
     </div>
   );
 }

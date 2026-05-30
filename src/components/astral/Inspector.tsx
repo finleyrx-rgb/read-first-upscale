@@ -8,11 +8,14 @@ import { WALLNAME, ROOF_FORMS, type WallKey } from "@/lib/astral/constants";
 import { defaultHead, defaultSill, overlappingOpeningIds } from "@/lib/astral/store";
 import { maxHead, openingHead, openingSill } from "@/lib/astral/geom";
 import { WALL_TYPES, WALL_TYPE_STYLES } from "@/lib/astral/wallTypes";
+import { useAgent } from "@/lib/astral/agent/client";
 
 export function Inspector() {
   const S = useAstral((s) => s);
   const sel = S.sel;
   const M = useMemo(() => buildModel(S), [S]);
+  const agentToggle = useAgent((s) => s.toggle);
+  const agentSetDraft = useAgent((s) => s.setDraft);
   if (!sel || !M.byId[sel]) return null;
   const n = M.byId[sel];
 
@@ -32,6 +35,14 @@ export function Inspector() {
           ⊕ Construction detail
         </button>
       )}
+
+      <button className="astral-insp-ask" type="button"
+        onClick={() => {
+          agentSetDraft(`About ${n.name || n.type} (${sel}): `);
+          agentToggle(true);
+        }}>
+        ✦ Ask Astral about this
+      </button>
 
       {n.type === "Building" && (
         <>

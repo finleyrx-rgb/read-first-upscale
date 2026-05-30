@@ -9,15 +9,19 @@ import { Inspector } from "./Inspector";
 import { ExportBar } from "./ExportBar";
 import { MaterialsPanel } from "./MaterialsPanel";
 import { ProjectsBar } from "./ProjectsBar";
-import { useAstral, readStoredUnit } from "@/lib/astral/store";
+import { useAstral, readStoredUnit, readBootstrap, INITIAL_STATE } from "@/lib/astral/store";
+import { AstralDrawer } from "./AstralDrawer";
 
 export function AstralApp() {
-  // Hydrate the unit preference post-mount so SSR HTML matches initial render.
-  const setUnit = useAstral((s) => s.set);
+  // Hydrate URL share / localStorage / unit preference post-mount so SSR HTML
+  // matches the initial client render (avoids hydration mismatch).
+  const patch = useAstral((s) => s.patch);
   useEffect(() => {
+    const boot = readBootstrap();
     const stored = readStoredUnit();
-    if (stored !== useAstral.getState().unit) setUnit("unit", stored);
-  }, [setUnit]);
+    if (boot) patch({ ...boot, unit: INITIAL_STATE.unit, view: INITIAL_STATE.view });
+    if (stored !== useAstral.getState().unit) patch({ unit: stored });
+  }, [patch]);
 
   return (
     <div className="astral-root">
@@ -43,6 +47,7 @@ export function AstralApp() {
         <SectionPanel />
         <MaterialsPanel />
       </div>
+      <AstralDrawer projectKey="local" />
     </div>
   );
 }

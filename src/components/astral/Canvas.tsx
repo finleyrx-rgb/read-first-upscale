@@ -12,6 +12,7 @@ import { ElevationView } from "./views/ElevationView";
 import { SectionView } from "./views/SectionView";
 import { DetailView } from "./views/DetailView";
 import { ServicesPlan } from "./views/ServicesPlan";
+import { AxonView } from "./views/AxonView";
 
 function Chips() {
   const S = useAstral(useShallow((s) => ({
@@ -36,7 +37,8 @@ export function Canvas() {
   const layer = useAstral((s) => s.layer);
 
   let body: React.ReactElement;
-  if (view === "detail") body = <DetailView />;
+  if (view === "axon") body = <AxonView />;
+  else if (view === "detail") body = <DetailView />;
   else if (view === "section") body = <SectionView />;
   else if (view === "elevation") body = <ElevationView />;
   else if (layer === "framing") body = <FramingPlan />;

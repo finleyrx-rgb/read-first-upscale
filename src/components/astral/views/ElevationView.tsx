@@ -5,7 +5,7 @@ import React from "react";
 import { useMemo } from "react";
 import { useAstral } from "@/lib/astral/store";
 import { useShallow } from "zustand/react/shallow";
-import { FACE_LABEL, FACE_WALL, KIND_COL, braceLayout, cladHex, lintelDepthMM, nogRows, openFrac, roofHex } from "@/lib/astral/geom";
+import { FACE_LABEL, FACE_WALL, KIND_COL, braceLayout, cladHex, lintelDepthMM, nogRows, openFrac, openingOH, openingSill, roofHex } from "@/lib/astral/geom";
 import { ClickLayer } from "./ClickLayer";
 import { ScaleChip } from "./PlanView";
 import { SheetFrame } from "../SheetFrame";

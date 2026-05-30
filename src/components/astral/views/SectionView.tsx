@@ -117,8 +117,8 @@ export function SectionView() {
           const fr = openFrac(S, o);
           const owid = Math.min(o.width, widmm * 0.92) * sc;
           const cxp = x0 + Math.max(owid / 2 + wallT, Math.min(w - owid / 2 - wallT, fr * w));
-          const oh = (o.kind === "Window" ? 1000 : (o.kind === "Garage" ? Math.min(S.studH - 200, 2400) : 1980)) * sc;
-          const sill = (o.kind === "Window" ? 1000 : 0) * sc;
+          const oh = openingOH(o, S.studH) * sc;
+          const sill = openingSill(o) * sc;
           return (
             <rect key={o.id} x={cxp - owid / 2} y={base - sill - oh} width={owid} height={oh}
               fill="#fbf9f3" stroke={KIND_COL[o.kind]} strokeWidth={1.2} strokeDasharray="5 3"

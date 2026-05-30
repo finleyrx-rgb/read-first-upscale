@@ -13,6 +13,8 @@ export const PROJECT = {
   paper: "A1",
   status: "CONCEPT",
   rev: "P1",
+  // Deterministic issue date — must not depend on `new Date()` so SSR and client agree.
+  date: "30/05/2026",
 } as const;
 
 export const COMPASS = {

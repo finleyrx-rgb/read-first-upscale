@@ -171,10 +171,12 @@ function SlabDetail() {
   );
 }
 
-function OpeningDetail({ S, node }: { S: Pick<DS, "openings">; node: Node }) {
+function OpeningDetail({ S, node }: { S: Pick<DS, "openings" | "studH">; node: Node }) {
   const id = useAstral.getState().detailFor;
   const o = S.openings.find((z) => `opening-${z.id}` === id) || null;
   const wmm = o ? o.width : 2000;
+  const headMM = o ? (o.head ?? (o.kind === "Garage" ? Math.min(S.studH - 200, 2400) : o.kind === "Door" ? 1980 : 2000)) : 2000;
+  const sillMM = o ? (o.sill ?? (o.kind === "Window" ? 900 : 0)) : 0;
   const cx = 300, top = 156, opH = 176, half = 115, plY = top - 30;
   const lintel = (node?.derived as { lintel?: { v: string } } | undefined)?.lintel?.v || lintelRule(wmm).v;
   const studHatch: React.ReactNode[] = [];
@@ -194,12 +196,16 @@ function OpeningDetail({ S, node }: { S: Pick<DS, "openings">; node: Node }) {
           </g>
         );
       })}
-      {T(cx, top + 24 + opH / 2, `${o ? o.kind : "opening"} ${wmm}`, 9, "middle", "#8a7c5e")}
+      {T(cx, top + 24 + opH / 2, `${o ? o.kind : "opening"} ${wmm} W`, 9, "middle", "#8a7c5e")}
       {o && o.kind === "Window" && L1(cx - half - 12, top - 2, cx + half + 12, top - 2, 1.3, "#2f6f7e")}
       <Lead k="o1" x={cx} y={top + 8} tx={cx + half + 34} ty={top + 8} t={lintel} />
       <Lead k="o2" x={cx - half + 12} y={plY + 22} tx={cx - half - 58} ty={plY + 22} t="jack studs" />
       <Lead k="o3" x={cx - half} y={top + 90} tx={cx - half - 58} ty={top + 90} t="2/ trimming studs" />
       <Lead k="o4" x={cx} y={plY + 7} tx={cx + half + 34} ty={plY - 6} t="2/90×45 top plate" />
+      <Lead k="hd" x={cx + half} y={top + 24} tx={cx + half + 34} ty={top + 40} t={`head ${headMM} AFFL`} />
+      {sillMM > 0 && (
+        <Lead k="sl" x={cx - half} y={top + 24 + opH} tx={cx - half - 58} ty={top + 24 + opH} t={`sill ${sillMM} AFFL`} />
+      )}
       {o && o.kind === "Window" && (
         <Lead k="o5" x={cx + half} y={top - 2} tx={cx + half + 34} ty={top - 20} t="head flashing" />
       )}

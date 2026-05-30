@@ -10,6 +10,7 @@ import { ScaleChip } from "./PlanView";
 import { SheetFrame } from "../SheetFrame";
 import { PlanDimensions } from "./PlanDimensions";
 import { PlanAnnotations } from "./PlanAnnotations";
+import { PartyWalls } from "./PartyWalls";
 
 export function FramingPlan() {
   const S = useAstral(useShallow((s) => ({
@@ -113,6 +114,7 @@ export function FramingPlan() {
         <text x={x0 + w / 2} y={y0 - 14} fill="#3f7d54" fontSize={8} fontFamily="IBM Plex Mono" textAnchor="middle">
           bracing panels indicative — confirm BU demand &amp; layout
         </text>
+        <PartyWalls />
         <PlanDimensions />
         <PlanAnnotations />
         <SheetFrame />

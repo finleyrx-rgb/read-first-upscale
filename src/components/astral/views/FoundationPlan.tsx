@@ -9,6 +9,7 @@ import { ScaleChip } from "./PlanView";
 import { SheetFrame } from "../SheetFrame";
 import { PlanDimensions } from "./PlanDimensions";
 import { PlanAnnotations } from "./PlanAnnotations";
+import { PartyWalls } from "./PartyWalls";
 
 export function FoundationPlan() {
   const S = useAstral(useShallow((s) => ({ L: s.L, W: s.W, openings: s.openings })));
@@ -50,6 +51,7 @@ export function FoundationPlan() {
         <text x={x0 + w / 2} y={y0 - 16} fill="#3c4a47" fontSize={10} fontFamily="IBM Plex Mono" textAnchor="middle">
           FOUNDATION — slab, thickened edge, bearing pads
         </text>
+        <PartyWalls />
         <PlanDimensions />
         <PlanAnnotations />
         <SheetFrame />

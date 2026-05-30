@@ -5,7 +5,6 @@
 import { useAstral } from "@/lib/astral/store";
 import { useShallow } from "zustand/react/shallow";
 import { openPlace, planGeom } from "@/lib/astral/geom";
-import { WALLTYPES } from "@/lib/astral/constants";
 import { SHEET_INDEX } from "@/lib/astral/sheet";
 
 const MONO = "IBM Plex Mono";
@@ -61,32 +60,8 @@ function SectionMarkers() {
   );
 }
 
-function WallLegend() {
-  const items = [
-    { k: "External", ...WALLTYPES.External },
-    { k: "Partition", ...WALLTYPES.Partition },
-    { k: "Structural", ...WALLTYPES.Structural },
-    { k: "Wet", ...WALLTYPES.Wet },
-  ];
-  const bx = 14, by = 18, rh = 14, rw = 118;
-  return (
-    <g pointerEvents="none">
-      <rect x={bx - 4} y={by - 12} width={rw} height={items.length * rh + 8}
-        fill="#fbf9f3" stroke="#cfc6b4" strokeWidth={0.8} rx={4} opacity={0.94} />
-      <text x={bx} y={by - 2} fill="#3c4a47" fontSize={7.5} fontFamily={MONO}
-        letterSpacing="0.1em">WALL TYPES</text>
-      {items.map((it, i) => {
-        const yy = by + 10 + i * rh;
-        return (
-          <g key={it.k}>
-            <rect x={bx} y={yy - 6} width={16} height={9} fill={it.fill} stroke={it.stroke} strokeWidth={0.8} />
-            <text x={bx + 22} y={yy + 2} fill={INK} fontSize={8.5} fontFamily={MONO}>{it.label}</text>
-          </g>
-        );
-      })}
-    </g>
-  );
-}
+// (Legacy partition-type swatch removed — wall types now rendered via
+// WallLegend.tsx using the new §7.1 master-plan taxonomy.)
 
 function CalloutBubble({ bx, by, tx, ty, k, nodeId }:
   { bx: number; by: number; tx: number; ty: number; k: string; nodeId?: string }) {
@@ -108,7 +83,7 @@ function CalloutBubble({ bx, by, tx, ty, k, nodeId }:
 
 function PlanCallouts() {
   const S = useAstral(useShallow((s) => ({
-    L: s.L, W: s.W, openings: s.openings, eave: s.eave, layer: s.layer,
+    L: s.L, W: s.W, openings: s.openings, parts: s.parts, eave: s.eave, layer: s.layer,
   })));
   const g = planGeom(S);
   const { w, h, x0, y0, sc } = g;
@@ -128,6 +103,16 @@ function PlanCallouts() {
       out.push(<CalloutBubble key="lintel" bx={bx} by={by} tx={pl.cx} ty={pl.cy}
         k="detail_opening" nodeId={`opening-${bigOp.id}`} />);
     }
+    // Partition junction callouts — first 2 partitions only to avoid clutter.
+    S.parts.slice(0, 2).forEach((p, i) => {
+      const across = p.dir === "Across width";
+      const px = across ? x0 + (p.off / S.L) * w : x0 + ((p.start + p.len / 2) / S.L) * w;
+      const py = across ? y0 + ((p.start + p.len / 2) / S.W) * h : y0 + (p.off / S.W) * h;
+      const bx = x0 - 36;
+      const by = y0 + h * (0.25 + i * 0.35);
+      out.push(<CalloutBubble key={`part-${p.id}`} bx={bx} by={by} tx={px} ty={py}
+        k="detail_wall" nodeId={`part-${p.id}`} />);
+    });
   } else {
     out.push(<CalloutBubble key="slab1" bx={x0 + w + 34} by={y0 + h + 18}
       tx={x0 + w - 6} ty={y0 + h - 6} k="detail_slab" nodeId="slab" />);
@@ -167,12 +152,10 @@ function DetailKey() {
 
 /** Composite annotations for any architectural/framing/foundation plan view. */
 export function PlanAnnotations() {
-  const layer = useAstral((s) => s.layer);
   return (
     <g>
       <SectionMarkers />
       <NorthPoint x={566} y={56} />
-      {layer === "arch" && <WallLegend />}
       <PlanCallouts />
       <DetailKey />
     </g>
@@ -197,6 +180,27 @@ export function ElevationCallouts() {
       )}
       <CalloutBubble bx={ox - 30} by={oy + oh + 8} tx={ox + 8} ty={oy + oh - 4}
         k="detail_slab" nodeId="slab" />
+      {/* wall body — mid-height, opposite side */}
+      <CalloutBubble bx={ox - 30} by={oy + oh * 0.45}
+        tx={ox + 12} ty={oy + oh * 0.55} k="detail_wall" nodeId={`wall-${wallKey}`} />
+    </g>
+  );
+}
+
+/** Roof / wall / slab callouts for the SectionView (§7.2 cross-references). */
+export function SectionCallouts({
+  x0, w, base, eave, apex,
+}: {
+  x0: number; w: number; base: number; eave: number; apex: number;
+}) {
+  return (
+    <g>
+      <CalloutBubble bx={x0 + w + 34} by={apex - 6}
+        tx={x0 + w / 2 + 6} ty={apex + 4} k="detail_roof" nodeId="roof" />
+      <CalloutBubble bx={x0 - 34} by={(eave + base) / 2}
+        tx={x0 + 4} ty={(eave + base) / 2} k="detail_wall" nodeId="wall-S" />
+      <CalloutBubble bx={x0 - 34} by={base + 26}
+        tx={x0 + 6} ty={base - 4} k="detail_slab" nodeId="slab" />
     </g>
   );
 }

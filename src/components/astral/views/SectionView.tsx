@@ -7,6 +7,7 @@ import { KIND_COL, openFrac, openingOH, openingSill } from "@/lib/astral/geom";
 import { ClickLayer } from "./ClickLayer";
 import { ScaleChip } from "./PlanView";
 import { SheetFrame } from "../SheetFrame";
+import { SectionCallouts } from "./PlanAnnotations";
 
 const VW = 600, VH = 440, m = 70;
 
@@ -149,6 +150,7 @@ export function SectionView() {
           fontFamily="IBM Plex Mono" textAnchor="middle">
           SECTION {tag}–{tag} · {cut === "cross" ? "across width" : "along length"} · {S.roof} {S.pitch}°
         </text>
+        <SectionCallouts x0={x0} w={w} base={base} eave={eave} apex={eave - apexP} />
         <SheetFrame />
       </svg>
       <ScaleChip label={`section ${tag}–${tag} · ${cut === "cross" ? "cross (across width)" : "longitudinal (along length)"} · indicative`} />

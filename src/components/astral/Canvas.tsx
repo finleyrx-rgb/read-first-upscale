@@ -1,7 +1,7 @@
 // Canvas — slim view router. Renders the active view+layer combo by composing the
 // modular SVG view components in views/. Plus the floating quantities chip strip.
 
-import { useMemo } from "react";
+import React, { useMemo } from "react";
 import { useShallow } from "zustand/react/shallow";
 import { useAstral } from "@/lib/astral/store";
 import { qtys } from "@/lib/astral/model";
@@ -34,7 +34,7 @@ export function Canvas() {
   const view = useAstral((s) => s.view);
   const layer = useAstral((s) => s.layer);
 
-  let body: JSX.Element;
+  let body: React.ReactElement;
   if (view === "detail") body = <DetailView />;
   else if (view === "section") body = <SectionView />;
   else if (view === "elevation") body = <ElevationView />;

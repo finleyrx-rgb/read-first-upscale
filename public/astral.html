@@ -1,0 +1,1111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Project Astral · Build Flow</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{--paper:#f3efe6;--paper2:#ece6d8;--ink:#1d2a2a;--ink2:#3c4a47;--line:#cfc6b4;
+    --ochre:#bf6b2c;--ochre2:#e0a35a;--blue:#2f6f7e;--good:#3f7d54;--warn:#b4472d;--card:#fbf9f3;
+    --mono:"IBM Plex Mono",ui-monospace,monospace;--ui:"Archivo",system-ui,sans-serif;--disp:"Fraunces",Georgia,serif;}
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--ui);-webkit-font-smoothing:antialiased}
+  body{background-image:radial-gradient(var(--line) 0.5px,transparent 0.5px);background-size:22px 22px}
+  header.top{display:flex;align-items:center;justify-content:space-between;padding:16px 22px;border-bottom:1px solid var(--line);background:rgba(243,239,230,.86);backdrop-filter:blur(6px);position:sticky;top:0;z-index:20}
+  .brand{display:flex;align-items:baseline;gap:10px}
+  .brand .mark{font-family:var(--disp);font-weight:700;font-size:22px}
+  .brand .mark em{color:var(--ochre);font-style:normal}
+  .brand .sub{font-family:var(--mono);font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink2)}
+  .topnote{font-family:var(--mono);font-size:10px;color:var(--ink2);letter-spacing:.06em;text-align:right;max-width:300px;line-height:1.5}
+  .wrap{display:grid;grid-template-columns:1fr 452px;gap:26px;max-width:1240px;margin:24px auto;padding:0 22px}
+  @media(max-width:920px){.wrap{grid-template-columns:1fr;gap:18px}}
+  .stage{position:sticky;top:78px;align-self:start}
+  @media(max-width:920px){.stage{position:static}}
+  .canvas{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:0 24px 50px -34px rgba(29,42,42,.55);overflow:hidden}
+  .canvas .bar{display:flex;flex-direction:column;gap:8px;align-items:stretch;padding:10px 14px;border-bottom:1px solid var(--line)}
+  .tabs{display:flex;flex-direction:column;gap:7px}
+  .ctrlrow{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .ctrllab{font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink2);min-width:34px}
+  .pillrow{display:flex;gap:6px;flex-wrap:wrap}
+  .tab{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;padding:5px 11px;border:1px solid var(--line);border-radius:20px;background:var(--paper);cursor:pointer}
+  .tab.sm{font-size:9.5px;padding:4px 9px}
+  .tab.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+  .tab.unit{margin-left:auto;border-style:dashed;color:var(--ink2)}
+  .canvas .bar span.sc{font-family:var(--mono);font-size:10px;color:var(--ink2);align-self:flex-end}
+  svg{display:block;width:100%;height:auto;background:linear-gradient(rgba(47,111,126,.05) 1px,transparent 1px) 0 0/24px 24px,linear-gradient(90deg,rgba(47,111,126,.05) 1px,transparent 1px) 0 0/24px 24px}
+  .chips-row{display:flex;flex-wrap:wrap;gap:8px;padding:11px 14px;border-top:1px solid var(--line)}
+  .stat{font-family:var(--mono);font-size:11px;color:var(--ink2)} .stat b{color:var(--ink)}
+  .pill{font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;padding:3px 9px;border-radius:20px;border:1px solid var(--line);background:var(--paper2)}
+  .panel{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:0 24px 50px -38px rgba(29,42,42,.5)}
+  .rail{display:flex;gap:6px;flex-wrap:wrap;padding:14px 16px 4px}
+  .rail .sct{font-family:var(--mono);font-size:10px;letter-spacing:.05em;text-transform:uppercase;padding:5px 10px;border:1px solid var(--line);border-radius:18px;background:var(--paper);cursor:pointer;color:var(--ink2)}
+  .rail .sct.on{background:var(--ochre);color:#fff;border-color:var(--ochre)}
+  .rail .sctgap{flex-basis:100%;height:0}
+  .step-head{padding:14px 20px 4px}
+  .step-head .kx{font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--ochre)}
+  .step-head h2{font-family:var(--disp);font-weight:600;font-size:25px;margin:4px 0 2px;line-height:1.05}
+  .step-head p{margin:0;color:var(--ink2);font-size:13px}
+  .body{padding:10px 20px 6px;min-height:240px}
+  .q{margin:14px 0} .q>label{display:block;font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink2);margin-bottom:7px}
+  .opts{display:flex;flex-wrap:wrap;gap:8px}
+  .opt{font-size:13px;font-weight:500;padding:9px 13px;border:1px solid var(--line);border-radius:10px;background:var(--paper);cursor:pointer;transition:.12s}
+  .opt:hover{border-color:var(--ochre2)} .opt.sel{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+  .num{display:flex;align-items:center;gap:10px}
+  .num input[type=number]{width:104px;font-family:var(--mono);font-size:15px;padding:9px 11px;border:1px solid var(--line);border-radius:10px;background:var(--paper)}
+  .num input:focus{outline:none;border-color:var(--ochre)}
+  input[type=range]{width:100%;accent-color:var(--ochre)}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .sw{display:flex;flex-wrap:wrap;gap:9px}
+  .swatch{width:34px;height:34px;border-radius:8px;border:2px solid var(--line);cursor:pointer;position:relative}
+  .swatch.sel{border-color:var(--ink);box-shadow:0 0 0 2px var(--paper),0 0 0 4px var(--ink)}
+  .swatch span{position:absolute;bottom:-15px;left:50%;transform:translateX(-50%);font-family:var(--mono);font-size:8px;color:var(--ink2);white-space:nowrap}
+  .swwrap{display:flex;flex-wrap:wrap;gap:9px;margin-bottom:14px}
+  .openrow{border:1px solid var(--line);border-radius:11px;padding:10px 12px;margin-bottom:10px;background:var(--paper)}
+  .openrow .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+  .openrow .kind{display:flex;gap:6px}
+  .mini{font-size:11px;font-weight:600;padding:5px 9px;border:1px solid var(--line);border-radius:8px;background:var(--card);cursor:pointer}
+  .mini.sel{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+  .rm{font-family:var(--mono);font-size:11px;color:var(--warn);cursor:pointer;border:none;background:none}
+  .addbtn{font-family:var(--ui);font-weight:600;font-size:13px;padding:9px 14px;border:1px dashed var(--ochre);color:var(--ochre);border-radius:10px;background:transparent;cursor:pointer;width:100%}
+  .lab{font-family:var(--mono);font-size:10px;color:var(--ink2);margin:6px 0 2px;text-transform:uppercase;letter-spacing:.06em}
+  .foot{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:16px 20px;border-top:1px solid var(--line)}
+  .btn{font-weight:600;font-size:14px;padding:11px 20px;border-radius:11px;border:1px solid var(--ink);cursor:pointer;background:var(--ink);color:var(--paper);transition:.12s}
+  .btn:hover{transform:translateY(-1px)} .btn.ghost{background:transparent;color:var(--ink)} .btn:disabled{opacity:.35;cursor:not-allowed}
+  .res{border:1px solid var(--line);border-radius:11px;padding:12px 14px;margin:10px 0;background:var(--paper)}
+  .res .rh{display:flex;justify-content:space-between;font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink2)}
+  .res .rv{font-family:var(--disp);font-weight:600;font-size:16px;margin-top:3px} .res .rn{font-size:12px;color:var(--ink2);margin-top:3px}
+  .tag{font-family:var(--mono);font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;border-radius:6px}
+  .tag.sed{background:#f4dcc2;color:#9a4a16} .tag.ok{background:#d8e8dd;color:var(--good)}
+  table.bom{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:6px}
+  table.bom th,table.bom td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line)}
+  table.bom th{font-family:var(--mono);font-size:10px;text-transform:uppercase;color:var(--ink2)}
+  table.bom td:last-child,table.bom th:last-child{text-align:right;font-family:var(--mono)}
+  .check{display:flex;gap:9px;padding:7px 0;border-bottom:1px dashed var(--line);font-size:12.5px}
+  .check .bx{width:15px;height:15px;border:1.5px solid var(--ink2);border-radius:4px;flex:none;margin-top:1px}
+  .sechead{font-family:var(--disp);font-weight:600;font-size:18px;margin:18px 0 6px}
+  .muted{color:var(--ink2)}
+  #inspector{margin-top:14px}
+  .insp{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:0 24px 50px -38px rgba(29,42,42,.5);padding:14px 16px}
+  .insp .ih{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+  .insp .ih .t{font-family:var(--disp);font-weight:600;font-size:18px;line-height:1.05}
+  .insp .ih .ty{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--ochre)}
+  .insp .x{font-family:var(--mono);font-size:11px;color:var(--ink2);cursor:pointer;border:1px solid var(--line);border-radius:8px;padding:5px 10px;background:var(--paper)}
+  .insp .sub2{font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink2);margin:12px 0 4px}
+  .insp .drow{display:flex;justify-content:space-between;gap:10px;font-size:12.5px;padding:4px 0;border-bottom:1px dashed var(--line)}
+  .insp .drow b{font-family:var(--mono);font-weight:500}
+  @media print{header.top,.foot,.rail{display:none}.wrap{grid-template-columns:1fr}body{background:#fff}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="brand"><span class="mark">Project <em>Astral</em></span><span class="sub">build flow</span></div>
+  <div class="topnote">Concept configurator · sizes to NZS 3604 where in scope · SED items flagged, not designed</div>
+</header>
+<div class="wrap">
+  <div class="stage">
+    <div class="canvas">
+      <div class="bar">
+        <div class="tabs" id="tabs"></div>
+        <span class="sc" id="planScale"></span>
+      </div>
+      <svg id="view" viewBox="-14 -14 628 540" preserveAspectRatio="xMidYMid meet"></svg>
+      <div class="chips-row" id="chips"></div>
+    </div>
+    <div id="inspector"></div>
+  </div>
+  <div class="panel">
+    <div class="rail" id="rail"></div>
+    <div class="step-head"><div class="kx" id="kx"></div><h2 id="title"></h2><p id="blurb"></p></div>
+    <div class="body" id="body"></div>
+    <div class="foot">
+      <div class="stat" id="footnote"></div>
+    </div>
+  </div>
+</div>
+<script>
+const CLAD=[{n:"Cream",h:"#ece6d6"},{n:"Sand",h:"#d8c7a3"},{n:"Clay",h:"#b06a45"},{n:"Sage",h:"#8f9b86"},{n:"Charcoal",h:"#3c3f43"},{n:"White",h:"#f4f2ec"}];
+const ROOFC=[{n:"Ironsand",h:"#33373b"},{n:"Grey Friars",h:"#50545a"},{n:"Titania",h:"#d6d2c8"},{n:"Karaka",h:"#39402f"},{n:"Sandstone",h:"#b7ab93"},{n:"Copper",h:"#9c5a32"}];
+const S={
+  type:"Garage",wind:"Extra High",found:"Concrete slab",
+  L:10000,W:8000,studH:3000,spacing:600,
+  roof:"Hip",pitch:20,cover:"Colorsteel corrugate",struct:"Prefab trusses",roofCol:"Ironsand",
+  joinery:"Fiji mahogany",
+  clad:"Plaster system",cladCol:"Cream",lining:"Plywood",floor:"Sealed / clear",insul:"None — open",
+  view:"plan", layer:"arch", face:"front", cut:"cross", unit:"m", eave:450,
+  openings:[
+    {id:1,kind:"Garage",wall:"W",off:4000,width:5000},
+    {id:2,kind:"Door",wall:"S",off:2000,width:810},
+    {id:3,kind:"Window",wall:"S",off:7200,width:1200}
+  ],
+  parts:[]
+};
+let nid=4, step=0, sel=null, detailFor=null;
+const STEPS=["Site","Footprint","Roof","Openings","Layout","Finishes","Resolve","Outputs"];
+const $=id=>document.getElementById(id);
+const NS="http://www.w3.org/2000/svg";
+function el(p,t,a,x){const n=document.createElementNS(NS,t);for(const k in a)n.setAttribute(k,a[k]);if(x!=null)n.textContent=x;p.appendChild(n);return n;}
+function clr(n){while(n.firstChild)n.removeChild(n.firstChild);}
+const fmt=v=>Math.round(v).toLocaleString();
+const cladHex=()=>(CLAD.find(c=>c.n===S.cladCol)||CLAD[0]).h;
+const roofHex=()=>(ROOFC.find(c=>c.n===S.roofCol)||ROOFC[0]).h;
+const WALLEN={N:()=>S.L,S:()=>S.L,E:()=>S.W,W:()=>S.W};
+const WALLNAME={S:"Front",N:"Back",W:"Left end",E:"Right end"};
+const WALLREF={S:"left",N:"left",W:"top",E:"top"};
+const openFrac=o=>Math.max(0,Math.min(1,o.off/WALLEN[o.wall]()));
+/* §7.1 wall-type legend */
+const WALLTYPES={
+  External:{fill:'#1d2a2a',stroke:'#1d2a2a',hatch:null,label:'External'},
+  Partition:{fill:'#cdbf9f',stroke:'#1d2a2a',hatch:null,label:'Partition'},
+  Structural:{fill:'#c8975a',stroke:'#7a4a16',hatch:'diag',label:'Structural'},
+  Wet:{fill:'#a8c8cf',stroke:'#2f6f7e',hatch:'dot',label:'Wet area'}
+};
+const WALLTYPE_KEYS=["Partition","Structural","Wet"];
+function wtStyle(t){return WALLTYPES[t]||WALLTYPES.Partition;}
+
+/* ---------- RULES ---------- */
+function loadedDim(){return Math.round(S.W/2);}
+function studRule(){const eh=S.wind==="Extra High"||S.wind==="Cyclonic (SED)";const sp="@"+S.spacing;
+  if(S.studH>=3000)return eh?{v:"140×45 SG8 "+sp,n:"3604 T8.2 · "+S.wind+" · LD "+(loadedDim()/1000).toFixed(1)+"m · indicative"}:{v:"90×70 SG8 "+sp,n:"3604 T8.2 · "+S.wind+" · 3.0m · indicative"};
+  if(S.studH>=2700)return eh?{v:"90×70 SG8 "+sp,n:"3604 T8.2 · "+S.wind+" · indicative"}:{v:"90×45 SG8 "+sp,n:"3604 T8.2 · "+S.wind+" · indicative"};
+  return {v:"90×45 SG8 "+sp,n:"3604 T8.2 · "+S.wind+" · indicative"};}
+/* framing/bracing helpers (indicative) */
+function lintelDepthMM(span){return span>3000?240:span<=1200?90:span<=2000?140:190;}
+function nogRows(){return Math.max(1,Math.round(S.studH/1350));}
+function braceLayout(wall){const len=WALLEN[wall]();const ops=S.openings.filter(o=>o.wall===wall).map(o=>[o.off-o.width/2,o.off+o.width/2]);
+  const clear=(a,b)=>!ops.some(([s,e])=>b>s&&a<e);const pw=900;const cand=[200,(len-pw)/2,len-pw-200];const out=[];
+  cand.forEach(st=>{st=Math.max(100,Math.min(len-pw-100,st));if(clear(st,st+pw)&&!out.some(o=>Math.abs(o-st)<pw*1.2))out.push(st);});
+  return out.map(st=>({start:st,len:pw}));}
+function lintelRule(span){if(span>3000)return{v:"Engineered head / portal",sed:true,n:span+"mm > 3604 lintel range → SED"};
+  if(span<=1200)return{v:"2/90×45 SG8",sed:false,n:span+"mm"};if(span<=2000)return{v:"2/140×45 SG8",sed:false,n:span+"mm"};return{v:"2/190×45 SG8",sed:false,n:span+"mm"};}
+function roofRule(){const span=S.W;if(S.struct.indexOf("truss")>-1)return{v:"Prefab "+(S.roof==="Hip"?"hip ":"")+"trusses @900",sed:true,n:(span/1000).toFixed(1)+"m span · fabricator PS1"};
+  if(span>6000)return{v:"Engineered rafters/beam",sed:true,n:(span/1000).toFixed(1)+"m → SED"};return{v:"Cut roof per 3604",sed:false,n:(span/1000).toFixed(1)+"m span"};}
+function bracingRule(){let gov=null;["N","S","E","W"].forEach(w=>{const tot=S.openings.filter(o=>o.wall===w).reduce((a,o)=>a+o.width,0);if(tot>0.45*WALLEN[w]())gov=w;});
+  if(gov)return{v:"Engineered portal at "+WALLNAME[gov].toLowerCase(),sed:true,n:"Opening(s) leave little wall on that line → governing"};
+  const area=(S.L*S.W)/1e6;const f=({"Medium":0.7,"High":1.0,"Very High":1.3,"Extra High":1.6,"Cyclonic (SED)":2.0})[S.wind]||1.6;
+  return{v:"~"+Math.round(area*55*f)+" BUs each way (indicative)",sed:false,n:"Achieved via P21 panels — confirm"};}
+function tieRule(){const hi=["High","Very High","Extra High","Cyclonic (SED)"].indexOf(S.wind)>-1;
+  return hi?{v:"Cyclone straps + M12 chem anchors @600",sed:S.wind==="Cyclonic (SED)",n:"Strap every truss/rafter, both ends"}:{v:"Standard 3604 fixings",sed:false,n:"Skew nails / wire dogs"};}
+function footRule(){const big=S.struct.indexOf("truss")>-1||S.W>6000||S.wind==="Cyclonic (SED)";
+  return{v:S.found==="Concrete slab"?"Slab + thickened edge & pads":"Engineered pile foundation",sed:true,n:big?"Loads/spans → engineer + PS1":"Confirm engineer"};}
+function qtys(){const Lm=S.L/1000,Wm=S.W/1000,Hm=S.studH/1000;const perim=2*(Lm+Wm),wallA=perim*Hm,floorA=Lm*Wm;
+  const roofA=S.roof==="Flat"?floorA*1.05:floorA/Math.cos(S.pitch*Math.PI/180)*1.06;
+  return{perim:perim.toFixed(1),floorA:floorA.toFixed(0),wallA:wallA.toFixed(0),roofA:roofA.toFixed(0),
+    concrete:(floorA*0.1+perim*0.05).toFixed(1),mesh:Math.ceil(floorA/12.5),
+    studsLm:Math.round(perim/(S.spacing/1000)*Hm+perim*3),purlinsLm:Math.round(roofA/0.9),
+    roofingM2:Math.round(roofA),cladM2:Math.round(wallA*0.86),liningM2:Math.round(wallA*0.86),
+    joinery:S.openings.length+" openings"};}
+
+/* ---------- MODEL LAYER (Phase 1: hierarchical object graph = single source of truth) ---------- */
+let M=null;
+function mk(id,type,name,parent,params,geometry){return {id,type,name,parent,children:[],params:params||{},geometry:geometry||{},material:{},derived:{},compliance:[],rules:[],links:{}};}
+const CTX=()=>({wind:S.wind,exposure:S.wind,studH:S.studH,spacing:S.spacing});
+/* NZS 3604 logic now lives as node-based rules. Each rule fn returns the canonical
+   result object {v,sed,n}; runRules stores {value,status,basis} (+raw) on the node. */
+const RULES={
+  Wall:[{id:'stud',fn:(n,c)=>studRule()}],
+  Opening:[{id:'lintel',fn:(n,c)=>lintelRule(n.params.width)}],
+  RoofSystem:[{id:'structure',fn:(n,c)=>roofRule()}],
+  Building:[{id:'bracing',fn:(n,c)=>bracingRule()},{id:'tie',fn:(n,c)=>tieRule()},{id:'foundation',fn:(n,c)=>footRule()},
+            {id:'lintels',fn:(n,c)=>lintelRule(Math.max(810,...S.openings.filter(o=>o.kind!=="Garage").map(o=>o.width),0))}],
+  Slab:[],Partition:[],Site:[]
+};
+function runRules(n,c){(RULES[n.type]||[]).forEach(r=>{const res=r.fn(n,c);n.rules.push(r.id);n.compliance.push({rule:r.id,value:res.v,status:res.sed?'sed':'ok',basis:res.n,raw:res});});}
+/* derivation: compute sub-elements into node.derived (exist in model, NOT drawn yet) */
+function deriveWall(n,c){const len=n.params.length;n.derived={studs:{count:Math.round(len/S.spacing)+1,size:studRule().v},topPlate:2,bottomPlate:1,bracingPanels:[]};}
+function deriveOpening(n,c){n.derived={lintel:lintelRule(n.params.width),trimmingStuds:2,sill:n.params.kind==='Window'};}
+function deriveRoof(n,c){const truss=S.struct.indexOf('truss')>-1;n.derived={system:truss?'Prefab trusses':'Cut rafters',members:Math.round(S.L/900),purlins:Math.round((S.L*S.W/1e6)/0.9)};}
+function deriveBuilding(n,c){n.derived={bracing:bracingRule().v,tieDown:tieRule().v};}
+const DERIVE={Wall:deriveWall,Opening:deriveOpening,RoofSystem:deriveRoof,Building:deriveBuilding};
+function buildModelFromLegacyState(S){
+  const byId={};const add=n=>{byId[n.id]=n;return n;};
+  const site=add(mk('site','Site','Site',null,{wind:S.wind,found:S.found}));
+  const bld=add(mk('building','Building',S.type,'site',{type:S.type,L:S.L,W:S.W,studH:S.studH,spacing:S.spacing},{footprint:{L:S.L,W:S.W}}));
+  site.children.push('building');
+  const slab=add(mk('slab','Slab','Slab / Foundation','building',{found:S.found},{outline:{L:S.L,W:S.W}}));bld.children.push('slab');
+  ['N','S','E','W'].forEach(w=>{const wall=add(mk('wall-'+w,'Wall',WALLNAME[w],'building',{wall:w,type:'External',length:WALLEN[w](),height:S.studH,studSpec:studRule().v},{}));bld.children.push(wall.id);});
+  S.parts.forEach(p=>{const pn=add(mk('part-'+p.id,'Wall','Internal '+(p.type||'Partition'),'building',{wall:'INT',type:(p.type||'Partition'),length:p.len,height:S.studH}));bld.children.push(pn.id);});
+  S.openings.forEach(o=>{const op=add(mk('opening-'+o.id,'Opening',o.kind,'wall-'+o.wall,{kind:o.kind,width:o.width,off:o.off,wall:o.wall}));const pw=byId['wall-'+o.wall];if(pw)pw.children.push(op.id);});
+  const roof=add(mk('roof','RoofSystem',S.roof+' roof','building',{form:S.roof,pitch:S.pitch,cover:S.cover,struct:S.struct},{pitch:S.pitch}));bld.children.push('roof');
+  S.parts.forEach(p=>{const pt=add(mk('part-'+p.id,'Partition','Partition','building',{dir:p.dir,off:p.off,start:p.start,len:p.len,door:p.door,doorW:p.doorW,doorOff:p.doorOff}));bld.children.push(pt.id);});
+  const c=CTX();Object.values(byId).forEach(n=>{if(DERIVE[n.type])DERIVE[n.type](n,c);runRules(n,c);});
+  return {root:site,byId};
+}
+function rebuildModel(){M=buildModelFromLegacyState(S);return M;}
+function comp(id,rule){if(!M)return null;const nd=M.byId[id];if(!nd)return null;const x=nd.compliance.find(e=>e.rule===rule);return x?x.raw:null;}
+
+/* ---------- PAPER-SPACE: project metadata + sheet registry (Phase 1) ---------- */
+const PROJECT={firm:"PROJECT ASTRAL",tagline:"spatial construction set",
+  consent:"BUILDING CONSENT",location:"Wanaka NZ",paper:"A1",status:"CONCEPT",rev:"P1"};
+const COMPASS={front:"South",back:"North",left:"West",right:"East"};
+const SHEET_SERIES={A0:"Register",A1:"Plans",A2:"Elevations",A3:"Sections",A4:"Schedules",A5:"Details"};
+/* prefix follows Upscale Plan §8 taxonomy. byFace expands to one numbered sheet per elevation. */
+const SHEETS={
+  cover:           {prefix:"A0",title:"Drawing Register",   scale:"NTS"},
+  plan_arch:       {prefix:"A1",title:"Floor Plan",         scale:"1:100"},
+  plan_foundation: {prefix:"A1",title:"Foundation Plan",    scale:"1:100"},
+  plan_framing:    {prefix:"A1",title:"Framing Plan",       scale:"1:100"},
+  elevation_arch:       {prefix:"A2",title:"Elevation",         scale:"1:100",byFace:true},
+  elevation_foundation: {prefix:"A2",title:"Concrete Elevation",scale:"1:100",byFace:true},
+  elevation_framing:    {prefix:"A2",title:"Framing Elevation", scale:"1:50", byFace:true},
+  section_cross:  {prefix:"A3",title:"Cross Section",        scale:"1:50"},
+  section_long:   {prefix:"A3",title:"Longitudinal Section", scale:"1:50"},
+  detail_wall:    {prefix:"A5",title:"Wall Framing Detail",  scale:"1:5"},
+  detail_roof:    {prefix:"A5",title:"Eave Detail",          scale:"1:10"},
+  detail_slab:    {prefix:"A5",title:"Slab Edge Detail",     scale:"1:5"},
+  detail_opening: {prefix:"A5",title:"Lintel / Head Detail", scale:"1:5"}
+};
+const SHEET_FACES=["front","back","left","right"];
+/* Deterministic, declaration-ordered numbering. Add a sheet -> it auto-numbers in its series. */
+function buildSheetIndex(){const ctr={},idx={};
+  Object.keys(SHEETS).forEach(key=>{const def=SHEETS[key],p=def.prefix;
+    const assign=id=>{ctr[p]=(ctr[p]||0)+1;idx[id]={prefix:p,seq:ctr[p]};};
+    if(def.byFace)SHEET_FACES.forEach(f=>assign(key+'@'+f));else assign(key);});
+  return idx;}
+const SHEET_INDEX=buildSheetIndex();
+
+/* ---------- PAPER-SPACE: meta resolution (Phase 2) ---------- */
+function currentSheetRef(){
+  if(S.view==='plan')return {key:S.layer==='framing'?'plan_framing':S.layer==='foundation'?'plan_foundation':'plan_arch'};
+  if(S.view==='elevation')return {key:S.layer==='framing'?'elevation_framing':S.layer==='foundation'?'elevation_foundation':'elevation_arch',face:S.face};
+  if(S.view==='section')return {key:S.cut==='long'?'section_long':'section_cross'};
+  const ty=(M&&detailFor&&M.byId[detailFor])?M.byId[detailFor].type:'';
+  if(!ty)return {key:'detail_wall',generic:true};
+  return {key:ty==='RoofSystem'?'detail_roof':ty==='Slab'?'detail_slab':ty==='Opening'?'detail_opening':'detail_wall'};
+}
+function getSheetMeta(){
+  const ref=currentSheetRef(),def=SHEETS[ref.key]||SHEETS.plan_arch;
+  const refId=def.byFace?ref.key+'@'+(ref.face||'front'):ref.key;
+  const ix=SHEET_INDEX[refId]||{prefix:def.prefix,seq:1};
+  const number=ix.prefix+'.'+String(ix.seq).padStart(2,'0');
+  let title=def.title,sub='';
+  if(def.byFace){const c=COMPASS[ref.face]||'South';title=def.title==='Elevation'?c+' Elevation':c+' '+def.title;sub=c;}
+  else if(ref.generic){title='Construction Detail';}
+  else if(ref.key.indexOf('detail_')===0){sub=def.title.replace(/ Detail$/,'');}
+  const scale=def.scale;
+  return {key:ref.key,refId,number,prefix:ix.prefix,
+    title:title.toUpperCase(),titleMixed:title,sub:sub.toUpperCase(),
+    series:(SHEET_SERIES[ix.prefix]||'').toUpperCase(),
+    scale,scaleNote:scale+' @ '+PROJECT.paper,
+    project:(S.type||'Building'),location:PROJECT.location,wind:S.wind,
+    dims:(S.L/1000).toFixed(1)+' × '+(S.W/1000).toFixed(1)+' m',
+    date:new Date().toLocaleDateString('en-NZ'),status:PROJECT.status,rev:PROJECT.rev};
+}
+function getSheetNumber(){return getSheetMeta().number;}
+function getSheetTitle(){return getSheetMeta().titleMixed;}
+
+/* ---------- DRAW DISPATCH ---------- */
+function drawCanvas(){const v=$("view");clr(v);
+  if(S.view==="detail")drawDetail(v);
+  else if(S.view==="section")drawSection(v);
+  else if(S.view==="plan"){if(S.layer==="framing")drawFraming(v);else if(S.layer==="foundation")drawFoundation(v);else drawPlan(v);}
+  else drawElev(v,S.face,S.layer);
+  const meta=getSheetMeta();
+  drawAnnotations(v,meta);
+  drawSheetFrame(v,meta);
+  drawTitleBlock(v,meta);
+  // chips
+  const q=qtys();
+  $("chips").innerHTML=`<span class="stat"><b>${q.floorA}</b> m² floor</span><span class="pill">${S.wind} wind</span><span class="pill">${S.roof} · ${S.roofCol}</span><span class="pill">${S.clad.split(" ")[0]} · ${S.cladCol}</span>`;
+  if(sel){const selEl=v.querySelector('[data-node-id="'+sel+'"]');if(selEl&&selEl.getBBox){try{const bb=selEl.getBBox();el(v,'rect',{x:bb.x-3,y:bb.y-3,width:bb.width+6,height:bb.height+6,fill:'none',stroke:'#bf6b2c','stroke-width':1.6,'stroke-dasharray':'4 3','pointer-events':'none'});}catch(e){}}}
+}
+function dimPlan(s,sc,w,h,x0,y0){
+  const ink='#1d2a2a',lab='#9a8f78';
+  const fmtMM=mm=>S.unit==='m'?(mm/1000).toFixed(2):Math.round(mm)+'';
+  const T=(x,y,t,sz,col,anc,rot)=>{const e=el(s,'text',{x,y,fill:col||ink,'font-size':sz||7.5,'font-family':'IBM Plex Mono','text-anchor':anc||'middle'},t);if(rot)e.setAttribute('transform','rotate('+rot+' '+x+' '+y+')');return e;};
+  const dedup=arr=>[...new Set(arr.map(n=>Math.round(n)))].sort((a,b)=>a-b);
+  const rowH=(ptsMM,y,name)=>{if(ptsMM.length<2)return;const xs=ptsMM.map(mm=>x0+mm*sc);
+    el(s,'line',{x1:xs[0],y1:y,x2:xs[xs.length-1],y2:y,stroke:ink,'stroke-width':0.5});
+    xs.forEach(x=>el(s,'line',{x1:x,y1:y-3,x2:x,y2:y+3,stroke:ink,'stroke-width':0.5}));
+    for(let i=1;i<xs.length;i++){const seg=ptsMM[i]-ptsMM[i-1];if((xs[i]-xs[i-1])>14)T((xs[i-1]+xs[i])/2,y-3,fmtMM(seg),7.5);}
+    T(xs[xs.length-1]+6,y+2.5,name,6.5,lab,'start');};
+  const rowV=(ptsMM,x,name)=>{if(ptsMM.length<2)return;const ys=ptsMM.map(mm=>y0+mm*sc);
+    el(s,'line',{x1:x,y1:ys[0],x2:x,y2:ys[ys.length-1],stroke:ink,'stroke-width':0.5});
+    ys.forEach(y=>el(s,'line',{x1:x-3,y1:y,x2:x+3,y2:y,stroke:ink,'stroke-width':0.5}));
+    for(let i=1;i<ys.length;i++){const seg=ptsMM[i]-ptsMM[i-1];if((ys[i]-ys[i-1])>14)T(x-3,(ys[i-1]+ys[i])/2,fmtMM(seg),7.5,null,'middle',-90);}
+    T(x,ys[ys.length-1]+10,name,6.5,lab,'middle');};
+  const opsAt=wll=>S.openings.filter(o=>o.wall===wll).map(o=>o.off).sort((a,b)=>a-b);
+  const partsAcrossX=S.parts.filter(p=>p.dir==="Across width").map(p=>p.off).sort((a,b)=>a-b);
+  const partsAlongY=S.parts.filter(p=>p.dir==="Along length").map(p=>p.off).sort((a,b)=>a-b);
+  const nOps=opsAt('N'),sOps=opsAt('S'),wOps=opsAt('W'),eOps=opsAt('E');
+  // TOP
+  if(nOps.length)rowH(dedup([0,...nOps,S.L]),y0-22,'WINDOWS');
+  rowH([0,S.L],y0-(nOps.length?40:22),'OVERALL');
+  // BOTTOM
+  let bRow=y0+h+22;
+  if(sOps.length){rowH(dedup([0,...sOps,S.L]),bRow,'WINDOWS');bRow+=18;}
+  if(partsAcrossX.length){rowH(dedup([0,...partsAcrossX,S.L]),bRow,'INTERIOR WALLS');bRow+=18;}
+  rowH([0,S.L],bRow,'OVERALL');
+  // LEFT
+  let lCol=x0-22;
+  if(wOps.length){rowV(dedup([0,...wOps,S.W]),lCol,'WINDOWS');lCol-=18;}
+  if(partsAlongY.length){rowV(dedup([0,...partsAlongY,S.W]),lCol,'INTERIOR WALLS');lCol-=18;}
+  rowV([0,S.W],lCol,'OVERALL');
+  // RIGHT
+  let rCol=x0+w+22;
+  if(eOps.length){rowV(dedup([0,...eOps,S.W]),rCol,'WINDOWS');rCol+=18;}
+  rowV([0,S.W],rCol,'OVERALL');
+}
+function drawPlan(s){const VW=600,VH=440,m=66;
+  const sc=Math.min((VW-2*m)/S.L,(VH-2*m)/S.W);
+  const w=S.L*sc,h=S.W*sc,x0=(VW-w)/2,y0=(VH-h)/2,tt=Math.max(3,90*sc);
+  $("planScale").textContent="plan ≈1:"+Math.round(1000/sc);
+  {const e=(S.eave||450)*sc;el(s,'rect',{x:x0-e,y:y0-e,width:w+2*e,height:h+2*e,fill:'none',stroke:'#b9b09c','stroke-width':1,'stroke-dasharray':'6 4'});}
+  el(s,'rect',{x:x0+tt,y:y0+tt,width:w-2*tt,height:h-2*tt,fill:cladHex(),opacity:0.30,'data-node-id':'slab','data-node-type':'Slab'});
+  el(s,'rect',{x:x0,y:y0,width:w,height:h,fill:'none',stroke:'#1d2a2a','stroke-width':2,'data-node-id':'building','data-node-type':'Building'});
+  el(s,'rect',{x:x0+tt,y:y0+tt,width:w-2*tt,height:h-2*tt,fill:'none',stroke:'#1d2a2a','stroke-width':1});
+  const colKind={Garage:'#bf6b2c',Door:'#3f7d54',Window:'#2f6f7e'};
+  S.openings.forEach(o=>{
+    const len=WALLEN[o.wall]()*sc, owid=Math.min(o.width,WALLEN[o.wall]()*0.95)*sc;
+    let cx,cy,horiz;
+    const fr=openFrac(o);
+    if(o.wall==="N"){horiz=true;cx=x0+fr*w;cy=y0;}
+    else if(o.wall==="S"){horiz=true;cx=x0+fr*w;cy=y0+h;}
+    else if(o.wall==="W"){horiz=false;cx=x0;cy=y0+fr*h;}
+    else{horiz=false;cx=x0+w;cy=y0+fr*h;}
+    if(horiz){const ax=Math.max(x0,Math.min(x0+w-owid,cx-owid/2));
+      el(s,'rect',{x:ax,y:cy-tt/2-1,width:owid,height:tt+2,fill:'#fbf9f3'});
+      el(s,'line',{x1:ax,y1:cy,x2:ax+owid,y2:cy,stroke:colKind[o.kind],'stroke-width':o.kind==='Garage'?3:2.2,'data-node-id':'opening-'+o.id,'data-node-type':'Opening'});
+      el(s,'text',{x:ax+owid/2,y:cy+(o.wall==='S'?-tt/2-4:tt/2+9),fill:colKind[o.kind],'font-size':9,'font-family':'IBM Plex Mono','text-anchor':'middle'},o.kind[0]+(o.kind==='Garage'?' '+(o.width/1000)+'m':''));
+    } else {const ay=Math.max(y0,Math.min(y0+h-owid,cy-owid/2));
+      el(s,'rect',{x:cx-tt/2-1,y:ay,width:tt+2,height:owid,fill:'#fbf9f3'});
+      el(s,'line',{x1:cx,y1:ay,x2:cx,y2:ay+owid,stroke:colKind[o.kind],'stroke-width':o.kind==='Garage'?3:2.2,'data-node-id':'opening-'+o.id,'data-node-type':'Opening'});
+      const tx=cx+(o.wall==='W'?tt/2+8:-tt/2-8);
+      el(s,'text',{x:tx,y:ay+owid/2,fill:colKind[o.kind],'font-size':9,'font-family':'IBM Plex Mono','text-anchor':'middle','transform':`rotate(-90 ${tx} ${ay+owid/2})`},o.kind[0]+(o.kind==='Garage'?' '+(o.width/1000)+'m':''));}
+  });
+  // internal partitions (partial extent: start + length along their run)
+  {const ix0=x0+tt,iy0=y0+tt,iw=w-2*tt,ih=h-2*tt,pt=Math.max(2.5,70*sc);
+    S.parts.forEach(p=>{
+      const st0=wtStyle(p.type||'Partition');
+      const runMax=p.dir==="Across width"?S.W:S.L; const st=p.start||0, ln=(p.len!=null?p.len:runMax);
+      const drawHatch=(rx,ry,rw,rh)=>{
+        if(!st0.hatch) return;
+        const cp='cp-part-'+p.id;
+        const defs=el(s,'defs',{});
+        const clip=el(defs,'clipPath',{id:cp});
+        el(clip,'rect',{x:rx,y:ry,width:rw,height:rh});
+        if(st0.hatch==='diag'){const step=4;for(let k=-rh;k<rw+rh;k+=step){el(s,'line',{x1:rx+k,y1:ry,x2:rx+k+rh,y2:ry+rh,stroke:st0.stroke,'stroke-width':0.5,opacity:0.55,'clip-path':`url(#${cp})`});}}
+        else if(st0.hatch==='dot'){const step=3.5;for(let yy=ry+1;yy<ry+rh;yy+=step)for(let xx=rx+1;xx<rx+rw;xx+=step)el(s,'circle',{cx:xx,cy:yy,r:0.5,fill:st0.stroke,opacity:0.7,'clip-path':`url(#${cp})`});}
+      };
+      if(p.dir==="Across width"){const px=x0+Math.max(0,Math.min(1,p.off/S.L))*w; const scW=h/S.W;
+        const yFront=y0+h, yA=yFront-st*scW, yB=yFront-(st+ln)*scW;
+        el(s,'rect',{x:px-pt/2,y:yB,width:pt,height:yA-yB,fill:st0.fill,'fill-opacity':st0.hatch?0.45:1,'data-node-id':'part-'+p.id,'data-node-type':'Partition'});
+        drawHatch(px-pt/2,yB,pt,yA-yB);
+        el(s,'rect',{x:px-pt/2,y:yB,width:pt,height:yA-yB,fill:'none',stroke:st0.stroke,'stroke-width':0.9});
+        if(p.door){const gy=yFront-Math.max(0,Math.min(runMax,p.doorOff))*scW,gh=(p.doorW/S.W)*h;
+          el(s,'rect',{x:px-pt/2-1,y:gy-gh/2,width:pt+2,height:gh,fill:'#fbf9f3'});
+          el(s,'path',{d:`M ${px} ${gy-gh/2} A ${gh} ${gh} 0 0 1 ${px+gh} ${gy-gh/2}`,fill:'none',stroke:'#3f7d54','stroke-width':0.7});}
+      } else {const py=y0+Math.max(0,Math.min(1,p.off/S.W))*h; const scL=w/S.L;
+        const xA=x0+st*scL, xB=x0+(st+ln)*scL;
+        el(s,'rect',{x:xA,y:py-pt/2,width:xB-xA,height:pt,fill:st0.fill,'fill-opacity':st0.hatch?0.45:1,'data-node-id':'part-'+p.id,'data-node-type':'Partition'});
+        drawHatch(xA,py-pt/2,xB-xA,pt);
+        el(s,'rect',{x:xA,y:py-pt/2,width:xB-xA,height:pt,fill:'none',stroke:st0.stroke,'stroke-width':0.9});
+        if(p.door){const gx=x0+Math.max(0,Math.min(runMax,p.doorOff))*scL,gw=(p.doorW/S.L)*w;
+          el(s,'rect',{x:gx-gw/2,y:py-pt/2-1,width:gw,height:pt+2,fill:'#fbf9f3'});
+          el(s,'path',{d:`M ${gx-gw/2} ${py} A ${gw} ${gw} 0 0 1 ${gx-gw/2} ${py-gw}`,fill:'none',stroke:'#3f7d54','stroke-width':0.7});}
+      }
+    });}
+  dimPlan(s,sc,w,h,x0,y0);
+  drawWallLegend(s);
+}
+function drawWallLegend(s){
+  // §7.1 wall-type legend — top-left of drawing field (above title block)
+  const items=[{k:'External',...WALLTYPES.External},{k:'Partition',...WALLTYPES.Partition},{k:'Structural',...WALLTYPES.Structural},{k:'Wet',...WALLTYPES.Wet}];
+  const bx=14,by=18,rh=14,rw=118;
+  el(s,'rect',{x:bx-4,y:by-12,width:rw,height:items.length*rh+8,fill:'#fbf9f3',stroke:'#cfc6b4','stroke-width':0.8,rx:4,opacity:0.94});
+  el(s,'text',{x:bx,y:by-2,fill:'#3c4a47','font-size':7.5,'font-family':'IBM Plex Mono','letter-spacing':'0.1em'},'WALL TYPES');
+  items.forEach((it,i)=>{const yy=by+10+i*rh;
+    el(s,'rect',{x:bx,y:yy-6,width:16,height:9,fill:it.fill,'fill-opacity':it.hatch?0.45:1,stroke:it.stroke,'stroke-width':0.8});
+    if(it.hatch==='diag'){for(let k=-9;k<16+9;k+=3){el(s,'line',{x1:bx+k,y1:yy-6,x2:bx+k+9,y2:yy+3,stroke:it.stroke,'stroke-width':0.4,opacity:0.6});}}
+    else if(it.hatch==='dot'){for(let yyy=yy-5;yyy<yy+3;yyy+=3)for(let xxx=bx+2;xxx<bx+16;xxx+=3)el(s,'circle',{cx:xxx,cy:yyy,r:0.4,fill:it.stroke,opacity:0.7});}
+    el(s,'text',{x:bx+22,y:yy+2,fill:'#1d2a2a','font-size':8.5,'font-family':'IBM Plex Mono'},it.label);
+  });
+}
+function texture(s,x,y,w,h,kind,colHex){
+  // light material texture overlay within rect
+  el(s,'rect',{x:x,y:y,width:w,height:h,fill:colHex});
+  const o={};
+  if(kind==="Weatherboard"){for(let yy=y+6;yy<y+h;yy+=6)el(s,'line',{x1:x,y1:yy,x2:x+w,y2:yy,stroke:'#00000022','stroke-width':0.6});}
+  else if(kind==="Ply + batten"){for(let xx=x+10;xx<x+w;xx+=20)el(s,'line',{x1:xx,y1:y,x2:xx,y2:y+h,stroke:'#00000022','stroke-width':0.8});}
+  else if(kind==="Fibre-cement"){for(let xx=x+24;xx<x+w;xx+=24)el(s,'line',{x1:xx,y1:y,x2:xx,y2:y+h,stroke:'#00000018','stroke-width':0.5});}
+  // plaster = solid
+}
+function roofTexture(s,pts,colHex,cover){
+  el(s,'polygon',{points:pts.map(p=>p.join(',')).join(' '),fill:colHex,stroke:'#1d2a2a','stroke-width':1,'data-node-id':'roof','data-node-type':'RoofSystem'});
+  // fine lines suggestion for corrugate/tray
+  const xs=pts.map(p=>p[0]),ys=pts.map(p=>p[1]);const minx=Math.min(...xs),maxx=Math.max(...xs),miny=Math.min(...ys),maxy=Math.max(...ys);
+  const step=cover.indexOf("corrugate")>-1?7:cover.indexOf("tray")>-1?16:cover.indexOf("Tile")>-1?0:0;
+  if(step){for(let xx=minx+step;xx<maxx;xx+=step)el(s,'line',{x1:xx,y1:miny,x2:xx,y2:maxy,stroke:'#ffffff22','stroke-width':0.6});}
+}
+function planGeom(){const VW=600,VH=440,m=66;const sc=Math.min((VW-2*m)/S.L,(VH-2*m)/S.W);const w=S.L*sc,h=S.W*sc,x0=(VW-w)/2,y0=(VH-h)/2,tt=Math.max(3,90*sc);return{sc,w,h,x0,y0,tt};}
+function openPlace(o,g){const {sc,w,h,x0,y0}=g;const fr=openFrac(o);const owid=Math.min(o.width,WALLEN[o.wall]()*0.95)*sc;let horiz,cx,cy;
+  if(o.wall==='N'){horiz=true;cx=x0+fr*w;cy=y0;}else if(o.wall==='S'){horiz=true;cx=x0+fr*w;cy=y0+h;}else if(o.wall==='W'){horiz=false;cx=x0;cy=y0+fr*h;}else{horiz=false;cx=x0+w;cy=y0+fr*h;}
+  return {horiz,cx,cy,owid};}
+function drawFraming(s){const g=planGeom();const {sc,w,h,x0,y0,tt}=g;
+  $("planScale").textContent="framing plan · studs @"+S.spacing+" · trusses @900 · indicative";
+  el(s,'rect',{x:x0+tt,y:y0+tt,width:w-2*tt,height:h-2*tt,fill:'#f4efe3'});
+  el(s,'rect',{x:x0,y:y0,width:w,height:h,fill:'none',stroke:'#1d2a2a','stroke-width':1.5,'data-node-id':'building','data-node-type':'Building'});
+  el(s,'rect',{x:x0+tt,y:y0+tt,width:w-2*tt,height:h-2*tt,fill:'none',stroke:'#1d2a2a','stroke-width':0.6});
+  const spx=S.spacing*sc;
+  for(let x=x0+tt;x<=x0+w-tt+0.1;x+=spx){el(s,'line',{x1:x,y1:y0,x2:x,y2:y0+tt,stroke:'#8a7c5e','stroke-width':0.7});el(s,'line',{x1:x,y1:y0+h-tt,x2:x,y2:y0+h,stroke:'#8a7c5e','stroke-width':0.7});}
+  for(let y=y0+tt;y<=y0+h-tt+0.1;y+=spx){el(s,'line',{x1:x0,y1:y,x2:x0+tt,y2:y,stroke:'#8a7c5e','stroke-width':0.7});el(s,'line',{x1:x0+w-tt,y1:y,x2:x0+w,y2:y,stroke:'#8a7c5e','stroke-width':0.7});}
+  el(s,'line',{x1:x0,y1:y0+h/2,x2:x0+w,y2:y0+h/2,stroke:'#bf6b2c','stroke-width':0.8,'data-node-id':'roof','data-node-type':'RoofSystem'});
+  const tspx=900*sc;for(let x=x0+tspx;x<x0+w;x+=tspx){el(s,'line',{x1:x,y1:y0,x2:x,y2:y0+h,stroke:'#c8975a','stroke-width':0.6,'stroke-dasharray':'3 3'});}
+  [[x0,y0],[x0+w,y0],[x0,y0+h],[x0+w,y0+h]].forEach(([cx,cy])=>el(s,'rect',{x:cx-tt/2,y:cy-tt/2,width:tt,height:tt,fill:'#1d2a2a',opacity:0.55}));
+  S.openings.forEach(o=>{const pl=openPlace(o,g);
+    if(pl.horiz){const ax=Math.max(x0,Math.min(x0+w-pl.owid,pl.cx-pl.owid/2));const yb=pl.cy<y0+h/2?y0:y0+h-tt;
+      el(s,'rect',{x:ax,y:yb,width:pl.owid,height:tt,fill:'#f0e3cf',stroke:'#b4472d','stroke-width':1.2,'data-node-id':'opening-'+o.id,'data-node-type':'Opening'});
+      [ax,ax+pl.owid].forEach(jx=>el(s,'rect',{x:jx-1.5,y:yb,width:3,height:tt,fill:'#1d2a2a',opacity:0.6}));}
+    else{const ay=Math.max(y0,Math.min(y0+h-pl.owid,pl.cy-pl.owid/2));const xb=pl.cx<x0+w/2?x0:x0+w-tt;
+      el(s,'rect',{x:xb,y:ay,width:tt,height:pl.owid,fill:'#f0e3cf',stroke:'#b4472d','stroke-width':1.2,'data-node-id':'opening-'+o.id,'data-node-type':'Opening'});
+      [ay,ay+pl.owid].forEach(jy=>el(s,'rect',{x:xb,y:jy-1.5,width:tt,height:3,fill:'#1d2a2a',opacity:0.6}));}});
+  const bandFor={N:bp=>[x0+(bp.start/S.L)*w,y0,(bp.len/S.L)*w,tt],S:bp=>[x0+(bp.start/S.L)*w,y0+h-tt,(bp.len/S.L)*w,tt],W:bp=>[x0,y0+(bp.start/S.W)*h,tt,(bp.len/S.W)*h],E:bp=>[x0+w-tt,y0+(bp.start/S.W)*h,tt,(bp.len/S.W)*h]};
+  ["N","S","E","W"].forEach(wll=>braceLayout(wll).forEach(bp=>{const a=bandFor[wll](bp),bx=a[0],by=a[1],bw=a[2],bh=a[3];
+    el(s,'rect',{x:bx,y:by,width:bw,height:bh,fill:'rgba(63,125,84,0.16)',stroke:'#3f7d54','stroke-width':0.8});
+    el(s,'line',{x1:bx,y1:by,x2:bx+bw,y2:by+bh,stroke:'#3f7d54','stroke-width':0.6});el(s,'line',{x1:bx+bw,y1:by,x2:bx,y2:by+bh,stroke:'#3f7d54','stroke-width':0.6});}));
+  el(s,'text',{x:x0+w/2,y:y0-26,fill:'#3c4a47','font-size':10,'font-family':'IBM Plex Mono','text-anchor':'middle'},"FRAMING PLAN — studs · trusses @900 · lintels (red) · bracing (green)");
+  el(s,'text',{x:x0+w/2,y:y0-14,fill:'#3f7d54','font-size':8,'font-family':'IBM Plex Mono','text-anchor':'middle'},"bracing panels indicative — confirm BU demand & layout");
+}
+function drawFoundation(s){const g=planGeom();const {sc,w,h,x0,y0}=g;
+  $("planScale").textContent="foundation / slab plan";
+  el(s,'rect',{x:x0,y:y0,width:w,height:h,fill:'#efeadd',stroke:'#1d2a2a','stroke-width':1.5,'data-node-id':'slab','data-node-type':'Slab'});
+  const ed=300*sc;el(s,'rect',{x:x0+ed,y:y0+ed,width:w-2*ed,height:h-2*ed,fill:'none',stroke:'#8a7c5e','stroke-width':0.7,'stroke-dasharray':'5 3'});
+  [0.33,0.66].forEach(fx=>{[y0,y0+h].forEach(py=>{el(s,'rect',{x:x0+fx*w-4,y:py-4,width:8,height:8,fill:'none',stroke:'#1d2a2a','stroke-width':0.8});el(s,'line',{x1:x0+fx*w-4,y1:py-4,x2:x0+fx*w+4,y2:py+4,stroke:'#1d2a2a','stroke-width':0.4});});});
+  S.openings.filter(o=>o.kind==='Garage').forEach(o=>{const pl=openPlace(o,g);if(!pl.horiz){[pl.cy-pl.owid/2,pl.cy+pl.owid/2].forEach(yy=>el(s,'rect',{x:pl.cx-3,y:yy-3,width:7,height:7,fill:'none',stroke:'#bf6b2c','stroke-width':0.9}));}else{[pl.cx-pl.owid/2,pl.cx+pl.owid/2].forEach(xx=>el(s,'rect',{x:xx-3,y:pl.cy-3,width:7,height:7,fill:'none',stroke:'#bf6b2c','stroke-width':0.9}));}});
+  el(s,'text',{x:x0+w/2,y:y0+h/2,fill:'#7a6f57','font-size':9,'font-family':'IBM Plex Mono','text-anchor':'middle'},"100 SLAB · SE82 MESH · DPM · 300 THICKENED EDGE (SED)");
+  el(s,'text',{x:x0+w/2,y:y0-16,fill:'#3c4a47','font-size':10,'font-family':'IBM Plex Mono','text-anchor':'middle'},"FOUNDATION — slab, thickened edge, bearing pads");
+}
+function drawDetail(s){
+  const node=(M&&detailFor&&M.byId[detailFor])?M.byId[detailFor]:null; const ty=node?node.type:'none';
+  $("planScale").textContent="construction detail · indicative, not to scale";
+  const ink='#1d2a2a';
+  const L1=(a,b,c,d,lw,col)=>el(s,'line',{x1:a,y1:b,x2:c,y2:d,stroke:col||ink,'stroke-width':lw||1});
+  const R=(x,y,w,h,fill)=>el(s,'rect',{x,y,width:w,height:h,fill:fill||'none',stroke:ink,'stroke-width':0.9});
+  const T=(x,y,t,sz,anc,col)=>el(s,'text',{x,y,fill:col||'#3c4a47','font-size':sz||8.5,'font-family':'IBM Plex Mono','text-anchor':anc||'start'},t);
+  const lead=(x,y,tx,tyt,t)=>{L1(x,y,tx,tyt,0.4,'#8a7c5e');el(s,'circle',{cx:x,cy:y,r:1.4,fill:ink});T(tx+(tx>=x?3:-3),tyt,t,8.5,tx>=x?'start':'end');};
+  el(s,'rect',{x:16,y:12,width:568,height:416,fill:'none',stroke:'#cfc6b4','stroke-width':1});
+  const title=ty==='RoofSystem'?'EAVE DETAIL':ty==='Slab'?'SLAB EDGE / FOOTING DETAIL':ty==='Opening'?'LINTEL / HEAD DETAIL':(ty==='Wall'||ty==='Building')?'WALL FRAMING DETAIL':'DETAIL';
+  T(300,32,title,12,'middle',ink);T(300,46,'(indicative · refer engineer for SED items)',8,'middle','#8a7c5e');
+  if(ty==='Wall'||ty==='Building'){const cx=255,fy=372,topY=120,ww=60,cavity=!/plaster/i.test(S.clad);
+    L1(cx-160,fy,cx+160,fy,1.6);
+    R(cx-ww/2,fy-13,ww,13,'#e7e0d0');
+    L1(cx-ww/2,fy-13.6,cx+ww/2,fy-13.6,1.3,'#2f6f7e');
+    R(cx-ww/2,topY-20,ww,20,'#e7e0d0');
+    L1(cx-ww/2,topY,cx-ww/2,fy-13,1.1);L1(cx+ww/2,topY,cx+ww/2,fy-13,1.1);
+    for(let y=topY+14;y<fy-18;y+=15)L1(cx-ww/2+3,y,cx+ww/2-3,y-9,0.4,'#cdbf9f');
+    L1(cx-ww/2-5,topY-20,cx-ww/2-5,fy,0.7,'#a89a78');
+    if(cavity){for(let y=topY-8;y<fy-12;y+=24)R(cx-ww/2-10,y,4,15);L1(cx-ww/2-14,topY-20,cx-ww/2-14,fy,1.2,'#bf6b2c');}
+    else{L1(cx-ww/2-9,topY-20,cx-ww/2-9,fy,1.3,'#bf6b2c');}
+    L1(cx+ww/2+8,topY-20,cx+ww/2+8,fy,0.9,'#2f6f7e');
+    el(s,'circle',{cx:cx,cy:fy-6,r:2,fill:ink});
+    lead(cx,topY-10,cx+150,topY-10,'2/90×45 top plate');
+    lead(cx-ww/2,(topY+fy)/2-24,cx+150,(topY+fy)/2-24,(node&&node.derived&&node.derived.studs?node.derived.studs.size:studRule().v)+' (H1.2)');
+    lead(cx-ww/2-5,fy-150,cx-150,fy-150,'building wrap');
+    if(cavity)lead(cx-ww/2-10,fy-115,cx-150,fy-115,'20mm cavity batten');
+    lead(cx-ww/2-(cavity?14:9),fy-78,cx-150,fy-78,S.clad);
+    lead(cx+ww/2+8,fy-100,cx+150,fy-100,S.lining+' lining');
+    lead(cx,fy-13.6,cx+150,fy-44,'DPC under plate');
+    lead(cx,fy-6,cx-150,fy-6,'plate fix: '+(tieRule().v.indexOf('chem')>-1?'M12 chem anchor @600':'proprietary anchor @900'));
+    lead(cx-ww/2,fy-13,cx-150,fy-26,'bottom plate H3.2');
+  } else if(ty==='RoofSystem'){const ex=300,ey=250,run=170,slope=Math.tan(S.pitch*Math.PI/180),rise=run*slope,oh=60;
+    R(ex-30,ey,40,14,'#e7e0d0');
+    L1(ex-oh,ey+oh*slope,ex+run,ey-rise,1.3);
+    L1(ex-oh,ey-7+oh*slope,ex+run,ey-rise-7,1.2,'#bf6b2c');
+    L1(ex-oh,ey-3+oh*slope,ex+run,ey-rise-3,0.5,'#a89a78');
+    R(ex+28,ey-30,8,8);
+    L1(ex-oh,ey+oh*slope-6,ex-oh,ey+oh*slope+30,1.3);
+    L1(ex-30,ey+16,ex-oh,ey+oh*slope+10,0.9);
+    L1(ex-6,ey,ex+8,ey-7,0.6);
+    el(s,'path',{d:`M ${ex-oh-6} ${ey+oh*slope+30} a 6 6 0 1 0 12 0`,fill:'none',stroke:ink,'stroke-width':0.9});
+    L1(ex-oh,ey+96,ex,ey+96,0.5);L1(ex-oh,ey+92,ex-oh,ey+100,0.5);L1(ex,ey+92,ex,ey+100,0.5);T(ex-oh/2,ey+108,S.eave+' overhang',8.5,'middle');
+    lead(ex+run,ey-rise,ex+run+4,ey-rise,'to ridge');
+    lead(ex+32,ey-26,ex+92,ey-64,'70×45 purlin · clip fix');
+    lead(ex+120,ey-rise*0.7-7,ex+150,ey-rise*0.7-46,S.cover+' + underlay');
+    lead(ex-oh,ey+oh*slope+18,ex-150,ey+74,'fascia + spouting');
+    lead(ex-30,ey+16,ex-150,ey+16,'soffit lining + bearer');
+    lead(ex-30,ey,ex-150,ey-12,'fix: cyclone clip / strap each truss');
+    lead(ex-8,ey+7,ex+150,ey+30,(node&&node.derived&&node.derived.system?node.derived.system:'truss')+' @900');
+  } else if(ty==='Slab'){const gx=300,gl=372;
+    L1(gx-160,gl,gx+160,gl,1.4);for(let x=gx-156;x<gx+160;x+=12)L1(x,gl,x-6,gl+8,0.4,'#8a7c5e');
+    el(s,'path',{d:`M ${gx-150} ${gl-42} L ${gx+150} ${gl-42} L ${gx+150} ${gl-30} L ${gx-104} ${gl-30} L ${gx-126} ${gl-4} L ${gx-150} ${gl-4} Z`,fill:'#efeadd',stroke:ink,'stroke-width':1.1});
+    for(let x=gx-92;x<gx+140;x+=22)el(s,'circle',{cx:x,cy:gl-38,r:1.3,fill:ink});
+    [gl-17,gl-10].forEach(yy=>el(s,'circle',{cx:gx-138,cy:yy,r:1.7,fill:'none',stroke:ink,'stroke-width':0.7}));
+    L1(gx-150,gl-28,gx+150,gl-28,0.7,'#2f6f7e');L1(gx-150,gl-28,gx-150,gl-4,0.7,'#2f6f7e');
+    L1(gx-148,gl-26,gx+148,gl-26,0.4,'#a89a78');
+    lead(gx+40,gl-42,gx+150,gl-78,'100 slab · SE82 mesh');
+    lead(gx-138,gl-13,gx-162,gl-72,'edge bars (SED)');
+    lead(gx-126,gl-12,gx-150,gl-46,'300 thickened edge');
+    lead(gx-150,gl-28,gx-200,gl-28,'DPM up edge');
+    lead(gx-118,gl-2,gx-150,gl+16,'compacted hardfill + blinding');
+  } else if(ty==='Opening'){const o=S.openings.find(z=>'opening-'+z.id===detailFor);const wmm=o?o.width:2000;const cx=300,top=156,opH=176,half=115,plY=top-30;
+    R(cx-half-12,plY,2*half+24,14,'#e7e0d0');
+    for(let x=cx-half+12;x<cx+half;x+=34)L1(x,plY+14,x,top,0.6,'#8a7c5e');
+    R(cx-half,top,2*half,16,'#f0e3cf');R(cx-half,top+16,2*half,8,'#f0e3cf');
+    [cx-half,cx+half].forEach(jx=>{const d=jx<cx?-1:1;L1(jx,top,jx,top+24+opH,1.3);L1(jx+7*d,top,jx+7*d,top+24+opH,1);});
+    T(cx,top+24+opH/2,(o?o.kind:'opening')+' '+wmm,9,'middle','#8a7c5e');
+    if(o&&o.kind==='Window')L1(cx-half-12,top-2,cx+half+12,top-2,1.3,'#2f6f7e');
+    lead(cx,top+8,cx+half+34,top+8,(node&&node.derived&&node.derived.lintel?node.derived.lintel.v:lintelRule(wmm).v));
+    lead(cx-half+12,plY+22,cx-half-58,plY+22,'jack studs');
+    lead(cx-half,top+90,cx-half-58,top+90,'2/ trimming studs');
+    lead(cx,plY+7,cx+half+34,plY-6,'2/90×45 top plate');
+    if(o&&o.kind==='Window')lead(cx+half,top-2,cx+half+34,top-20,'head flashing');
+    if(wmm>3000)T(cx,plY-10,'WIDE OPENING — ENGINEERED HEAD (SED)',8.5,'middle','#b4472d');
+  } else { T(300,220,'Select a wall, roof, slab or opening on a plan, then tap “Construction detail”.',9,'middle','#8a7c5e'); }
+  T(300,420,'tap a plan / elevation tab to return',8,'middle','#8a7c5e');
+}
+
+/* ---------- PAPER-SPACE: shared sheet geometry ---------- */
+const SHEET_GEO={
+  paper:{x:-12,y:-12,w:624,h:534},   // outer trim edge
+  frame:{x:-6,y:-6,w:612,h:522},     // heavy drawing border -> (606,516)
+  tbTop:442,metaBot:460,bottom:516,  // title-block bands
+  cols:[-6,152,300,410,502,606],     // title-block column lines
+  metaDiv:[300,470],revY:486         // metadata dividers / sheet-cell sub-rule
+};
+function wrapWords(str,max){const w=str.split(' '),L=[];let c='';
+  w.forEach(x=>{if((c+' '+x).trim().length>max){if(c)L.push(c);c=x;}else c=(c+' '+x).trim();});
+  if(c)L.push(c);return L;}
+
+/* ---------- PHASE 6: drawing-convention marker foundations ---------- */
+/* Reusable, aesthetic-matched primitives. Mounted via drawAnnotations(); expandable. */
+const MARK={
+  northPoint(svg,x,y){el(svg,'circle',{cx:x,cy:y,r:11,fill:'#fbf9f3',stroke:'#cfc6b4','stroke-width':0.8});
+    el(svg,'path',{d:`M ${x} ${y-9} L ${x+4} ${y+5} L ${x} ${y+1} L ${x-4} ${y+5} Z`,fill:'#1d2a2a'});
+    el(svg,'text',{x,y:y+18,fill:'#7a6f57','font-size':7,'font-family':'IBM Plex Mono','text-anchor':'middle'},'N');},
+  grid(svg,x,y,label){el(svg,'circle',{cx:x,cy:y,r:9,fill:'#fbf9f3',stroke:'#1d2a2a','stroke-width':0.9});
+    el(svg,'text',{x,y:y+3.2,fill:'#1d2a2a','font-size':9,'font-family':'IBM Plex Mono','text-anchor':'middle'},label);},
+  detail(svg,x,y,ref,sheet){el(svg,'circle',{cx:x,cy:y,r:11,fill:'#fbf9f3',stroke:'#bf6b2c','stroke-width':1});
+    el(svg,'line',{x1:x-11,y1:y,x2:x+11,y2:y,stroke:'#bf6b2c','stroke-width':0.7});
+    el(svg,'text',{x,y:y-2.5,fill:'#bf6b2c','font-size':8,'font-family':'IBM Plex Mono','text-anchor':'middle'},ref);
+    el(svg,'text',{x,y:y+8.5,fill:'#bf6b2c','font-size':6.5,'font-family':'IBM Plex Mono','text-anchor':'middle'},sheet);},
+  section(svg,x,y,dir,tag){const d=dir==='left'?-1:1;
+    el(svg,'circle',{cx:x,cy:y,r:10,fill:'#fbf9f3',stroke:'#1d2a2a','stroke-width':1});
+    el(svg,'text',{x,y:y+3.2,fill:'#1d2a2a','font-size':8.5,'font-family':'IBM Plex Mono','text-anchor':'middle'},tag);
+    el(svg,'path',{d:`M ${x+10*d} ${y-6} L ${x+18*d} ${y} L ${x+10*d} ${y+6} Z`,fill:'#1d2a2a'});},
+  revCloud(svg,x,y,w,h){let d=`M ${x} ${y}`;const s=10;
+    for(let i=x;i<x+w;i+=s)d+=` A ${s/2} ${s/2} 0 0 1 ${i+s} ${y}`;
+    for(let j=y;j<y+h;j+=s)d+=` A ${s/2} ${s/2} 0 0 1 ${x+w} ${j+s}`;
+    el(svg,'path',{d,fill:'none',stroke:'#b4472d','stroke-width':0.8});}
+};
+/* Phase 5 pipeline hook. Currently mounts a north point on plan-family sheets; */
+/* grid bubbles / callouts / section markers attach here as the model exposes axes. */
+function calloutRef(detailKey){
+  const ix=SHEET_INDEX[detailKey];if(!ix)return{ref:'-',sheet:'A5.--'};
+  return{ref:String(ix.seq).padStart(2,'0'),sheet:ix.prefix+'.'+String(ix.seq).padStart(2,'0')};
+}
+function calloutBubble(svg,bx,by,tx,ty,detailKey,nodeId){
+  // leader
+  el(svg,'line',{x1:bx,y1:by,x2:tx,y2:ty,stroke:'#bf6b2c','stroke-width':0.6,'stroke-dasharray':'3 2'});
+  el(svg,'circle',{cx:tx,cy:ty,r:2,fill:'#bf6b2c'});
+  const r=calloutRef(detailKey);
+  // bubble (clickable group)
+  const g=el(svg,'g',{'data-callout-key':detailKey,'data-callout-node':nodeId||'','style':'cursor:pointer'});
+  MARK.detail(g,bx,by,r.ref,r.sheet);
+}
+function buildCallouts(){
+  const out=[];const g=planGeom();const {w,h,x0,y0}=g;
+  // pick largest opening for lintel callout
+  const bigOp=S.openings.slice().sort((a,b)=>b.width-a.width)[0];
+  if(S.view==='plan' && S.layer!=='foundation'){
+    // wall framing → mid south wall, bubble below-right outside
+    out.push({bx:x0+w+34,by:y0+h-12,tx:x0+w*0.32,ty:y0+h-6,k:'detail_wall',n:'wall-S'});
+    // eave → outside top-right
+    out.push({bx:x0+w+34,by:y0-22,tx:x0+w+((S.eave||450)*g.sc)*0.5,ty:y0-((S.eave||450)*g.sc)*0.5,k:'detail_roof',n:'roof'});
+    // lintel/head → biggest opening
+    if(bigOp){const pl=openPlace(bigOp,g);
+      const bx=pl.cx + (pl.horiz?0:(bigOp.wall==='W'?-32:32));
+      const by=pl.cy + (pl.horiz?(bigOp.wall==='N'?-26:26):0);
+      out.push({bx,by,tx:pl.cx,ty:pl.cy,k:'detail_opening',n:'opening-'+bigOp.id});}
+  } else if(S.view==='plan' && S.layer==='foundation'){
+    // slab edge → outside bottom-right
+    out.push({bx:x0+w+34,by:y0+h+18,tx:x0+w-6,ty:y0+h-6,k:'detail_slab',n:'slab'});
+    // edge thickening also via slab detail mid-left
+    out.push({bx:x0-34,by:y0+h*0.5,tx:x0+6,ty:y0+h*0.5,k:'detail_slab',n:'slab'});
+  } else if(S.view==='elevation'){
+    // approximate elevation bubble positions using existing draw geom assumptions
+    // top-right eave + (if any opening on this face) lintel pointer near middle
+    const VW=600,VH=440;const ox=80,oy=70,ow=VW-160,oh=VH-160;
+    out.push({bx:ox+ow+30,by:oy-6,tx:ox+ow-10,ty:oy+8,k:'detail_roof',n:'roof'});
+    const face=S.face,wallKey=face==='front'?'S':face==='back'?'N':face==='left'?'W':'E';
+    const faceOp=S.openings.filter(o=>o.wall===wallKey).sort((a,b)=>b.width-a.width)[0];
+    if(faceOp){out.push({bx:ox+ow+30,by:oy+oh*0.45,tx:ox+ow*0.55,ty:oy+oh*0.55,k:'detail_opening',n:'opening-'+faceOp.id});}
+    out.push({bx:ox-30,by:oy+oh+8,tx:ox+8,ty:oy+oh-4,k:'detail_slab',n:'slab'});
+  }
+  return out;
+}
+function drawCallouts(svg){
+  if(S.view==='detail')return;
+  buildCallouts().forEach(c=>calloutBubble(svg,c.bx,c.by,c.tx,c.ty,c.k,c.n));
+  // legend strip — top-right, below the north point
+  if(S.view==='plan'){
+    const items=[['detail_wall','Wall'],['detail_roof','Eave'],['detail_slab','Slab'],['detail_opening','Lintel']]
+      .map(([k,lab])=>{const r=calloutRef(k);return {k,lab,sheet:r.sheet};});
+    const bx=474,by=98,rh=13;
+    el(svg,'rect',{x:bx-4,y:by-12,width:120,height:items.length*rh+8,fill:'#fbf9f3',stroke:'#cfc6b4','stroke-width':0.8,rx:4,opacity:0.94});
+    el(svg,'text',{x:bx,y:by-2,fill:'#3c4a47','font-size':7.5,'font-family':'IBM Plex Mono','letter-spacing':'0.1em'},'DETAIL KEY');
+    items.forEach((it,i)=>{const yy=by+9+i*rh;
+      el(svg,'circle',{cx:bx+5,cy:yy-2,r:4.5,fill:'#fbf9f3',stroke:'#bf6b2c','stroke-width':0.7});
+      el(svg,'text',{x:bx+15,y:yy+1.5,fill:'#1d2a2a','font-size':8.5,'font-family':'IBM Plex Mono'},it.sheet+' · '+it.lab);
+    });
+  }
+}
+function drawSectionMarkers(svg){
+  // §7.3 plan section markers — A-A cross (vertical line across W), B-B long (horizontal line across L)
+  if(S.view!=='plan')return;
+  const g=planGeom();const {w,h,x0,y0}=g;
+  const mk=(x1,y1,x2,y2,tag,cut,dir)=>{
+    el(svg,'line',{x1,y1,x2,y2,stroke:'#1d2a2a','stroke-width':0.7,'stroke-dasharray':'10 3 2 3'});
+    const grp=(bx,by,d)=>{const gg=el(svg,'g',{'data-section-cut':cut,style:'cursor:pointer'});MARK.section(gg,bx,by,d,tag);return gg;};
+    grp(x1,y1,dir==='h'?'left':'left');grp(x2,y2,dir==='h'?'right':'right');
+  };
+  // A-A cross — vertical at L/2
+  const ax=x0+w/2;
+  mk(ax,y0-44,ax,y0+h+44,'A','cross','v');
+  // B-B long — horizontal at W/2 (offset further to clear lintel callout on side walls)
+  const by=y0+h/2;
+  mk(x0-46,by,x0+w+46,by,'B','long','h');
+}
+function drawAnnotations(svg,meta){
+  if(S.view==='plan')MARK.northPoint(svg,566,56);
+  drawSectionMarkers(svg);
+  drawCallouts(svg);
+}
+
+/* ---------- PHASE 3: paper-space frame ---------- */
+function drawSheetFrame(svg,meta){
+  const G=SHEET_GEO,C=G.cols,ink='#1d2a2a',line='#cfc6b4';
+  // outer trim edge
+  el(svg,'rect',{x:G.paper.x,y:G.paper.y,width:G.paper.w,height:G.paper.h,fill:'none',stroke:'#d8cfbc','stroke-width':0.6});
+  // doubled inner field rule (top + sides only, stops at title block)
+  el(svg,'path',{d:`M -2 ${G.tbTop} L -2 -2 L 602 -2 L 602 ${G.tbTop}`,fill:'none',stroke:line,'stroke-width':0.5});
+  // corner registration ticks
+  [[-6,-6,1,1],[606,-6,-1,1],[-6,516,1,-1],[606,516,-1,-1]].forEach(([x,y,sx,sy])=>{
+    el(svg,'line',{x1:x,y1:y,x2:x+6*sx,y2:y,stroke:'#d8cfbc','stroke-width':0.6});
+    el(svg,'line',{x1:x,y1:y,x2:x,y2:y+6*sy,stroke:'#d8cfbc','stroke-width':0.6});});
+  // title-block field (covers drafting grid so text reads clean)
+  el(svg,'rect',{x:G.frame.x,y:G.tbTop,width:G.frame.w,height:G.bottom-G.tbTop,fill:'#fbf9f3'});
+  el(svg,'line',{x1:G.frame.x,y1:G.tbTop,x2:606,y2:G.tbTop,stroke:ink,'stroke-width':1});
+  el(svg,'line',{x1:G.frame.x,y1:G.metaBot,x2:606,y2:G.metaBot,stroke:ink,'stroke-width':0.6});
+  // metadata strip dividers (reserved revision area = right segment)
+  G.metaDiv.forEach(x=>el(svg,'line',{x1:x,y1:G.tbTop,x2:x,y2:G.metaBot,stroke:ink,'stroke-width':0.45}));
+  // main block columns
+  [C[1],C[2],C[3],C[4]].forEach(x=>el(svg,'line',{x1:x,y1:G.metaBot,x2:x,y2:G.bottom,stroke:ink,'stroke-width':0.6}));
+  // sheet-number cell sub-rule (status/rev over number)
+  el(svg,'line',{x1:C[4],y1:G.revY,x2:C[5],y2:G.revY,stroke:ink,'stroke-width':0.45});
+  // heavy outer border last (crisp over field + fill)
+  el(svg,'rect',{x:G.frame.x,y:G.frame.y,width:G.frame.w,height:G.frame.h,fill:'none',stroke:ink,'stroke-width':1.4});
+}
+
+/* ---------- PHASE 4: title block ---------- */
+function drawTitleBlock(svg,meta){
+  const G=SHEET_GEO,C=G.cols;
+  const hot=(meta.wind==='Extra High'||meta.wind==='Cyclonic (SED)');
+  const T=(x,y,t,o)=>{o=o||{};const a={x,y,fill:o.c||'#1d2a2a','font-size':o.s||9,
+    'font-family':o.f||'IBM Plex Mono','text-anchor':o.a||'start'};if(o.w)a['font-weight']=o.w;el(svg,'text',a,t);};
+  // metadata strip
+  T(C[0]+8,455,'PROJECT ASTRAL · SPATIAL CONSTRUCTION SET',{s:7,c:'#7a6f57'});
+  T(G.metaDiv[0]+8,455,meta.series+' SERIES · '+meta.number,{s:7,c:'#7a6f57'});
+  T(G.metaDiv[1]+8,455,'REV '+meta.rev+' · ISSUED '+meta.date,{s:7,c:'#9a8f78'});
+  // col 0 — identity
+  T(C[0]+8,479,'PROJECT ASTRAL',{s:14,f:'Fraunces',w:700});
+  T(C[0]+8,492,PROJECT.tagline,{s:7.5,c:'#7a6f57'});
+  T(C[0]+8,503,PROJECT.consent,{s:7.5,c:'#bf6b2c'});
+  T(C[0]+8,512,'concept / indicative — not for construction',{s:6.5,c:'#9a8f78'});
+  // col 1 — project
+  T(C[1]+8,470,'PROJECT',{s:7,c:'#9a8f78'});
+  T(C[1]+8,486,meta.project.toUpperCase()+' — '+meta.location.toUpperCase(),{s:10});
+  T(C[1]+8,499,meta.dims,{s:7.5,c:'#3c4a47'});
+  T(C[1]+8,511,'WIND ZONE — '+meta.wind.toUpperCase(),{s:7.5,c:hot?'#bf6b2c':'#3c4a47'});
+  // col 2 — drawing
+  T(C[2]+8,470,'DRAWING',{s:7,c:'#9a8f78'});
+  let lines=wrapWords(meta.title,16),size=12;if(lines.length>2){lines=wrapWords(meta.title,22);size=9.5;}
+  const ty0=lines.length>1?485:490;lines.forEach((ln,i)=>T(C[2]+8,ty0+i*12,ln,{s:size,f:'Fraunces',w:600}));
+  if(meta.sub)T(C[2]+8,509,meta.sub,{s:7.5,c:'#bf6b2c'});
+  // col 3 — issue (scale appears descriptive + notation)
+  T(C[3]+8,470,'DATE',{s:7,c:'#9a8f78'});T(C[3]+8,481,meta.date,{s:8.5});
+  T(C[3]+8,494,'SCALE',{s:7,c:'#9a8f78'});T(C[3]+8,505,meta.scale,{s:9});
+  T(C[3]+8,513,meta.scaleNote,{s:7,c:'#7a6f57'});
+  // col 4 — status / rev / sheet number
+  T(C[4]+8,470,'STATUS',{s:7,c:'#9a8f78'});
+  T(C[4]+8,481,meta.status,{s:8.5,c:'#bf6b2c'});
+  T(C[5]-8,481,'REV '+meta.rev,{s:8.5,a:'end',c:'#3c4a47'});
+  T(C[4]+8,498,'SHEET',{s:7,c:'#9a8f78'});
+  T(C[4]+8,513,meta.number,{s:17,f:'Fraunces',w:700});
+}
+
+/* ---------- §7.4 SECTION VIEW ---------- */
+function drawSection(s){
+  const VW=600,VH=440,m=70;
+  const cut=S.cut==='long'?'long':'cross';
+  // cross section cuts ACROSS width (W), longitudinal cuts ACROSS length (L)
+  const widmm = cut==='cross'? S.W : S.L;
+  const apexmm = cut==='cross'
+      ? (S.W/2)*Math.tan(S.pitch*Math.PI/180)
+      : (S.roof==='Mono' ? S.L*Math.tan(S.pitch*Math.PI/180) : (S.W/2)*Math.tan(S.pitch*Math.PI/180));
+  const slabT=100, footing=200; // mm
+  const totH=S.studH+(S.roof==='Flat'?200:apexmm)+slabT+footing;
+  const sc=Math.min((VW-2*m)/widmm,(VH-2*m)/totH);
+  const w=widmm*sc, eh=S.studH*sc, x0=(VW-w)/2, base=VH-m-footing*sc;
+  const eave=base-eh, apexP=apexmm*sc;
+  const tag=cut==='cross'?'A':'B';
+  $("planScale").textContent="section "+tag+"–"+tag+" · "+(cut==='cross'?"cross (across width)":"longitudinal (along length)")+" · indicative";
+
+  // ground / ffl / slab + thickened edge
+  el(s,'line',{x1:x0-40,y1:base,x2:x0+w+40,y2:base,stroke:'#1d2a2a','stroke-width':1.4});
+  el(s,'rect',{x:x0,y:base,width:w,height:slabT*sc,fill:'#efeadd',stroke:'#1d2a2a','stroke-width':1.1,'data-node-id':'slab','data-node-type':'Slab'});
+  // thickened edges (foundation pads at each side)
+  [[x0,1],[x0+w,-1]].forEach(([xe,d])=>{
+    el(s,'rect',{x:xe-(d>0?0:14),y:base,width:14,height:(slabT+footing)*sc,fill:'#efeadd',stroke:'#1d2a2a','stroke-width':1.1});
+  });
+  el(s,'text',{x:x0+w+44,y:base+3,fill:'#3c4a47','font-size':9,'font-family':'IBM Plex Mono'},'FFL 0');
+  // earth hatch below ground
+  for(let xx=x0-30;xx<x0+w+30;xx+=8){el(s,'line',{x1:xx,y1:base+(slabT+footing)*sc,x2:xx+5,y2:base+(slabT+footing)*sc+5,stroke:'#7a6f57','stroke-width':0.4});}
+
+  // outline wall envelope (cut walls — heavy poché)
+  const wallT=Math.max(3,90*sc);
+  // left wall
+  el(s,'rect',{x:x0,y:eave,width:wallT,height:eh,fill:'#1d2a2a','fill-opacity':0.82,'data-node-id':'wall-'+(cut==='cross'?'W':'S'),'data-node-type':'Wall'});
+  // right wall
+  el(s,'rect',{x:x0+w-wallT,y:eave,width:wallT,height:eh,fill:'#1d2a2a','fill-opacity':0.82,'data-node-id':'wall-'+(cut==='cross'?'E':'N'),'data-node-type':'Wall'});
+  // top plate line
+  el(s,'line',{x1:x0,y1:eave,x2:x0+w,y2:eave,stroke:'#8a7c5e','stroke-width':1.1});
+  el(s,'line',{x1:x0,y1:eave+4,x2:x0+w,y2:eave+4,stroke:'#8a7c5e','stroke-width':0.7});
+
+  // ROOF — pitched profile in section
+  let rpts;
+  if(S.roof==='Flat'){rpts=[[x0-((S.eave||450)*sc),eave-6],[x0+w+((S.eave||450)*sc),eave-6],[x0+w+((S.eave||450)*sc),eave-2],[x0-((S.eave||450)*sc),eave-2]];}
+  else if(S.roof==='Mono'){
+    const r=widmm*Math.tan(S.pitch*Math.PI/180)*sc;
+    rpts=[[x0-((S.eave||450)*sc),eave-(cut==='cross'?Math.min(r,apexP*2):0)],
+          [x0+w+((S.eave||450)*sc),eave],
+          [x0+w+((S.eave||450)*sc),eave+4],
+          [x0-((S.eave||450)*sc),eave+4]];
+  } else {
+    // Gable / Hip — apex at midpoint for cross; longitudinal of gable shows ridge as horizontal line
+    if(cut==='long' && (S.roof==='Gable' || S.roof==='Hip')){
+      rpts=[[x0-((S.eave||450)*sc),eave-apexP*0.05],[x0+w+((S.eave||450)*sc),eave-apexP*0.05],
+            [x0+w+((S.eave||450)*sc),eave],[x0-((S.eave||450)*sc),eave]];
+      // draw ridge line
+      el(s,'line',{x1:x0-((S.eave||450)*sc),y1:eave-apexP,x2:x0+w+((S.eave||450)*sc),y2:eave-apexP,stroke:'#1d2a2a','stroke-width':0.9,'stroke-dasharray':'6 3'});
+    } else {
+      rpts=[[x0-((S.eave||450)*sc),eave],[x0+w/2,eave-apexP],[x0+w+((S.eave||450)*sc),eave]];
+    }
+  }
+  el(s,'polyline',{points:rpts.map(p=>p.join(',')).join(' '),fill:'#efeadd',stroke:'#1d2a2a','stroke-width':1.2,'data-node-id':'roof','data-node-type':'RoofSystem'});
+
+  // truss / rafter representation
+  if(S.roof!=='Flat'){
+    if(cut==='cross' && S.roof!=='Mono'){
+      // king + bottom chord
+      el(s,'line',{x1:x0,y1:eave,x2:x0+w,y2:eave,stroke:'#8a7c5e','stroke-width':0.8,'stroke-dasharray':'8 4'});
+      el(s,'line',{x1:x0+w/2,y1:eave,x2:x0+w/2,y2:eave-apexP,stroke:'#8a7c5e','stroke-width':0.6});
+      el(s,'line',{x1:x0,y1:eave,x2:x0+w/2,y2:eave-apexP,stroke:'#8a7c5e','stroke-width':0.4});
+      el(s,'line',{x1:x0+w,y1:eave,x2:x0+w/2,y2:eave-apexP,stroke:'#8a7c5e','stroke-width':0.4});
+    } else if(cut==='long'){
+      // trusses repeating @900
+      const tspx=900*sc;for(let x=x0+tspx;x<x0+w;x+=tspx)el(s,'line',{x1:x,y1:eave,x2:x,y2:eave-apexP*0.18,stroke:'#c8975a','stroke-width':0.5});
+    }
+  }
+
+  // openings projected onto the cut line — only those whose wall is PARALLEL to the cut show as voids in the elevation behind
+  // For cross cut: walls N & S are seen as elevation behind; for long cut: walls W & E are seen behind
+  const seenWalls = cut==='cross' ? ['N','S'] : ['W','E'];
+  S.openings.forEach(o=>{
+    if(seenWalls.indexOf(o.wall)<0) return;
+    const fr=openFrac(o);
+    const owid=Math.min(o.width,widmm*0.92)*sc;
+    const cxp=x0+Math.max(owid/2+wallT,Math.min(w-owid/2-wallT,fr*w));
+    const oh=(o.kind==='Window'?1000:(o.kind==='Garage'?Math.min(S.studH-200,2400):1980))*sc;
+    const sill=(o.kind==='Window'?1000:0)*sc;
+    const col=o.kind==='Garage'?'#bf6b2c':o.kind==='Door'?'#3f7d54':'#2f6f7e';
+    el(s,'rect',{x:cxp-owid/2,y:base-sill-oh,width:owid,height:oh,fill:'#fbf9f3',stroke:col,'stroke-width':1.2,'stroke-dasharray':'5 3','data-node-id':'opening-'+o.id,'data-node-type':'Opening'});
+  });
+
+  // dimension annotations — stud height + apex
+  const dx=x0+w+24;
+  el(s,'line',{x1:dx,y1:base,x2:dx,y2:eave,stroke:'#7a6f57','stroke-width':0.5});
+  el(s,'line',{x1:dx-3,y1:base,x2:dx+3,y2:base,stroke:'#7a6f57','stroke-width':0.5});
+  el(s,'line',{x1:dx-3,y1:eave,x2:dx+3,y2:eave,stroke:'#7a6f57','stroke-width':0.5});
+  el(s,'text',{x:dx+5,y:(base+eave)/2,fill:'#3c4a47','font-size':9,'font-family':'IBM Plex Mono'},S.studH+' stud');
+  if(S.roof!=='Flat'){
+    el(s,'line',{x1:dx,y1:eave,x2:dx,y2:eave-apexP,stroke:'#7a6f57','stroke-width':0.5});
+    el(s,'line',{x1:dx-3,y1:eave-apexP,x2:dx+3,y2:eave-apexP,stroke:'#7a6f57','stroke-width':0.5});
+    el(s,'text',{x:dx+5,y:(eave+eave-apexP)/2,fill:'#3c4a47','font-size':9,'font-family':'IBM Plex Mono'},Math.round(apexmm)+' rise');
+  }
+
+  // title strip under drawing
+  el(s,'text',{x:x0+w/2,y:base+(footing*sc)+22,fill:'#3c4a47','font-size':11,'font-family':'IBM Plex Mono','text-anchor':'middle'},'SECTION '+tag+'–'+tag+' · '+(cut==='cross'?'across width':'along length')+' · '+S.roof+' '+S.pitch+'°');
+}
+
+
+function drawElev(s,face,layer){
+  const VW=600,VH=440,m=70;
+  const longFace=(face==="front"||face==="back");
+  const widmm=longFace?S.L:S.W;
+  const wall=face==="front"?"S":face==="back"?"N":face==="left"?"W":"E";
+  const apexmm=(S.W/2)*Math.tan(S.pitch*Math.PI/180);
+  const totH=S.studH+(S.roof==="Flat"?200:apexmm);
+  const sc=Math.min((VW-2*m)/widmm,(VH-2*m)/totH);
+  const w=widmm*sc, eh=S.studH*sc, x0=(VW-w)/2, base=VH-m, eave=base-eh, apexP=apexmm*sc;
+  const fName={front:"FRONT",back:"BACK",left:"LEFT",right:"RIGHT"}[face];
+  const lName=layer==="framing"?"framing":layer==="foundation"?"concrete":"envelope";
+  $("planScale").textContent=fName.toLowerCase()+" elevation · "+lName+" · indicative";
+  el(s,'line',{x1:x0-34,y1:base,x2:x0+w+34,y2:base,stroke:'#3c4a47','stroke-width':2});
+  let pts;
+  if(S.roof==="Flat"){pts=[[x0-6,eave-4],[x0+w+6,eave-2],[x0+w+6,eave+2],[x0-6,eave+2]];}
+  else if(S.roof==="Mono"){const r=widmm*Math.tan(S.pitch*Math.PI/180)*sc;pts=!longFace?[[x0,eave-Math.min(r,apexP*2)],[x0+w,eave],[x0+w,eave+2],[x0,eave+2]]:[[x0,eave-apexP],[x0+w,eave-apexP],[x0+w,eave],[x0,eave]];}
+  else if(!longFace){pts=[[x0,eave],[x0+w/2,eave-apexP],[x0+w,eave]];}
+  else{let ridge=S.roof==="Hip"?(S.W/2)*sc:(S.roof==="Gable"?4:(S.W/2)*sc);pts=[[x0,eave],[x0+ridge,eave-apexP],[x0+w-ridge,eave-apexP],[x0+w,eave]];}
+  const colKind={Garage:'#bf6b2c',Door:'#3f7d54',Window:'#2f6f7e'};
+  const ows=o=>{const owid=Math.min(o.width,widmm*0.95)*sc;const cxp=x0+Math.max(owid/2,Math.min(w-owid/2,openFrac(o)*w));const oh=(o.kind==="Window"?1000:(o.kind==="Garage"?Math.min(S.studH-200,2400):1980))*sc;const sill=(o.kind==="Window"?1000:0)*sc;return{owid,cxp,oh,sill};};
+  if(layer==="foundation"){
+    el(s,'rect',{x:x0,y:eave,width:w,height:eh,fill:'none',stroke:'#cfc6b4','stroke-width':1,'stroke-dasharray':'4 3'});
+    el(s,'line',{x1:x0-22,y1:base,x2:x0+w+22,y2:base,stroke:'#1d2a2a','stroke-width':1.4});
+    el(s,'text',{x:x0+w+26,y:base+3,fill:'#3c4a47','font-size':9,'font-family':'IBM Plex Mono'},"FFL 0");
+    el(s,'rect',{x:x0,y:base,width:w,height:11,fill:'#efeadd',stroke:'#1d2a2a','stroke-width':1.1,'data-node-id':'slab','data-node-type':'Slab'});
+    el(s,'rect',{x:x0-2,y:base+11,width:15,height:15,fill:'#efeadd',stroke:'#1d2a2a','stroke-width':1});
+    el(s,'rect',{x:x0+w-13,y:base+11,width:15,height:15,fill:'#efeadd',stroke:'#1d2a2a','stroke-width':1});
+    el(s,'text',{x:x0+w/2,y:base+22,fill:'#7a6f57','font-size':9,'font-family':'IBM Plex Mono','text-anchor':'middle'},"100 slab · thickened edge (SED)");
+  } else if(layer==="framing"){
+    el(s,'rect',{x:x0,y:eave,width:w,height:eh,fill:'none',stroke:'#1d2a2a','stroke-width':1,'data-node-id':'building','data-node-type':'Building'});
+    el(s,'line',{x1:x0,y1:eave+2,x2:x0+w,y2:eave+2,stroke:'#8a7c5e','stroke-width':1.1});
+    el(s,'line',{x1:x0,y1:eave+5,x2:x0+w,y2:eave+5,stroke:'#8a7c5e','stroke-width':1.1});
+    el(s,'line',{x1:x0,y1:base-3,x2:x0+w,y2:base-3,stroke:'#8a7c5e','stroke-width':1.4});
+    const zones=S.openings.filter(o=>o.wall===wall).map(o=>{const a=ows(o);return{x1:a.cxp-a.owid/2,x2:a.cxp+a.owid/2,head:base-a.sill-a.oh,sillY:base-a.sill,kind:o.kind,owid:a.owid,cxp:a.cxp,id:o.id};});
+    const inZone=x=>zones.find(z=>x>z.x1-2&&x<z.x2+2);
+    const spx=S.spacing*sc;
+    for(let x=x0+spx;x<x0+w-1;x+=spx){const z=inZone(x);
+      if(!z)el(s,'line',{x1:x,y1:eave+5,x2:x,y2:base-3,stroke:'#8a7c5e','stroke-width':0.7});
+      else{el(s,'line',{x1:x,y1:eave+5,x2:x,y2:z.head,stroke:'#8a7c5e','stroke-width':0.45});if(z.kind==='Window')el(s,'line',{x1:x,y1:z.sillY,x2:x,y2:base-3,stroke:'#8a7c5e','stroke-width':0.45});}}
+    const rows=nogRows();for(let r=1;r<=rows;r++){const ny=eave+5+((base-3)-(eave+5))*(r/(rows+1));el(s,'line',{x1:x0,y1:ny,x2:x0+w,y2:ny,stroke:'#a89a78','stroke-width':0.5,'stroke-dasharray':'10 4'});}
+    [x0,x0+w].forEach(cv=>{const d=cv===x0?1:-1;el(s,'line',{x1:cv+2*d,y1:eave+5,x2:cv+2*d,y2:base-3,stroke:'#1d2a2a','stroke-width':1});el(s,'line',{x1:cv+5*d,y1:eave+5,x2:cv+5*d,y2:base-3,stroke:'#8a7c5e','stroke-width':0.8});});
+    zones.forEach(z=>{const ld=Math.max(4,lintelDepthMM(Math.round(z.owid/sc))*sc);
+      [z.x1,z.x2].forEach(jx=>{const d=jx===z.x1?-1:1;el(s,'line',{x1:jx,y1:eave+5,x2:jx,y2:base-3,stroke:'#1d2a2a','stroke-width':1});el(s,'line',{x1:jx+3*d,y1:z.head,x2:jx+3*d,y2:base-3,stroke:'#8a7c5e','stroke-width':0.7});});
+      el(s,'rect',{x:z.x1-3,y:z.head-ld,width:(z.x2-z.x1)+6,height:ld,fill:'#f0e3cf',stroke:'#b4472d','stroke-width':1.1,'data-node-id':'opening-'+z.id,'data-node-type':'Opening'});
+      if(z.kind==='Window'){el(s,'rect',{x:z.x1,y:z.sillY,width:z.x2-z.x1,height:3,fill:'#a89a78'});}
+      if(Math.round(z.owid/sc)>3000)el(s,'text',{x:z.cxp,y:z.head-ld-3,fill:'#b4472d','font-size':8,'font-family':'IBM Plex Mono','text-anchor':'middle'},'ENG. HEAD (SED)');});
+    braceLayout(wall).forEach(bp=>{const bx1=x0+(bp.start/widmm)*w,bx2=x0+((bp.start+bp.len)/widmm)*w;
+      el(s,'rect',{x:bx1,y:eave+5,width:bx2-bx1,height:(base-3)-(eave+5),fill:'rgba(63,125,84,0.07)',stroke:'#3f7d54','stroke-width':0.8});
+      el(s,'line',{x1:bx1,y1:base-3,x2:bx2,y2:eave+5,stroke:'#3f7d54','stroke-width':0.8});el(s,'line',{x1:bx1,y1:eave+5,x2:bx2,y2:base-3,stroke:'#3f7d54','stroke-width':0.8});
+      el(s,'text',{x:(bx1+bx2)/2,y:base-7,fill:'#3f7d54','font-size':7,'font-family':'IBM Plex Mono','text-anchor':'middle'},'BL');});
+    el(s,'polyline',{points:pts.map(p=>p.join(',')).join(' '),fill:'none',stroke:'#1d2a2a','stroke-width':1});
+    if(!longFace){el(s,'line',{x1:x0,y1:eave,x2:x0+w,y2:eave,stroke:'#8a7c5e','stroke-width':0.7});el(s,'line',{x1:x0+w/2,y1:eave,x2:x0+w/2,y2:eave-apexP,stroke:'#8a7c5e','stroke-width':0.6});el(s,'line',{x1:x0+w*0.25,y1:eave,x2:x0+w*0.42,y2:eave-apexP*0.55,stroke:'#8a7c5e','stroke-width':0.5});el(s,'line',{x1:x0+w*0.75,y1:eave,x2:x0+w*0.58,y2:eave-apexP*0.55,stroke:'#8a7c5e','stroke-width':0.5});}
+    else{const tspx=900*sc;for(let x=x0+tspx;x<x0+w;x+=tspx)el(s,'line',{x1:x,y1:eave,x2:x,y2:eave-apexP*0.16,stroke:'#c8975a','stroke-width':0.5});}
+    el(s,'text',{x:x0+w/2,y:eave-6,fill:'#3f7d54','font-size':8,'font-family':'IBM Plex Mono','text-anchor':'middle'},'bracing (green) indicative — confirm BU demand');
+  } else {
+    texture(s,x0,eave,w,eh,S.clad,cladHex());
+    el(s,'rect',{x:x0,y:eave,width:w,height:eh,fill:'none',stroke:'#1d2a2a','stroke-width':1.4,'data-node-id':'building','data-node-type':'Building'});
+    roofTexture(s,pts,roofHex(),S.cover);
+    el(s,'line',{x1:x0-8,y1:eave,x2:x0,y2:eave,stroke:'#1d2a2a','stroke-width':1});
+    el(s,'line',{x1:x0+w,y1:eave,x2:x0+w+8,y2:eave,stroke:'#1d2a2a','stroke-width':1});
+    S.openings.filter(o=>o.wall===wall).forEach(o=>{const{owid,cxp,oh,sill}=ows(o);
+      el(s,'rect',{x:cxp-owid/2,y:base-sill-oh,width:owid,height:oh,fill:'#ffffff',opacity:.55,stroke:colKind[o.kind],'stroke-width':o.kind==='Garage'?2.4:1.6,'data-node-id':'opening-'+o.id,'data-node-type':'Opening'});
+      if(o.kind==="Window"){el(s,'line',{x1:cxp,y1:base-sill-oh,x2:cxp,y2:base-sill,stroke:colKind[o.kind],'stroke-width':0.8});el(s,'line',{x1:cxp-owid/2,y1:base-sill-oh/2,x2:cxp+owid/2,y2:base-sill-oh/2,stroke:colKind[o.kind],'stroke-width':0.8});}
+      if(o.kind==="Garage"&&o.width>3000)el(s,'text',{x:cxp,y:base-oh-4,fill:'#b4472d','font-size':9,'font-family':'IBM Plex Mono','text-anchor':'middle'},"ENG. HEAD");});
+  }
+  el(s,'text',{x:x0+w/2,y:base+(layer==="foundation"?36:18),fill:'#3c4a47','font-size':11,'font-family':'IBM Plex Mono','text-anchor':'middle'},fName+" · "+S.roof+" "+S.pitch+"° · "+(layer==="framing"?"framing":layer==="foundation"?"concrete":S.cladCol+" / "+S.roofCol));
+}
+
+/* ---------- UI HELPERS ---------- */
+function chip(val,cur,cb){const d=document.createElement('div');d.className='opt'+(val===cur?' sel':'');d.textContent=val;d.onclick=()=>{cb(val);render();};return d;}
+function optRow(label,vals,cur,cb){const q=document.createElement('div');q.className='q';const l=document.createElement('label');l.textContent=label;q.appendChild(l);const o=document.createElement('div');o.className='opts';vals.forEach(v=>o.appendChild(chip(v,cur,cb)));q.appendChild(o);return q;}
+const U={mm:{f:v=>v,step:10,sfx:'mm'},m:{f:v=>+(v/1000).toFixed(3),step:0.1,sfx:'m'}};
+function toMM(str){return Math.round((+str||0)*(S.unit==='m'?1000:1));}
+function dimInput(label,getMM,setMM,minMM,maxMM,live){const q=document.createElement('div');q.className='q';if(label){const l=document.createElement('label');l.textContent=label;q.appendChild(l);}const u=U[S.unit];const wr=document.createElement('div');wr.className='num';const i=document.createElement('input');i.type='number';i.value=u.f(getMM());i.min=u.f(minMM);i.max=u.f(maxMM);i.step=u.step;i.style.cssText="width:120px;font-family:var(--mono);font-size:14px;padding:8px 10px;border:1px solid var(--line);border-radius:9px;background:var(--paper)";i.addEventListener(live?'input':'change',()=>{let mm=Math.max(minMM,Math.min(maxMM,toMM(i.value)));setMM(mm);if(live)drawCanvas();else render();});const sfx=document.createElement('span');sfx.className='stat';sfx.textContent=u.sfx;wr.appendChild(i);wr.appendChild(sfx);q.appendChild(wr);return q;}
+function numRow(label,key,minv,maxv,stepv,sfx){return dimInput(label,()=>S[key],v=>S[key]=v,minv,maxv,true);}
+function sliderRow(label,key,minv,maxv){const q=document.createElement('div');q.className='q';const l=document.createElement('label');l.textContent=label+" — "+S[key]+"°";q.appendChild(l);const i=document.createElement('input');i.type='range';i.min=minv;i.max=maxv;i.value=S[key];i.oninput=()=>{S[key]=+i.value;l.textContent=label+" — "+S[key]+"°";drawCanvas();};q.appendChild(i);return q;}
+function swatches(label,list,curKey){const q=document.createElement('div');q.className='q';const l=document.createElement('label');l.textContent=label;q.appendChild(l);const w=document.createElement('div');w.className='swwrap';list.forEach(c=>{const d=document.createElement('div');d.className='swatch'+(S[curKey]===c.n?' sel':'');d.style.background=c.h;const sp=document.createElement('span');sp.textContent=c.n;d.appendChild(sp);d.onclick=()=>{S[curKey]=c.n;render();};w.appendChild(d);});q.appendChild(w);return q;}
+
+function renderOpenings(b){
+  const note=document.createElement('p');note.className='muted';note.style.fontSize='13px';note.textContent="Add openings, choose the wall, and type a set-out measurement to place each one. The plan and elevations follow.";b.appendChild(note);
+  S.openings.forEach(o=>{
+    const row=document.createElement('div');row.className='openrow';
+    const top=document.createElement('div');top.className='top';
+    const kw=document.createElement('div');kw.className='kind';
+    ["Garage","Door","Window"].forEach(k=>{const m=document.createElement('div');m.className='mini'+(o.kind===k?' sel':'');m.textContent=k;m.onclick=()=>{o.kind=k;o.width=k==='Garage'?5000:(k==='Window'?1200:810);render();};kw.appendChild(m);});
+    const rm=document.createElement('button');rm.className='rm';rm.textContent="remove";rm.onclick=()=>{S.openings=S.openings.filter(x=>x.id!==o.id);render();};
+    top.appendChild(kw);top.appendChild(rm);row.appendChild(top);
+    const lw=document.createElement('div');lw.className='lab';lw.textContent="Wall";row.appendChild(lw);
+    const ww=document.createElement('div');ww.className='opts';
+    ["S","N","W","E"].forEach(wl=>{const c=document.createElement('div');c.className='opt'+(o.wall===wl?' sel':'');c.style.padding='6px 10px';c.style.fontSize='12px';c.textContent=WALLNAME[wl];c.onclick=()=>{o.wall=wl;render();};ww.appendChild(c);});
+    row.appendChild(ww);
+    const lw2=document.createElement('div');lw2.className='lab';lw2.textContent="Set-out to centre — from "+WALLREF[o.wall]+" corner · wall = "+fmt(WALLEN[o.wall]())+"mm";row.appendChild(lw2);
+    row.appendChild(dimInput("",()=>o.off,v=>o.off=Math.max(0,Math.min(WALLEN[o.wall](),v)),0,20000,true));
+    const lw3=document.createElement('div');lw3.className='lab';lw3.textContent="Width";row.appendChild(lw3);
+    row.appendChild(dimInput("",()=>o.width,v=>o.width=Math.max(400,Math.min(7000,v)),400,7000,true));
+    b.appendChild(row);
+  });
+  const add=document.createElement('button');add.className='addbtn';add.textContent="+ Add opening";add.onclick=()=>{S.openings.push({id:nid++,kind:"Window",wall:"N",off:Math.round(S.L/2),width:1200});render();};b.appendChild(add);
+  b.appendChild(optRow("Joinery timber",["Fiji mahogany","Cedar","Aluminium","Pine"],S.joinery,v=>S.joinery=v));
+}
+
+const TEMPLATES=[
+ {n:"Garage 10×8",s:{type:"Garage",L:10000,W:8000,studH:3000,roof:"Hip",pitch:20,struct:"Prefab trusses",clad:"Plaster system",cover:"Colorsteel corrugate",ops:[["Garage","W",4000,5000],["Door","S",2000,810],["Window","S",7200,1200]]}},
+ {n:"Sleepout 6×4",s:{type:"Sleepout",L:6000,W:4000,studH:2700,roof:"Gable",pitch:15,struct:"Cut roof",clad:"Weatherboard",cover:"Colorsteel corrugate",ops:[["Door","S",1000,810],["Window","S",3500,1500],["Window","N",3000,1200]]}},
+ {n:"Cabin 7×5",s:{type:"Cabin",L:7000,W:5000,studH:2700,roof:"Gable",pitch:25,struct:"Cut roof",clad:"Ply + batten",cover:"Colorsteel corrugate",ops:[["Door","S",1200,900],["Window","S",4500,1800],["Window","E",2500,1000]]}},
+ {n:"Studio 4×4",s:{type:"Studio",L:4000,W:4000,studH:2700,roof:"Mono",pitch:8,struct:"Cut roof",clad:"Fibre-cement",cover:"Membrane",ops:[["Door","S",800,810],["Window","S",2800,1500]]}}
+];
+function loadTemplate(tp){const s=tp.s;S.type=s.type;S.L=s.L;S.W=s.W;S.studH=s.studH;S.roof=s.roof;S.pitch=s.pitch;S.struct=s.struct;S.clad=s.clad;S.cover=s.cover;S.openings=s.ops.map(o=>({id:nid++,kind:o[0],wall:o[1],off:o[2],width:o[3]}));S.parts=[];sel=null;detailFor=null;if(S.view==='detail')S.view='plan';render();}
+function applyType(type){S.type=type;const gl=type==='Garage'||type==='Workshop';const hasG=S.openings.some(o=>o.kind==='Garage');
+  if(gl&&!hasG)S.openings.unshift({id:nid++,kind:'Garage',wall:'W',off:Math.round(S.W/2),width:Math.min(5000,Math.round(S.W*0.6))});
+  if(!gl){S.openings=S.openings.filter(o=>o.kind!=='Garage');if(!S.openings.some(o=>o.kind==='Door'))S.openings.push({id:nid++,kind:'Door',wall:'S',off:1500,width:810});}}
+function renderBody(){const b=$("body");b.innerHTML="";
+  if(step===0){
+    const tl=document.createElement('div');tl.className='q';const ll=document.createElement('label');ll.textContent='Start from a template';tl.appendChild(ll);const tr=document.createElement('div');tr.className='opts';TEMPLATES.forEach(tp=>{const c=document.createElement('div');c.className='opt';c.textContent=tp.n;c.onclick=()=>loadTemplate(tp);tr.appendChild(c);});tl.appendChild(tr);b.appendChild(tl);
+    b.appendChild(optRow("Building type",["Garage","Sleepout","Cabin","Studio","Workshop"],S.type,v=>applyType(v)));
+    b.appendChild(optRow("Wind / exposure",["Medium","High","Very High","Extra High","Cyclonic (SED)"],S.wind,v=>S.wind=v));
+    b.appendChild(optRow("Foundation",["Concrete slab","Timber piles"],S.found,v=>S.found=v));}
+  else if(step===1){const t=document.createElement('div');t.className='two';t.appendChild(numRow("Length","L",2000,20000,100,""));t.appendChild(numRow("Width","W",2000,12000,100,""));b.appendChild(t);
+    b.appendChild(numRow("Stud height","studH",2400,3600,50,""));b.appendChild(optRow("Stud spacing (c/c)",[400,600],S.spacing,v=>S.spacing=+v));}
+  else if(step===2){b.appendChild(optRow("Roof form",["Gable","Hip","Mono","Flat"],S.roof,v=>S.roof=v));if(S.roof!=="Flat")b.appendChild(sliderRow("Pitch","pitch",3,35));
+    b.appendChild(optRow("Covering",["Colorsteel corrugate","Colorsteel tray","Membrane","Tile"],S.cover,v=>S.cover=v));
+    b.appendChild(optRow("Structure",["Prefab trusses","Cut roof"],S.struct,v=>S.struct=v));
+    b.appendChild(swatches("Roof colour",ROOFC,"roofCol"));
+    b.appendChild(numRow("Eave overhang","eave",0,900,50,""));
+    const tip=document.createElement('p');tip.className='muted';tip.style.fontSize='12px';tip.textContent="Tip: switch to the Front / End tabs above the drawing to see it.";b.appendChild(tip);}
+  else if(step===3){renderOpenings(b);}
+  else if(step===4){renderLayout(b);}
+  else if(step===5){b.appendChild(optRow("Exterior cladding",["Plaster system","Weatherboard","Ply + batten","Fibre-cement"],S.clad,v=>S.clad=v));
+    b.appendChild(swatches("Cladding colour",CLAD,"cladCol"));
+    b.appendChild(optRow("Interior lining",["Plywood","Plasterboard","None"],S.lining,v=>S.lining=v));
+    b.appendChild(optRow("Floor finish",["Sealed / clear","Epoxy","Polished","Bare"],S.floor,v=>S.floor=v));
+    b.appendChild(optRow("Insulation",["None — open","Ceiling only","Walls + ceiling"],S.insul,v=>S.insul=v));}
+  else if(step===6){renderResolve(b);}
+  else{renderOutputs(b);}
+}
+function renderLayout(b){
+  const note=document.createElement('p');note.className='muted';note.style.fontSize='13px';note.textContent="Add internal walls to split the space. Each is placed by a measurement, with an optional doorway. (Open garage? You can skip this.)";b.appendChild(note);
+  S.parts.forEach(p=>{
+    const row=document.createElement('div');row.className='openrow';
+    const top=document.createElement('div');top.className='top';
+    const kw=document.createElement('div');kw.className='kind';
+    ["Across width","Along length"].forEach(k=>{const m=document.createElement('div');m.className='mini'+(p.dir===k?' sel':'');m.textContent=k;m.onclick=()=>{p.dir=k;p.start=0;p.len=(k==="Across width"?S.W:S.L);render();};kw.appendChild(m);});
+    const rm=document.createElement('button');rm.className='rm';rm.textContent="remove";rm.onclick=()=>{S.parts=S.parts.filter(x=>x.id!==p.id);render();};
+    top.appendChild(kw);top.appendChild(rm);row.appendChild(top);
+    const acrossW=p.dir==="Across width";
+    const posMax=acrossW?S.L:S.W, posRef=acrossW?"left":"front";
+    const runMax=acrossW?S.W:S.L, runRef=acrossW?"front":"left";
+    if(p.start==null)p.start=0; if(p.len==null)p.len=runMax;
+    const l1=document.createElement('div');l1.className='lab';l1.textContent="Position — offset from "+posRef+" · 0–"+fmt(posMax)+"mm";row.appendChild(l1);
+    row.appendChild(dimInput("",()=>p.off,v=>p.off=Math.max(0,Math.min(posMax,v)),0,posMax,true));
+    const l1b=document.createElement('div');l1b.className='lab';l1b.textContent="Start from "+runRef+"  +  length of wall";row.appendChild(l1b);
+    const wr0=document.createElement('div');wr0.style.cssText="display:flex;gap:10px;flex-wrap:wrap";
+    wr0.appendChild(dimInput("",()=>p.start,v=>{p.start=Math.max(0,Math.min(runMax-200,v));if(p.start+p.len>runMax)p.len=runMax-p.start;},0,runMax,true));
+    wr0.appendChild(dimInput("",()=>p.len,v=>p.len=Math.max(200,Math.min(runMax-p.start,v)),200,runMax,true));
+    row.appendChild(wr0);
+    const lwt=document.createElement('div');lwt.className='lab';lwt.textContent="Wall type";row.appendChild(lwt);
+    const wtw=document.createElement('div');wtw.className='opts';
+    if(!p.type)p.type='Partition';
+    WALLTYPE_KEYS.forEach(k=>{const c=document.createElement('div');c.className='opt'+(p.type===k?' sel':'');c.style.cssText="padding:6px 12px;font-size:12px";c.textContent=WALLTYPES[k].label;c.onclick=()=>{p.type=k;render();};wtw.appendChild(c);});
+    row.appendChild(wtw);
+    const l2=document.createElement('div');l2.className='lab';l2.textContent="Doorway?";row.appendChild(l2);
+    const dw=document.createElement('div');dw.className='opts';["Yes","No"].forEach(v=>{const c=document.createElement('div');c.className='opt'+((p.door?"Yes":"No")===v?' sel':'');c.style.cssText="padding:6px 12px;font-size:12px";c.textContent=v;c.onclick=()=>{p.door=(v==="Yes");render();};dw.appendChild(c);});row.appendChild(dw);
+    if(p.door){
+      const l3=document.createElement('div');l3.className='lab';l3.textContent="Door set-out from "+runRef+"  +  width";row.appendChild(l3);
+      const wr=document.createElement('div');wr.style.cssText="display:flex;gap:10px;flex-wrap:wrap";
+      wr.appendChild(dimInput("",()=>p.doorOff,v=>p.doorOff=Math.max(0,Math.min(runMax,v)),0,runMax,true));
+      wr.appendChild(dimInput("",()=>p.doorW,v=>p.doorW=Math.max(600,Math.min(1200,v)),600,1200,true));
+      row.appendChild(wr);}
+    b.appendChild(row);
+  });
+  const add=document.createElement('button');add.className='addbtn';add.textContent="+ Add internal wall";add.onclick=()=>{S.parts.push({id:nid++,dir:"Across width",off:Math.round(S.L/2),start:0,len:S.W,type:'Partition',door:true,doorW:810,doorOff:Math.round(S.W/2)});render();};b.appendChild(add);
+}
+function resCard(b,label,r){const d=document.createElement('div');d.className='res';d.innerHTML=`<div class="rh"><span>${label}</span>${r.sed?'<span class="tag sed">SED / by others</span>':'<span class="tag ok">in scope</span>'}</div><div class="rv">${r.v}</div><div class="rn">${r.n}</div>`;b.appendChild(d);}
+function renderResolve(b){const note=document.createElement('p');note.className='muted';note.style.fontSize='13px';note.textContent="Worked out from your choices — no extra questions. Amber = an engineer or fabricator designs & stamps it.";b.appendChild(note);
+  resCard(b,"Wall studs",comp('wall-S','stud')||studRule());
+  const gnode=Object.values(M.byId).filter(n=>n.type==='Opening'&&n.params.kind==='Garage').sort((a,b2)=>b2.params.width-a.params.width)[0];
+  resCard(b,"Garage door head",gnode?comp(gnode.id,'lintel'):{v:"—",sed:false,n:"no garage door"});
+  resCard(b,"Window / door lintels",comp('building','lintels'));
+  resCard(b,"Roof structure",comp('roof','structure'));resCard(b,"Bracing",comp('building','bracing'));resCard(b,"Tie-downs / fixings",comp('building','tie'));resCard(b,"Foundation",comp('building','foundation'));}
+function renderOutputs(b){const q=qtys();
+  const spec=document.createElement('div');spec.innerHTML=`<div class="sechead">Build spec</div><table class="bom"><tbody>
+    <tr><td>${S.type} · ${(S.L/1000)}×${(S.W/1000)}m · ${S.studH/1000}m stud</td><td>${q.floorA} m²</td></tr>
+    <tr><td>${S.roof} roof ${S.pitch}° · ${S.cover} · ${S.roofCol}</td><td>${q.roofA} m²</td></tr>
+    <tr><td>${S.clad} (${S.cladCol}) · ${S.lining} · ${S.floor}</td><td>${S.insul}</td></tr>
+    <tr><td>Joinery: ${S.joinery}</td><td>${S.openings.length} openings</td></tr>
+    <tr><td>Exposure</td><td>${S.wind}</td></tr></tbody></table>`;b.appendChild(spec);
+  const bom=document.createElement('div');bom.innerHTML=`<div class="sechead">Indicative materials</div><table class="bom"><thead><tr><th>Item</th><th>Qty</th></tr></thead><tbody>
+    <tr><td>Concrete (slab + thickenings)</td><td>${q.concrete} m³</td></tr><tr><td>Mesh SE82</td><td>${q.mesh} sht</td></tr>
+    <tr><td>Framing timber</td><td>${q.studsLm} lm</td></tr><tr><td>Purlins</td><td>${q.purlinsLm} lm</td></tr>
+    <tr><td>${S.cover}</td><td>${q.roofingM2} m²</td></tr><tr><td>${S.clad}</td><td>${q.cladM2} m²</td></tr>
+    <tr><td>${S.lining} lining</td><td>${q.liningM2} m²</td></tr></tbody></table>`;b.appendChild(bom);
+  const req=document.createElement('div');req.innerHTML=`<div class="sechead">Requirements to actualise</div>`;
+  ["Engineered foundation + PS1","Roof structure design + PS1 (fabricator)","Garage door head / portal (engineer)","Bracing design (engineer / P21)","Cyclone fixing schedule (engineer)","Cladding system spec (supplier)","Consent pathway + producer statements"].forEach(t=>{const c=document.createElement('div');c.className='check';c.innerHTML=`<span class="bx"></span><span>${t}</span>`;req.appendChild(c);});
+  b.appendChild(req);
+  const pr=document.createElement('button');pr.className='btn';pr.style.marginTop='16px';pr.textContent="⎙ Print / Save as PDF";pr.onclick=()=>window.print();b.appendChild(pr);}
+
+function renderInspector(){
+  const host=$("inspector"); if(!host)return; host.innerHTML="";
+  if(!sel||!M||!M.byId[sel])return;
+  const n=M.byId[sel];
+  const card=document.createElement('div');card.className='insp';
+  const ih=document.createElement('div');ih.className='ih';
+  ih.innerHTML=`<div><div class="ty">${n.type}</div><div class="t">${n.name||n.type}</div></div>`;
+  const x=document.createElement('div');x.className='x';x.textContent='✕ deselect';x.onclick=()=>{sel=null;render();};
+  ih.appendChild(x);card.appendChild(ih);
+  if(['Wall','Building','RoofSystem','Slab','Opening'].includes(n.type)){const db=document.createElement('button');db.className='btn';db.style.cssText='font-size:12px;padding:8px 14px;margin-bottom:6px';db.textContent='⊕ Construction detail';db.onclick=()=>{detailFor=sel;S.view='detail';render();};card.appendChild(db);}
+  const body=document.createElement('div');
+  const dimF=(label,g,s,mn,mx)=>body.appendChild(dimInput(label,g,s,mn,mx,false));
+  const optF=(label,vals,cur,cb)=>body.appendChild(optRow(label,vals,cur,cb));
+  if(n.type==='Building'){dimF('Length',()=>S.L,v=>S.L=v,2000,20000);dimF('Width',()=>S.W,v=>S.W=v,2000,12000);dimF('Stud height',()=>S.studH,v=>S.studH=v,2400,3600);optF('Stud spacing',[400,600],S.spacing,v=>S.spacing=+v);}
+  else if(n.type==='Slab'){optF('Foundation',["Concrete slab","Timber piles"],S.found,v=>S.found=v);}
+  else if(n.type==='RoofSystem'){optF('Form',["Gable","Hip","Mono","Flat"],S.roof,v=>S.roof=v);optF('Covering',["Colorsteel corrugate","Colorsteel tray","Membrane","Tile"],S.cover,v=>S.cover=v);optF('Structure',["Prefab trusses","Cut roof"],S.struct,v=>S.struct=v);}
+  else if(n.type==='Opening'){const o=S.openings.find(z=>'opening-'+z.id===sel);if(o){optF('Type',["Garage","Door","Window"],o.kind,v=>o.kind=v);optF('Wall',["S","N","W","E"].map(w=>WALLNAME[w]),WALLNAME[o.wall],v=>o.wall=Object.keys(WALLNAME).find(k=>WALLNAME[k]===v));dimF('Width',()=>o.width,v=>o.width=v,400,7000);dimF('Set-out to centre',()=>o.off,v=>o.off=v,0,20000);}}
+  else if(n.type==='Partition'){const p=S.parts.find(z=>'part-'+z.id===sel);if(p){const runMax=p.dir==="Across width"?S.W:S.L,posMax=p.dir==="Across width"?S.L:S.W;optF('Direction',["Across width","Along length"],p.dir,v=>{p.dir=v;p.start=0;p.len=(v==="Across width"?S.W:S.L);});dimF('Position offset',()=>p.off,v=>p.off=v,0,posMax);dimF('Start',()=>p.start||0,v=>p.start=v,0,runMax);dimF('Length',()=>(p.len!=null?p.len:runMax),v=>p.len=v,200,runMax);}}
+  else if(n.type==='Wall'){const info=document.createElement('p');info.className='muted';info.style.fontSize='12px';info.textContent='Walls derive from the building — edit size via the Building.';body.appendChild(info);}
+  card.appendChild(body);
+  if(n.derived&&Object.keys(n.derived).length){const sh=document.createElement('div');sh.className='sub2';sh.textContent='Derived sub-elements';card.appendChild(sh);
+    Object.entries(n.derived).forEach(([k,v])=>{const r=document.createElement('div');r.className='drow';r.innerHTML=`<span>${k}</span><b>${typeof v==='object'?JSON.stringify(v).replace(/[{}"]/g,'').replace(/,/g,', '):v}</b>`;card.appendChild(r);});}
+  if(n.compliance&&n.compliance.length){const sh=document.createElement('div');sh.className='sub2';sh.textContent='Compliance';card.appendChild(sh);
+    n.compliance.forEach(c=>{const r=document.createElement('div');r.className='drow';r.innerHTML=`<span>${c.rule} — ${c.value}<br><span class="muted" style="font-size:11px">${c.basis}</span></span><span class="tag ${c.status==='sed'?'sed':'ok'}">${c.status}</span>`;card.appendChild(r);});}
+  host.appendChild(card);
+}
+function pillRow(items,cur,onpick,cls){const wrap=document.createElement('div');wrap.className='pillrow';items.forEach(([k,lbl])=>{const d=document.createElement('div');d.className='tab'+(cls?' sm':'')+(cur===k?' on':'');d.textContent=lbl;d.onclick=()=>onpick(k);wrap.appendChild(d);});return wrap;}
+function renderTabs(){const t=$("tabs");t.innerHTML="";
+  const vrow=document.createElement('div');vrow.className='ctrlrow';
+  vrow.appendChild(pillRow([["plan","Plan"],["elevation","Elevation"],["section","Section"],["detail","Detail"]],S.view,k=>{S.view=k;renderTabs();drawCanvas();}));
+  const u=document.createElement('div');u.className='tab unit';u.textContent=S.unit;u.title='switch units';u.onclick=()=>{S.unit=S.unit==='m'?'mm':'m';render();};vrow.appendChild(u);
+  t.appendChild(vrow);
+  const lr=document.createElement('div');lr.className='ctrlrow';const ll=document.createElement('span');ll.className='ctrllab';ll.textContent='layer';lr.appendChild(ll);
+  lr.appendChild(pillRow([["arch","Architectural"],["framing","Framing"],["foundation","Concrete"]],S.layer,k=>{S.layer=k;renderTabs();drawCanvas();},true));
+  t.appendChild(lr);
+  if(S.view==="elevation"){const fr=document.createElement('div');fr.className='ctrlrow';const fl=document.createElement('span');fl.className='ctrllab';fl.textContent='face';fr.appendChild(fl);
+    fr.appendChild(pillRow([["front","Front"],["back","Back"],["left","Left"],["right","Right"]],S.face,k=>{S.face=k;renderTabs();drawCanvas();},true));
+    t.appendChild(fr);}
+  if(S.view==="section"){const fr=document.createElement('div');fr.className='ctrlrow';const fl=document.createElement('span');fl.className='ctrllab';fl.textContent='cut';fr.appendChild(fl);
+    fr.appendChild(pillRow([["cross","A–A cross"],["long","B–B long"]],S.cut,k=>{S.cut=k;renderTabs();drawCanvas();},true));
+    t.appendChild(fr);}
+}
+function render(){rebuildModel();const r=$("rail");r.innerHTML="";
+  STEPS.forEach((nm,i)=>{if(i===6){const g=document.createElement('div');g.className='sctgap';r.appendChild(g);}const d=document.createElement('div');d.className='sct'+(i===step?' on':'');d.textContent=(i+1)+' '+nm;d.onclick=()=>{step=i;render();};r.appendChild(d);});
+  $("kx").textContent="Step "+(step+1)+" / "+STEPS.length+" · "+STEPS[step];
+  const titles=["Site & exposure","Footprint","Roof","Openings & joinery","Internal layout","Cladding & finishes","Auto-resolve to the rules","Your build"];
+  const blurbs=["Where it sits and what it's exposed to.","Set size and stud height.","Put a roof on it — try the colours, then flick to Elevation.","Type a set-out measurement to place each door and window.","Drop in internal walls to make rooms — placed by measurement.","Skin it — see the cladding and roof colours on the elevations.","Studs, lintels, bracing and tie-downs, worked out.","Spec, materials and the checklist to make it real."];
+  $("title").textContent=titles[step];$("blurb").textContent=blurbs[step];
+  renderBody();renderTabs();drawCanvas();renderInspector();
+  $("footnote").textContent=step===6?"↑ computed, not asked":"";}
+rebuildModel();
+render();
+/* Phase 2: click any tagged element -> select it (highlight + inspector) */
+$("view").addEventListener('click',function(e){
+  // section marker click → open section view at that cut
+  let sm=e.target;while(sm&&sm!==this&&!(sm.getAttribute&&sm.getAttribute('data-section-cut')))sm=sm.parentNode;
+  if(sm&&sm.getAttribute&&sm.getAttribute('data-section-cut')){
+    S.cut=sm.getAttribute('data-section-cut');S.view='section';render();return;
+  }
+  // callout bubble click → open matching detail
+  let c=e.target;while(c&&c!==this&&!(c.getAttribute&&c.getAttribute('data-callout-key')))c=c.parentNode;
+  if(c&&c.getAttribute&&c.getAttribute('data-callout-key')){
+    const nodeId=c.getAttribute('data-callout-node');
+    if(nodeId&&M&&M.byId[nodeId]){detailFor=nodeId;sel=nodeId;}
+    S.view='detail';render();return;
+  }
+  // standard select-on-click
+  let n=e.target;while(n&&n!==this&&!(n.getAttribute&&n.getAttribute('data-node-id')))n=n.parentNode;
+  if(n&&n.getAttribute&&n.getAttribute('data-node-id')){sel=n.getAttribute('data-node-id');render();}
+});
+</script>
+</body>
+</html>

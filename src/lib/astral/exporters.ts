@@ -158,11 +158,16 @@ const ACCENT = "#bf6b2c";
 
 function drawWatermark(pdf: jsPDF, pageW: number, pageH: number) {
   pdf.saveGraphicsState();
-  // jspdf supports GState for opacity
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const GState: any = (jsPDF as unknown as { GState: any }).GState;
-  if (GState) pdf.setGState(new GState({ opacity: 0.08 }));
-  pdf.setTextColor(150, 60, 30);
+  try {
+    // jsPDF exposes GState on the constructor for opacity control
+    const Ctor = (jsPDF as unknown as { GState?: new (o: { opacity: number }) => unknown }).GState;
+    if (Ctor) {
+      (pdf as unknown as { setGState: (s: unknown) => void }).setGState(new Ctor({ opacity: 0.08 }));
+    }
+  } catch {
+    /* opacity not supported — fall back to faint colour */
+  }
+  pdf.setTextColor(190, 110, 60);
   pdf.setFont("helvetica", "bold");
   pdf.setFontSize(64);
   pdf.text(

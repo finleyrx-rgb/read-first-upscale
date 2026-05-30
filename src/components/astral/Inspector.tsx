@@ -5,6 +5,8 @@ import { buildModel } from "@/lib/astral/model";
 import { useMemo } from "react";
 import { DimInput, OptRow } from "./form-primitives";
 import { WALLNAME, type WallKey } from "@/lib/astral/constants";
+import { defaultHead, defaultSill } from "@/lib/astral/store";
+import { maxHead, openingHead, openingSill } from "@/lib/astral/geom";
 
 export function Inspector() {
   const S = useAstral((s) => s);

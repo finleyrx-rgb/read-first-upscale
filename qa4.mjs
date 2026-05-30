@@ -1,0 +1,18 @@
+import puppeteer from 'puppeteer';
+import http from 'http';import fs from 'fs';
+const html=fs.readFileSync('/tmp/proj.html','utf8');
+const srv=http.createServer((q,r)=>{r.writeHead(200,{'Content-Type':'text/html'});r.end(html);}).listen(8769);
+const b=await puppeteer.launch({args:['--no-sandbox']});const p=await b.newPage();await p.setViewport({width:1280,height:900});
+p.on('pageerror',e=>console.log('ERR',e.message));p.on('console',m=>{if(m.type()==='error')console.log('CON',m.text());});
+await p.goto('http://localhost:8769/',{waitUntil:'networkidle0'});await new Promise(r=>setTimeout(r,400));
+await p.evaluate(()=>{S.view='section';S.cut='cross';render();});await new Promise(r=>setTimeout(r,200));
+await p.screenshot({path:'/tmp/sec_cross.png',fullPage:false});
+await p.evaluate(()=>{S.cut='long';render();});await new Promise(r=>setTimeout(r,200));
+await p.screenshot({path:'/tmp/sec_long.png'});
+await p.evaluate(()=>{S.view='plan';S.layer='arch';render();});await new Promise(r=>setTimeout(r,200));
+await p.screenshot({path:'/tmp/plan_markers.png'});
+const box=await p.evaluate(()=>{const g=document.querySelector('[data-section-cut="long"]');const b=g.getBoundingClientRect();return{x:b.x+b.width/2,y:b.y+b.height/2};});
+console.log('marker',box);await p.mouse.click(box.x,box.y);await new Promise(r=>setTimeout(r,200));
+console.log('after click',await p.evaluate(()=>({view:S.view,cut:S.cut})));
+await p.screenshot({path:'/tmp/after_click.png'});
+await b.close();srv.close();

@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { useAuth, signOut } from "@/hooks/use-auth";
 import { useAstral } from "@/lib/astral/store";
+import { useProjectSession } from "@/lib/astral/projectSession";
 import {
   createProject, updateProject, listProjects, loadProject,
   deleteProject, setProjectShared, shareUrlFor,
@@ -24,7 +25,8 @@ const BTN: React.CSSProperties = {
 
 export function ProjectsBar() {
   const { user, loading } = useAuth();
-  const [currentId, setCurrentId] = useState<string | null>(null);
+  const currentId = useProjectSession((s) => s.currentProjectId);
+  const setCurrentId = useProjectSession((s) => s.setCurrentProjectId);
   const [currentMeta, setCurrentMeta] = useState<ProjectMetaInput>({ name: "Untitled project" });
   const [list, setList] = useState<ProjectMeta[]>([]);
   const [open, setOpen] = useState<"none" | "list" | "meta" | "share">("none");

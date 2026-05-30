@@ -6,6 +6,7 @@ import type {
   CutKey, FaceKey, LayerKey, UnitKey, ViewKey, WallKey,
 } from "./constants";
 import { TEMPLATES } from "./constants";
+import { DEFAULT_WALL_TYPES, type WallType } from "./wallTypes";
 
 export type Opening = {
   id: number;
@@ -100,6 +101,9 @@ export type AstralState = {
   units: 1 | 2 | 3;
   parapet: boolean;
 
+  /** Wall construction type, per perimeter wall (§7.1 wall-type legend). */
+  wallTypes: Record<WallKey, WallType>;
+
   // model collections
   openings: Opening[];
   parts: Partition[];
@@ -151,6 +155,7 @@ export const INITIAL_STATE: AstralState = {
   unit: loadUnit(),
   units: 1,
   parapet: false,
+  wallTypes: { ...DEFAULT_WALL_TYPES },
   openings: [
     { id: 1, kind: "Garage", wall: "W", off: 4000, width: 5000 },
     { id: 2, kind: "Door", wall: "S", off: 2000, width: 810 },
@@ -283,6 +288,7 @@ export const useAstral = create<AstralStore>((set, get) => ({
       parts: [],
       units: ("units" in tp ? (tp as { units: 1 | 2 | 3 }).units : 1),
       parapet: false,
+      wallTypes: { ...DEFAULT_WALL_TYPES },
       sel: null, detailFor: null,
       view: get().view === "detail" ? "plan" : get().view,
     });

@@ -9,11 +9,12 @@ import { SheetFrame } from "../SheetFrame";
 import { PlanDimensions } from "./PlanDimensions";
 import { PlanAnnotations } from "./PlanAnnotations";
 import { PartyWalls } from "./PartyWalls";
+import { WallLegend, WallStrips } from "./WallLegend";
 
 export function PlanView() {
   const S = useAstral(useShallow((s) => ({
     L: s.L, W: s.W, eave: s.eave, openings: s.openings, parts: s.parts,
-    cladCol: s.cladCol,
+    cladCol: s.cladCol, wallTypes: s.wallTypes,
   })));
 
   const g = planGeom(S);
@@ -30,7 +31,8 @@ export function PlanView() {
         {/* slab fill */}
         <rect x={x0 + tt} y={y0 + tt} width={w - 2 * tt} height={h - 2 * tt}
           fill={cHex} opacity={0.3} data-node-id="slab" data-node-type="Slab" />
-        {/* outline */}
+        {/* perimeter walls, styled per §7.1 wall-type */}
+        <WallStrips x0={x0} y0={y0} w={w} h={h} tt={tt} types={S.wallTypes} />
         <rect x={x0} y={y0} width={w} height={h} fill="none" stroke="#1d2a2a" strokeWidth={2}
           data-node-id="building" data-node-type="Building" />
         <rect x={x0 + tt} y={y0 + tt} width={w - 2 * tt} height={h - 2 * tt}
@@ -93,6 +95,7 @@ export function PlanView() {
         <PartyWalls />
         <PlanDimensions />
         <PlanAnnotations />
+        <WallLegend />
         <SheetFrame />
       </svg>
       <ScaleChip label={`plan ≈1:${Math.round(1000 / sc)}`} />

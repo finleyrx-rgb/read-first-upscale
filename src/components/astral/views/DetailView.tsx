@@ -170,6 +170,10 @@ function SlabDetail() {
       <Lead k="s6" x={gx + 60} y={gl - 42} tx={gx + 150} ty={gl - 58} t="saw-cut CJ ≤ 6m bays" />
       <Lead k="s7" x={gx} y={gl - 38} tx={gx + 150} ty={gl - 30} t="M12 anchor @ 900 · 100 embed" />
       <Lead k="s8" x={gx + 30} y={gl - 30} tx={gx + 150} ty={gl - 12} t="DPC under bottom plate" />
+    </g>
+  );
+}
+
 
 function OpeningDetail({ S, node }: { S: Pick<DS, "openings" | "studH">; node: Node }) {
   const id = useAstral.getState().detailFor;

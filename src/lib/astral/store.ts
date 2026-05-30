@@ -333,7 +333,7 @@ export const useAstral = create<AstralStore>((set, get) => ({
 
 // Autosave: debounced write of the current project to localStorage. Skips UI fields.
 if (typeof window !== "undefined") {
-  const UI_KEYS = new Set(["view", "layer", "face", "cut", "step", "sel", "detailFor", "unit"]);
+  const UI_KEYS = new Set(["view", "layer", "face", "cut", "cutPos", "step", "sel", "detailFor", "unit"]);
   let t: number | null = null;
   useAstral.subscribe((s) => {
     if (t) window.clearTimeout(t);

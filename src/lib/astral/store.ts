@@ -257,6 +257,8 @@ export const useAstral = create<AstralStore>((set, get) => ({
         id: nid++, kind: o[0] as Opening["kind"], wall: o[1] as WallKey, off: o[2] as number, width: o[3] as number,
       })),
       parts: [],
+      units: ("units" in tp ? (tp as { units: 1 | 2 | 3 }).units : 1),
+      parapet: false,
       sel: null, detailFor: null,
       view: get().view === "detail" ? "plan" : get().view,
     });

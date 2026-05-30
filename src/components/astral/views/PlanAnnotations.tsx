@@ -40,20 +40,25 @@ function SectionTag({ x, y, dir, tag, cut }: { x: number; y: number; dir: "left"
 }
 
 function SectionMarkers() {
-  const S = useAstral(useShallow((s) => ({ L: s.L, W: s.W })));
+  const S = useAstral(useShallow((s) => ({ L: s.L, W: s.W, cutPos: s.cutPos, cut: s.cut })));
   const { w, h, x0, y0 } = planGeom(S);
-  const ax = x0 + w / 2;
-  const by = y0 + h / 2;
+  // A–A crosses the width at L * cutPos, B–B runs along length at W * cutPos
+  const ax = x0 + (S.cut === "cross" ? S.cutPos : 0.5) * w;
+  const by = y0 + (S.cut === "long" ? S.cutPos : 0.5) * h;
+  const aActive = S.cut === "cross";
+  const bActive = S.cut === "long";
   return (
     <g>
       {/* A–A cross — vertical */}
       <line x1={ax} y1={y0 - 44} x2={ax} y2={y0 + h + 44}
-        stroke={INK} strokeWidth={0.7} strokeDasharray="10 3 2 3" pointerEvents="none" />
+        stroke={INK} strokeWidth={aActive ? 1 : 0.7} strokeDasharray="10 3 2 3"
+        opacity={aActive ? 1 : 0.55} pointerEvents="none" />
       <SectionTag x={ax} y={y0 - 44} dir="left" tag="A" cut="cross" />
       <SectionTag x={ax} y={y0 + h + 44} dir="right" tag="A" cut="cross" />
       {/* B–B long — horizontal */}
       <line x1={x0 - 46} y1={by} x2={x0 + w + 46} y2={by}
-        stroke={INK} strokeWidth={0.7} strokeDasharray="10 3 2 3" pointerEvents="none" />
+        stroke={INK} strokeWidth={bActive ? 1 : 0.7} strokeDasharray="10 3 2 3"
+        opacity={bActive ? 1 : 0.55} pointerEvents="none" />
       <SectionTag x={x0 - 46} y={by} dir="left" tag="B" cut="long" />
       <SectionTag x={x0 + w + 46} y={by} dir="right" tag="B" cut="long" />
     </g>

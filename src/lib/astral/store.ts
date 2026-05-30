@@ -31,6 +31,24 @@ export function defaultSill(kind: Opening["kind"]): number {
   return kind === "Window" ? 900 : 0;
 }
 
+/** Returns ids of openings that overlap another on the same wall. */
+export function overlappingOpeningIds(openings: Opening[]): Set<number> {
+  const bad = new Set<number>();
+  const walls: Record<WallKey, Opening[]> = { N: [], S: [], E: [], W: [] };
+  openings.forEach((o) => walls[o.wall].push(o));
+  (Object.values(walls) as Opening[][]).forEach((list) => {
+    for (let i = 0; i < list.length; i++) {
+      for (let j = i + 1; j < list.length; j++) {
+        const a = list[i], b = list[j];
+        const a1 = a.off - a.width / 2, a2 = a.off + a.width / 2;
+        const b1 = b.off - b.width / 2, b2 = b.off + b.width / 2;
+        if (a2 > b1 && b2 > a1) { bad.add(a.id); bad.add(b.id); }
+      }
+    }
+  });
+  return bad;
+}
+
 export type Partition = {
   id: number;
   dir: "Across width" | "Along length";
@@ -88,6 +106,20 @@ export type AstralState = {
   detailFor: string | null;
 };
 
+const UNIT_KEY = "astral.unit";
+function loadUnit(): UnitKey {
+  if (typeof window === "undefined") return "m";
+  try {
+    const v = window.localStorage.getItem(UNIT_KEY);
+    if (v === "m" || v === "mm") return v;
+  } catch { /* noop */ }
+  return "m";
+}
+function saveUnit(u: UnitKey) {
+  if (typeof window === "undefined") return;
+  try { window.localStorage.setItem(UNIT_KEY, u); } catch { /* noop */ }
+}
+
 export const INITIAL_STATE: AstralState = {
   type: "Garage",
   wind: "Extra High",
@@ -112,7 +144,7 @@ export const INITIAL_STATE: AstralState = {
   layer: "arch",
   face: "front",
   cut: "cross",
-  unit: "m",
+  unit: loadUnit(),
   openings: [
     { id: 1, kind: "Garage", wall: "W", off: 4000, width: 5000 },
     { id: 2, kind: "Door", wall: "S", off: 2000, width: 810 },
@@ -123,6 +155,27 @@ export const INITIAL_STATE: AstralState = {
   sel: null,
   detailFor: null,
 };
+
+/** Auto-trim openings + partitions so they fit inside L × W. */
+function clampToDims(s: AstralState): Partial<AstralState> {
+  const wallLen = (w: WallKey) => (w === "N" || w === "S" ? s.L : s.W);
+  const openings = s.openings.map((o) => {
+    const wl = wallLen(o.wall);
+    const width = Math.min(o.width, Math.max(400, wl - 200));
+    const off = Math.max(width / 2, Math.min(wl - width / 2, o.off));
+    return { ...o, width, off };
+  });
+  const parts = s.parts.map((p) => {
+    const runMax = p.dir === "Across width" ? s.W : s.L;
+    const posMax = p.dir === "Across width" ? s.L : s.W;
+    const off = Math.max(0, Math.min(posMax, p.off));
+    const start = Math.max(0, Math.min(runMax - 200, p.start));
+    const len = Math.max(200, Math.min(runMax - start, p.len));
+    const doorOff = Math.max(0, Math.min(runMax, p.doorOff));
+    return { ...p, off, start, len, doorOff };
+  });
+  return { openings, parts };
+}
 
 type Actions = {
   set: <K extends keyof AstralState>(key: K, value: AstralState[K]) => void;
@@ -147,11 +200,21 @@ export type AstralStore = AstralState & Actions;
 
 let nid = 100;
 
+const dimKeys = new Set(["L", "W"]);
+
 export const useAstral = create<AstralStore>((set, get) => ({
   ...INITIAL_STATE,
 
-  set: (key, value) => set({ [key]: value } as Partial<AstralState>),
-  patch: (p) => set(p),
+  set: (key, value) => {
+    if (key === "unit") saveUnit(value as UnitKey);
+    set({ [key]: value } as Partial<AstralState>);
+    if (dimKeys.has(key as string)) set((s) => clampToDims(s) as Partial<AstralState>);
+  },
+  patch: (p) => {
+    if (p.unit) saveUnit(p.unit);
+    set(p);
+    if ("L" in p || "W" in p) set((s) => clampToDims(s) as Partial<AstralState>);
+  },
 
   addOpening: () => set((s) => ({
     openings: [...s.openings, {

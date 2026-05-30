@@ -100,6 +100,34 @@ export const TEMPLATES = [
       ops: [["Door", "S", 800, 810], ["Window", "S", 2800, 1500]] as const,
     },
   },
+  {
+    n: "Tiny 8×3",
+    s: {
+      type: "Sleepout", L: 8000, W: 3000, studH: 2400,
+      roof: "Mono", pitch: 6, struct: "Cut roof",
+      clad: "Ply + batten", cover: "Membrane",
+      ops: [
+        ["Door", "S", 1000, 810],
+        ["Window", "S", 3500, 1200],
+        ["Window", "S", 6000, 800],
+        ["Window", "N", 4000, 1500],
+      ] as const,
+    },
+  },
+  {
+    n: "Workshop 12×8",
+    s: {
+      type: "Workshop", L: 12000, W: 8000, studH: 3300,
+      roof: "Gable", pitch: 15, struct: "Prefab trusses",
+      clad: "Fibre-cement", cover: "Colorsteel tray",
+      ops: [
+        ["Garage", "W", 4000, 5400],
+        ["Door", "S", 1500, 900],
+        ["Window", "S", 8000, 1800],
+        ["Window", "N", 6000, 1200],
+      ] as const,
+    },
+  },
 ] as const;
 
 export type WallKey = "N" | "S" | "E" | "W";

@@ -5,7 +5,7 @@ import { buildModel } from "@/lib/astral/model";
 import { useMemo } from "react";
 import { DimInput, OptRow } from "./form-primitives";
 import { WALLNAME, type WallKey } from "@/lib/astral/constants";
-import { defaultHead, defaultSill } from "@/lib/astral/store";
+import { defaultHead, defaultSill, overlappingOpeningIds } from "@/lib/astral/store";
 import { maxHead, openingHead, openingSill } from "@/lib/astral/geom";
 
 export function Inspector() {
@@ -61,6 +61,9 @@ export function Inspector() {
         const hMax = maxHead(o.width, S.studH);
         const headOver = head > hMax;
         const sillOver = sill >= head - 200;
+        const overlaps = overlappingOpeningIds(S.openings).has(o.id);
+        const wallLenMM = (o.wall === "N" || o.wall === "S") ? S.L : S.W;
+        const overflow = o.off - o.width / 2 < 0 || o.off + o.width / 2 > wallLenMM;
         return (
           <>
             <OptRow label="Type" values={["Garage", "Door", "Window"] as const}
@@ -86,10 +89,12 @@ export function Inspector() {
                 setMM={(v) => S.updateOpening(o.id, { sill: v })}
                 minMM={0} maxMM={Math.max(0, head - 200)} />
             )}
-            {(headOver || sillOver) && (
+            {(headOver || sillOver || overlaps || overflow) && (
               <div className="astral-muted" style={{ fontSize: 11, color: "#b4472d", marginTop: 4 }}>
                 {headOver && <>⚠ Head {head} exceeds {hMax} (studH − lintel − top plate). Lower head or use engineered design.<br /></>}
-                {sillOver && <>⚠ Sill must sit at least 200mm below the head.</>}
+                {sillOver && <>⚠ Sill must sit at least 200mm below the head.<br /></>}
+                {overlaps && <>⚠ Overlaps another opening on this wall — move or resize.<br /></>}
+                {overflow && <>⚠ Extends past the wall ends — reduce width or move the set-out.</>}
               </div>
             )}
           </>

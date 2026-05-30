@@ -103,6 +103,13 @@ export type AstralState = {
   units: 1 | 2 | 3;
   parapet: boolean;
 
+  /** Number of habitable storeys (§7.10). 1 = single, 2 = two-storey. */
+  storeys: 1 | 2;
+  /** Subfloor clearance above ground (mm). Only meaningful when found = "Timber piles". */
+  subfloor: number;
+  /** Inter-storey floor build-up (mm) — joist + flooring depth. */
+  floorDepth: number;
+
   /** Wall construction type, per perimeter wall (§7.1 wall-type legend). */
   wallTypes: Record<WallKey, WallType>;
 
@@ -163,6 +170,9 @@ export const INITIAL_STATE: AstralState = {
   unit: loadUnit(),
   units: 1,
   parapet: false,
+  storeys: 1,
+  subfloor: 600,
+  floorDepth: 300,
   wallTypes: { ...DEFAULT_WALL_TYPES },
   openings: [
     { id: 1, kind: "Garage", wall: "W", off: 4000, width: 5000 },

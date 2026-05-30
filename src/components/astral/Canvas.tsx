@@ -12,18 +12,20 @@ import { ElevationView } from "./views/ElevationView";
 import { SectionView } from "./views/SectionView";
 import { DetailView } from "./views/DetailView";
 import { ServicesPlan } from "./views/ServicesPlan";
+import { AxonView } from "./views/AxonView";
 
 function Chips() {
   const S = useAstral(useShallow((s) => ({
     L: s.L, W: s.W, wind: s.wind, roof: s.roof, roofCol: s.roofCol,
     clad: s.clad, cladCol: s.cladCol, openings: s.openings, studH: s.studH,
     spacing: s.spacing, pitch: s.pitch, cover: s.cover, struct: s.struct,
-    found: s.found,
+    found: s.found, storeys: s.storeys,
   })));
   const q = useMemo(() => qtys(S as never), [S]);
   return (
     <div className="astral-chips">
       <span className="astral-stat"><b>{q.floorA}</b> m² floor</span>
+      {S.storeys > 1 && <span className="astral-pill">{S.storeys}-storey</span>}
       <span className="astral-pill">{S.wind} wind</span>
       <span className="astral-pill">{S.roof} · {S.roofCol}</span>
       <span className="astral-pill">{S.clad.split(" ")[0]} · {S.cladCol}</span>
@@ -36,7 +38,8 @@ export function Canvas() {
   const layer = useAstral((s) => s.layer);
 
   let body: React.ReactElement;
-  if (view === "detail") body = <DetailView />;
+  if (view === "axon") body = <AxonView />;
+  else if (view === "detail") body = <DetailView />;
   else if (view === "section") body = <SectionView />;
   else if (view === "elevation") body = <ElevationView />;
   else if (layer === "framing") body = <FramingPlan />;

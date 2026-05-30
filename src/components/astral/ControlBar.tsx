@@ -26,7 +26,7 @@ function PillRow<T extends string>({
 }
 
 const VIEWS: Pill<ViewKey> = [
-  ["plan", "Plan"], ["elevation", "Elevation"], ["section", "Section"], ["detail", "Detail"],
+  ["plan", "Plan"], ["elevation", "Elevation"], ["section", "Section"], ["axon", "Axon · 3D"], ["detail", "Detail"],
 ] as const;
 const LAYERS: Pill<LayerKey> = [
   ["arch", "Architectural"], ["framing", "Framing"], ["foundation", "Concrete"], ["services", "Services"],

@@ -50,6 +50,11 @@ export function Inspector() {
           <DimInput label="Width" getMM={() => S.W} setMM={(v) => S.set("W", v)} minMM={2000} maxMM={12000} />
           <DimInput label="Stud height" getMM={() => S.studH} setMM={(v) => S.set("studH", v)} minMM={2400} maxMM={3600} />
           <OptRow label="Stud spacing" values={[400, 600] as const} current={S.spacing} onPick={(v) => S.set("spacing", v)} />
+          <OptRow label="Storeys" values={[1, 2] as const} current={S.storeys}
+            onPick={(v) => S.set("storeys", v)} />
+          {S.storeys > 1 && (
+            <DimInput label="Inter-floor depth" getMM={() => S.floorDepth} setMM={(v) => S.set("floorDepth", v)} minMM={200} maxMM={500} />
+          )}
           <OptRow label="Units" values={[1, 2, 3] as const} current={S.units}
             onPick={(v) => S.set("units", v)} />
           {S.units > 1 && (
@@ -60,8 +65,13 @@ export function Inspector() {
         </>
       )}
       {n.type === "Slab" && (
-        <OptRow label="Foundation" values={["Concrete slab", "Timber piles"] as const}
-          current={S.found} onPick={(v) => S.set("found", v)} />
+        <>
+          <OptRow label="Foundation" values={["Concrete slab", "Timber piles"] as const}
+            current={S.found} onPick={(v) => S.set("found", v)} />
+          {S.found === "Timber piles" && (
+            <DimInput label="Subfloor clearance" getMM={() => S.subfloor} setMM={(v) => S.set("subfloor", v)} minMM={300} maxMM={1500} />
+          )}
+        </>
       )}
       {n.type === "RoofSystem" && (
         <>

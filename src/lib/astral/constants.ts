@@ -162,7 +162,7 @@ export const ROOF_FORMS = ["Gable", "Hip", "Mono", "Flat", "Gambrel", "Dutch Gab
 export type RoofForm = typeof ROOF_FORMS[number];
 
 export type WallKey = "N" | "S" | "E" | "W";
-export type ViewKey = "plan" | "elevation" | "section" | "detail";
+export type ViewKey = "plan" | "elevation" | "section" | "detail" | "axon";
 export type LayerKey = "arch" | "framing" | "foundation" | "services";
 export type FaceKey = "front" | "back" | "left" | "right";
 export type CutKey = "cross" | "long";

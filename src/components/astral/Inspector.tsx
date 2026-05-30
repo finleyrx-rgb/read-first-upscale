@@ -128,11 +128,27 @@ export function Inspector() {
           </>
         );
       })()}
-      {n.type === "Wall" && (
-        <p className="astral-muted" style={{ fontSize: 12 }}>
-          Walls derive from the building — edit size via the Building.
-        </p>
-      )}
+      {n.type === "Wall" && (() => {
+        // sel encoded as `wall-N|S|E|W`
+        const wl = sel.startsWith("wall-") ? (sel.slice(5) as WallKey) : null;
+        if (!wl) return null;
+        const current = S.wallTypes[wl];
+        return (
+          <>
+            <OptRow label="Construction"
+              values={WALL_TYPES.map((t) => WALL_TYPE_STYLES[t].label)}
+              current={WALL_TYPE_STYLES[current].label}
+              onPick={(lbl) => {
+                const next = WALL_TYPES.find((t) => WALL_TYPE_STYLES[t].label === lbl);
+                if (next) S.set("wallTypes", { ...S.wallTypes, [wl]: next });
+              }} />
+            <p className="astral-muted" style={{ fontSize: 11, marginTop: 4 }}>
+              Affects line/hatch on the architectural plan (§7.1 legend).
+              Length and structural derivation still come from the Building.
+            </p>
+          </>
+        );
+      })()}
 
       {Object.keys(n.derived).length > 0 && (
         <>

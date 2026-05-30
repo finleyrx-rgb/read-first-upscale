@@ -60,32 +60,8 @@ function SectionMarkers() {
   );
 }
 
-function WallLegend() {
-  const items = [
-    { k: "External", ...WALLTYPES.External },
-    { k: "Partition", ...WALLTYPES.Partition },
-    { k: "Structural", ...WALLTYPES.Structural },
-    { k: "Wet", ...WALLTYPES.Wet },
-  ];
-  const bx = 14, by = 18, rh = 14, rw = 118;
-  return (
-    <g pointerEvents="none">
-      <rect x={bx - 4} y={by - 12} width={rw} height={items.length * rh + 8}
-        fill="#fbf9f3" stroke="#cfc6b4" strokeWidth={0.8} rx={4} opacity={0.94} />
-      <text x={bx} y={by - 2} fill="#3c4a47" fontSize={7.5} fontFamily={MONO}
-        letterSpacing="0.1em">WALL TYPES</text>
-      {items.map((it, i) => {
-        const yy = by + 10 + i * rh;
-        return (
-          <g key={it.k}>
-            <rect x={bx} y={yy - 6} width={16} height={9} fill={it.fill} stroke={it.stroke} strokeWidth={0.8} />
-            <text x={bx + 22} y={yy + 2} fill={INK} fontSize={8.5} fontFamily={MONO}>{it.label}</text>
-          </g>
-        );
-      })}
-    </g>
-  );
-}
+// (Legacy partition-type swatch removed — wall types now rendered via
+// WallLegend.tsx using the new §7.1 master-plan taxonomy.)
 
 function CalloutBubble({ bx, by, tx, ty, k, nodeId }:
   { bx: number; by: number; tx: number; ty: number; k: string; nodeId?: string }) {

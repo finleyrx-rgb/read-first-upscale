@@ -323,14 +323,16 @@ export function SectionPanel() {
   return (
     <div className="astral-panel">
       <div className="astral-rail">
-        {STEPS.map((nm, i) => (
-          <>
-            {i === 6 && <div key={`gap-${i}`} className="sctgap" style={{ flexBasis: "100%", height: 0 }} />}
+        {STEPS.flatMap((nm, i) => {
+          const items = [];
+          if (i === 6) items.push(<div key={`gap-${i}`} className="sctgap" style={{ flexBasis: "100%", height: 0 }} />);
+          items.push(
             <div key={nm} className={`sct${i === step ? " on" : ""}`} onClick={() => setStep(i)}>
               {i + 1} {nm}
-            </div>
-          </>
-        ))}
+            </div>,
+          );
+          return items;
+        })}
       </div>
       <div className="astral-stephead">
         <div className="kx">Step {step + 1} / {STEPS.length} · {STEPS[step]}</div>

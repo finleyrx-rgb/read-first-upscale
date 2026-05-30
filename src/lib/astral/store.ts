@@ -208,8 +208,32 @@ let nid = 100;
 
 const dimKeys = new Set(["L", "W"]);
 
+// Compute initial state from URL share (?p=...) or localStorage, falling back
+// to INITIAL_STATE. Kept defensive: ignored on SSR or any parse failure.
+function bootstrapInitial(): AstralState {
+  if (typeof window === "undefined") return INITIAL_STATE;
+  try {
+    const url = new URL(window.location.href);
+    const token = url.searchParams.get("p");
+    if (token) {
+      const json = (() => {
+        const pad = token.length % 4 === 0 ? "" : "=".repeat(4 - (token.length % 4));
+        const raw = atob(token.replace(/-/g, "+").replace(/_/g, "/") + pad);
+        return JSON.parse(decodeURIComponent(escape(raw))) as Partial<AstralState>;
+      })();
+      return { ...INITIAL_STATE, ...json, unit: INITIAL_STATE.unit, view: INITIAL_STATE.view };
+    }
+    const ls = window.localStorage.getItem("astral.project.v1");
+    if (ls) {
+      const json = JSON.parse(ls) as Partial<AstralState>;
+      return { ...INITIAL_STATE, ...json, unit: INITIAL_STATE.unit, view: INITIAL_STATE.view };
+    }
+  } catch { /* noop */ }
+  return INITIAL_STATE;
+}
+
 export const useAstral = create<AstralStore>((set, get) => ({
-  ...INITIAL_STATE,
+  ...bootstrapInitial(),
 
   set: (key, value) => {
     if (key === "unit") saveUnit(value as UnitKey);
@@ -288,3 +312,33 @@ export const useAstral = create<AstralStore>((set, get) => ({
   setSel: (id) => set({ sel: id }),
   setDetailFor: (id) => set({ detailFor: id }),
 }));
+
+// Bump the local ID counter past anything we just loaded.
+{
+  const s = useAstral.getState();
+  const maxOpen = s.openings.reduce((m, o) => Math.max(m, o.id), 0);
+  const maxPart = s.parts.reduce((m, p) => Math.max(m, p.id), 0);
+  if (maxOpen + 1 > nid) nid = maxOpen + 1;
+  if (maxPart + 1 > nid) nid = maxPart + 1;
+}
+
+// Autosave: debounced write of the current project to localStorage. Skips UI fields.
+if (typeof window !== "undefined") {
+  const UI_KEYS = new Set(["view", "layer", "face", "cut", "step", "sel", "detailFor", "unit"]);
+  let t: number | null = null;
+  useAstral.subscribe((s) => {
+    if (t) window.clearTimeout(t);
+    t = window.setTimeout(() => {
+      try {
+        const out: Record<string, unknown> = {};
+        Object.entries(s).forEach(([k, v]) => {
+          if (typeof v === "function") return;
+          if (UI_KEYS.has(k)) return;
+          out[k] = v;
+        });
+        window.localStorage.setItem("astral.project.v1", JSON.stringify(out));
+      } catch { /* noop */ }
+    }, 400);
+  });
+}
+

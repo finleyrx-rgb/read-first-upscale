@@ -100,6 +100,7 @@ export function getSheetMeta(S: AstralState, detailType?: string): SheetMeta {
   if (S.view === "plan") {
     key = S.layer === "framing" ? "plan_framing"
       : S.layer === "foundation" ? "plan_foundation"
+      : S.layer === "services" ? "plan_services"
       : "plan_arch";
   } else if (S.view === "elevation") {
     key = S.layer === "framing" ? "elevation_framing"

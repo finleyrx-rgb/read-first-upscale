@@ -258,8 +258,15 @@ export function SectionView() {
           <line x1={x0 + w + 41} y1={base} x2={x0 + w + 47} y2={base} stroke="#7a6f57" strokeWidth={0.5} />
           <line x1={x0 + w + 41} y1={eave} x2={x0 + w + 47} y2={eave} stroke="#7a6f57" strokeWidth={0.5} />
           <text x={x0 + w + 50} y={(base + eave) / 2} fill={DATUM} fontSize={9} fontFamily={MONO}>
-            {S.studH} stud
+            {wallH} wall
           </text>
+          {firstFloorY !== null && (
+            <g>
+              <line x1={x0 + w + 44} y1={base} x2={x0 + w + 44} y2={firstFloorY} stroke="#7a6f57" strokeWidth={0.5} />
+              <line x1={x0 + w + 41} y1={firstFloorY} x2={x0 + w + 47} y2={firstFloorY} stroke="#7a6f57" strokeWidth={0.5} />
+              <text x={x0 + w + 50} y={(base + firstFloorY) / 2} fill={DATUM} fontSize={8} fontFamily={MONO}>{S.studH} GF</text>
+            </g>
+          )}
           {S.roof !== "Flat" && (
             <g>
               <line x1={x0 + w + 44} y1={eave} x2={x0 + w + 44} y2={eave - apexP} stroke="#7a6f57" strokeWidth={0.5} />
@@ -274,11 +281,17 @@ export function SectionView() {
         {/* FFL + stud-top datums — both margins */}
         <Datum x={x0} y={base} label="FFL" value="0" side="left" />
         <Datum x={x0 + w} y={base} label="FFL" value="0" side="right" />
-        <Datum x={x0} y={eave} label="STUD" value={`+${S.studH}`} side="left" />
-        <Datum x={x0 + w} y={eave} label="STUD" value={`+${S.studH}`} side="right" />
+        <Datum x={x0} y={eave} label="STUD" value={`+${wallH}`} side="left" />
+        <Datum x={x0 + w} y={eave} label="STUD" value={`+${wallH}`} side="right" />
+        {firstFloorY !== null && (
+          <>
+            <Datum x={x0} y={firstFloorY} label="1FL" value={`+${S.studH}`} side="left" />
+            <Datum x={x0 + w} y={firstFloorY} label="1FL" value={`+${S.studH}`} side="right" />
+          </>
+        )}
         {S.roof !== "Flat" && (
           <>
-            <Datum x={x0 + w / 2} y={eave - apexP} label="APEX" value={`+${S.studH + Math.round(apexmm)}`} side="right" />
+            <Datum x={x0 + w / 2} y={eave - apexP} label="APEX" value={`+${wallH + Math.round(apexmm)}`} side="right" />
           </>
         )}
 

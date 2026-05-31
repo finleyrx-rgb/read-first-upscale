@@ -74,6 +74,8 @@ export function takeoffStuds(S: AstralState): StudLine[] {
     // Plates: 2 top + 1 bottom along the full wall.
     const plates_lm = (len / 1000) * 3;
 
+    // Scale by number of storeys.
+    const st = S.storeys;
     return {
       wall: w,
       wallName: WALLNAME[w],
@@ -81,12 +83,12 @@ export function takeoffStuds(S: AstralState): StudLine[] {
       height_mm: h,
       spacing_mm: S.spacing,
       size,
-      common,
-      jack,
-      trimmer,
-      corner,
-      nogs_lm: round2(nogs_lm),
-      plates_lm: round2(plates_lm),
+      common: common * st,
+      jack: jack * st,
+      trimmer: trimmer * st,
+      corner: corner * st,
+      nogs_lm: round2(nogs_lm * st),
+      plates_lm: round2(plates_lm * st),
     };
   });
 }

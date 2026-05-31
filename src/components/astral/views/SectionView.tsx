@@ -31,6 +31,7 @@ export function SectionView() {
     L: s.L, W: s.W, studH: s.studH, eave: s.eave, spacing: s.spacing,
     roof: s.roof, pitch: s.pitch, cut: s.cut, cutPos: s.cutPos,
     openings: s.openings, insul: s.insul, struct: s.struct, cover: s.cover,
+    storeys: s.storeys, floorDepth: s.floorDepth,
   })));
 
   const cut = S.cut === "long" ? "long" : "cross";
@@ -43,11 +44,13 @@ export function SectionView() {
       ? S.L * Math.tan((S.pitch * Math.PI) / 180)
       : (S.W / 2) * Math.tan((S.pitch * Math.PI) / 180);
   const slabT = 100, footing = 200;
-  const totH = S.studH + (S.roof === "Flat" ? 200 : apexmm) + slabT + footing;
+  const wallH = S.studH * S.storeys + S.floorDepth * (S.storeys - 1);
+  const totH = wallH + (S.roof === "Flat" ? 200 : apexmm) + slabT + footing;
   const sc = Math.min((VW - 2 * m) / widmm, (VH - 2 * m) / totH);
-  const w = widmm * sc, eh = S.studH * sc;
+  const w = widmm * sc, eh = wallH * sc;
   const x0 = (VW - w) / 2, base = VH - m - footing * sc;
   const eave = base - eh, apexP = apexmm * sc;
+  const firstFloorY = S.storeys === 2 ? base - S.studH * sc : null;
   const tag = cut === "cross" ? "A" : "B";
 
   let rpts: [number, number][];
@@ -196,6 +199,15 @@ export function SectionView() {
         <line x1={x0} y1={eave} x2={x0 + w} y2={eave} stroke="#8a7c5e" strokeWidth={1.1} />
         <line x1={x0} y1={eave + 4} x2={x0 + w} y2={eave + 4} stroke="#8a7c5e" strokeWidth={0.7} />
 
+        {/* intermediate floor band (2-storey) */}
+        {firstFloorY !== null && (
+          <g pointerEvents="none">
+            <rect x={x0} y={firstFloorY - 3} width={w} height={6} fill="#c9a84c" fillOpacity={0.35} stroke="#7a4a16" strokeWidth={0.8} />
+            <line x1={x0 - 6} y1={firstFloorY} x2={x0 + w + 6} y2={firstFloorY} stroke="#7a4a16" strokeWidth={0.6} strokeDasharray="4 2" />
+            <text x={x0 + w + 10} y={firstFloorY + 2} fill="#7a4a16" fontSize={7} fontFamily={MONO}>1st floor</text>
+          </g>
+        )}
+
         {/* roof envelope */}
         <polyline points={rpts.map((p) => p.join(",")).join(" ")} fill="#efeadd" stroke={INK} strokeWidth={1.2}
           data-node-id="roof" data-node-type="RoofSystem" />
@@ -246,8 +258,15 @@ export function SectionView() {
           <line x1={x0 + w + 41} y1={base} x2={x0 + w + 47} y2={base} stroke="#7a6f57" strokeWidth={0.5} />
           <line x1={x0 + w + 41} y1={eave} x2={x0 + w + 47} y2={eave} stroke="#7a6f57" strokeWidth={0.5} />
           <text x={x0 + w + 50} y={(base + eave) / 2} fill={DATUM} fontSize={9} fontFamily={MONO}>
-            {S.studH} stud
+            {wallH} wall
           </text>
+          {firstFloorY !== null && (
+            <g>
+              <line x1={x0 + w + 44} y1={base} x2={x0 + w + 44} y2={firstFloorY} stroke="#7a6f57" strokeWidth={0.5} />
+              <line x1={x0 + w + 41} y1={firstFloorY} x2={x0 + w + 47} y2={firstFloorY} stroke="#7a6f57" strokeWidth={0.5} />
+              <text x={x0 + w + 50} y={(base + firstFloorY) / 2} fill={DATUM} fontSize={8} fontFamily={MONO}>{S.studH} GF</text>
+            </g>
+          )}
           {S.roof !== "Flat" && (
             <g>
               <line x1={x0 + w + 44} y1={eave} x2={x0 + w + 44} y2={eave - apexP} stroke="#7a6f57" strokeWidth={0.5} />
@@ -262,11 +281,17 @@ export function SectionView() {
         {/* FFL + stud-top datums — both margins */}
         <Datum x={x0} y={base} label="FFL" value="0" side="left" />
         <Datum x={x0 + w} y={base} label="FFL" value="0" side="right" />
-        <Datum x={x0} y={eave} label="STUD" value={`+${S.studH}`} side="left" />
-        <Datum x={x0 + w} y={eave} label="STUD" value={`+${S.studH}`} side="right" />
+        <Datum x={x0} y={eave} label="STUD" value={`+${wallH}`} side="left" />
+        <Datum x={x0 + w} y={eave} label="STUD" value={`+${wallH}`} side="right" />
+        {firstFloorY !== null && (
+          <>
+            <Datum x={x0} y={firstFloorY} label="1FL" value={`+${S.studH}`} side="left" />
+            <Datum x={x0 + w} y={firstFloorY} label="1FL" value={`+${S.studH}`} side="right" />
+          </>
+        )}
         {S.roof !== "Flat" && (
           <>
-            <Datum x={x0 + w / 2} y={eave - apexP} label="APEX" value={`+${S.studH + Math.round(apexmm)}`} side="right" />
+            <Datum x={x0 + w / 2} y={eave - apexP} label="APEX" value={`+${wallH + Math.round(apexmm)}`} side="right" />
           </>
         )}
 

@@ -20,6 +20,7 @@ export function ElevationView() {
     clad: s.clad, cladCol: s.cladCol, roofCol: s.roofCol,
     eave: s.eave, parapet: s.parapet, units: s.units,
     openings: s.openings, face: s.face, layer: s.layer,
+    storeys: s.storeys, floorDepth: s.floorDepth,
   })));
 
   const data = useMemo(() => {
@@ -27,14 +28,16 @@ export function ElevationView() {
     const wall = FACE_WALL[S.face];
     const widmm = longFace ? S.L : S.W;
     const apexmm = (S.W / 2) * Math.tan((S.pitch * Math.PI) / 180);
-    const totH = S.studH + (S.roof === "Flat" ? 200 : apexmm);
+    const wallH = S.studH * S.storeys + S.floorDepth * (S.storeys - 1);
+    const totH = wallH + (S.roof === "Flat" ? 200 : apexmm);
     const sc = Math.min((VW - 2 * m) / widmm, (VH - 2 * m) / totH);
-    const w = widmm * sc, eh = S.studH * sc;
+    const w = widmm * sc, eh = wallH * sc;
     const x0 = (VW - w) / 2, base = VH - m, eave = base - eh, apexP = apexmm * sc;
-    return { longFace, wall, widmm, sc, w, eh, x0, base, eave, apexP };
-  }, [S.L, S.W, S.studH, S.roof, S.pitch, S.face]);
+    const firstFloorY = S.storeys === 2 ? base - S.studH * sc : null;
+    return { longFace, wall, widmm, sc, w, eh, x0, base, eave, apexP, firstFloorY };
+  }, [S.L, S.W, S.studH, S.roof, S.pitch, S.face, S.storeys, S.floorDepth]);
 
-  const { longFace, wall, widmm, sc, w, x0, base, eave, apexP } = data;
+  const { longFace, wall, widmm, sc, w, x0, base, eave, apexP, firstFloorY } = data;
 
   const eo = (S.eave || 0) * sc;
   let pts: [number, number][];
@@ -115,6 +118,13 @@ export function ElevationView() {
         {S.layer === "arch" && (
           <ArchLayer S={S} pts={pts} x0={x0} w={w} eave={eave} eh={data.eh} base={base}
             ows={ows} facedOpenings={facedOpenings} />
+        )}
+
+        {firstFloorY !== null && (
+          <g pointerEvents="none">
+            <rect x={x0} y={firstFloorY - 3} width={w} height={6} fill="#c9a84c" fillOpacity={0.35} stroke="#7a4a16" strokeWidth={0.8} />
+            <line x1={x0 - 6} y1={firstFloorY} x2={x0 + w + 6} y2={firstFloorY} stroke="#7a4a16" strokeWidth={0.6} strokeDasharray="4 2" />
+          </g>
         )}
 
         {longFace && S.units > 1 && Array.from({ length: S.units - 1 }).map((_, i) => {

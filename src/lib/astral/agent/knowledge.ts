@@ -40,6 +40,9 @@ residential and accessory structures (sleepouts, cabins, garages, duplexes).
 - Typical roof pitches: **3° flat membrane**, **8–15° low slope**, **20–25°
   standard pitch**, **30–35° steeper / gable feel**.
 - Eave overhangs: **300–600 mm** typical, up to 900 mm for shade / weather.
+- Maximum **2 storeys** supported. For 2-storey: stud height applies per storey;
+  inter-floor depth is the joist+flooring build-up between storeys (typically
+  250–300 mm). Suspended timber floor on piles adds subfloor clearance.
 
 ## Common opening sizes (NZ residential vernacular)
 - **Doors**: 810 × 1980 (single), 1500–1800 wide for sliders.

@@ -120,6 +120,13 @@ export function ElevationView() {
             ows={ows} facedOpenings={facedOpenings} />
         )}
 
+        {firstFloorY !== null && (
+          <g pointerEvents="none">
+            <rect x={x0} y={firstFloorY - 3} width={w} height={6} fill="#c9a84c" fillOpacity={0.35} stroke="#7a4a16" strokeWidth={0.8} />
+            <line x1={x0 - 6} y1={firstFloorY} x2={x0 + w + 6} y2={firstFloorY} stroke="#7a4a16" strokeWidth={0.6} strokeDasharray="4 2" />
+          </g>
+        )}
+
         {longFace && S.units > 1 && Array.from({ length: S.units - 1 }).map((_, i) => {
           const px = x0 + ((i + 1) / S.units) * w;
           return (

@@ -146,6 +146,7 @@ function saveUnit(u: UnitKey) {
 }
 
 export const INITIAL_STATE: AstralState = {
+  mode: "dream",
   type: "Garage",
   wind: "Extra High",
   found: "Concrete slab",

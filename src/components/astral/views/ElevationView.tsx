@@ -37,7 +37,7 @@ export function ElevationView() {
     return { longFace, wall, widmm, sc, w, eh, x0, base, eave, apexP, firstFloorY };
   }, [S.L, S.W, S.studH, S.roof, S.pitch, S.face, S.storeys, S.floorDepth]);
 
-  const { longFace, wall, widmm, sc, w, x0, base, eave, apexP } = data;
+  const { longFace, wall, widmm, sc, w, x0, base, eave, apexP, firstFloorY } = data;
 
   const eo = (S.eave || 0) * sc;
   let pts: [number, number][];

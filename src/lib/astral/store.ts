@@ -113,6 +113,9 @@ export type AstralState = {
   /** Wall construction type, per perimeter wall (§7.1 wall-type legend). */
   wallTypes: Record<WallKey, WallType>;
 
+  // app-level mode: Dream (moodboard, intent) vs Build (configurator).
+  mode: "dream" | "build";
+
   // model collections
   openings: Opening[];
   parts: Partition[];

@@ -192,10 +192,11 @@ function TypologyRail() {
         Pick a starting shape. You can refine it later.
       </p>
       <div className="dream-typ-grid">
-        {TYPOLOGIES.map((t) => (
+        {TYPOLOGIES.map((t, i) => (
           <TypologyCard
             key={t.id}
             t={t}
+            index={i}
             selected={typologyId === t.id}
             onSelect={() => setTypology(typologyId === t.id ? null : t.id)}
           />

@@ -256,13 +256,14 @@ export function takeoffFixings(S: AstralState): FixingRow[] {
     0,
   );
   const hi = ["High", "Very High", "Extra High", "Cyclonic (SED)"].includes(S.wind);
+  const st = S.storeys;
   const rows: FixingRow[] = [
-    { item: "M12 chem anchors (slab → bottom plate)", qty: Math.ceil(perim_m / 0.9), unit: "ea", note: "@900 c/c" },
+    { item: "M12 chem anchors (slab → bottom plate)", qty: Math.ceil(perim_m / 0.9) * st, unit: "ea", note: "@900 c/c" },
     { item: "Cyclone straps (truss tie-down, both ends)", qty: trusses * 2, unit: "ea", note: hi ? "high-wind" : "standard" },
     { item: "Wire dogs / skew nails (stud → plate)", qty: studs * 2, unit: "ea", note: "top + bottom" },
-    { item: "Lintel hangers / brackets", qty: S.openings.length * 2, unit: "ea", note: "each end" },
-    { item: "Galv. flat-head nails (3.15×75)", qty: Math.ceil(perim_m * 30), unit: "ea", note: "plate fixing" },
-    { item: "Type 17 batten screws (cladding)", qty: Math.ceil(((2 * (S.L + S.W) * S.studH) / 1e6) * 12), unit: "ea", note: "≈12/m²" },
+    { item: "Lintel hangers / brackets", qty: S.openings.length * 2 * st, unit: "ea", note: "each end" },
+    { item: "Galv. flat-head nails (3.15×75)", qty: Math.ceil(perim_m * 30) * st, unit: "ea", note: "plate fixing" },
+    { item: "Type 17 batten screws (cladding)", qty: Math.ceil(((2 * (S.L + S.W) * S.studH * st) / 1e6) * 12), unit: "ea", note: "≈12/m²" },
   ];
   return rows;
 }

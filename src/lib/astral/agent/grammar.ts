@@ -49,6 +49,11 @@ export const ActionSchema = z.discriminatedUnion("verb", [
     units: z.union([z.literal(1), z.literal(2), z.literal(3)]).optional(),
   }),
   z.object({
+    verb: z.literal("setStoreys"),
+    storeys: z.union([z.literal(1), z.literal(2)]).optional(),
+    floorDepth: z.number().int().min(200).max(500).optional(),
+  }),
+  z.object({
     verb: z.literal("addOpening"),
     kind: OpeningKind,
     wall: WallEnum,

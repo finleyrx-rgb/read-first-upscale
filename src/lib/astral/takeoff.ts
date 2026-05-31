@@ -283,12 +283,13 @@ export type AreaRow = {
 export function takeoffAreas(S: AstralState): AreaRow[] {
   const perim = (2 * (S.L + S.W)) / 1000;
   const h = S.studH / 1000;
-  const wallA = perim * h;
+  const st = S.storeys;
+  const wallA = perim * h * st;
   const openA = S.openings.reduce((a, o) => {
     const head = o.head ?? defaultHead(o.kind, S.studH);
     const sill = o.sill ?? defaultSill(o.kind);
     return a + (o.width / 1000) * Math.max(0, (head - sill) / 1000);
-  }, 0);
+  }, 0) * st;
   const netExt = Math.max(0, wallA - openA);
   // Internal lining = both faces of external walls (minus openings) + both faces of partitions.
   const partsA = S.parts.reduce((a, p: Partition) => a + (p.len / 1000) * h, 0);
@@ -298,7 +299,7 @@ export function takeoffAreas(S: AstralState): AreaRow[] {
     ? (S.L / 1000) * (S.W / 1000) * 1.05
     : ((S.L / 1000) * (S.W / 1000) / Math.cos((S.pitch * Math.PI) / 180)) * 1.06;
 
-  return [
+  const rows: AreaRow[] = [
     {
       item: "Cladding", gross_m2: round2(wallA), openings_m2: round2(openA),
       net_m2: round2(netExt), waste_pct: 10,
@@ -325,6 +326,18 @@ export function takeoffAreas(S: AstralState): AreaRow[] {
       order_m2: round2(roofA * 1.15), spec: "Synthetic underlay",
     },
   ];
+
+  if (st === 2) {
+    const floorA = (S.L / 1000) * (S.W / 1000);
+    const joistLm = (S.L / 1000) * Math.ceil((S.W / 1000) / 0.45);
+    rows.push({
+      item: "Intermediate floor joists", gross_m2: round2(floorA), openings_m2: 0,
+      net_m2: round2(floorA), waste_pct: 10,
+      order_m2: round2(floorA * WASTE), spec: `≈${round2(joistLm)} lm @450 c/c`,
+    });
+  }
+
+  return rows;
 }
 
 // ---------- bundled takeoff ----------

@@ -28,12 +28,14 @@ export function ElevationView() {
     const wall = FACE_WALL[S.face];
     const widmm = longFace ? S.L : S.W;
     const apexmm = (S.W / 2) * Math.tan((S.pitch * Math.PI) / 180);
-    const totH = S.studH + (S.roof === "Flat" ? 200 : apexmm);
+    const wallH = S.studH * S.storeys + S.floorDepth * (S.storeys - 1);
+    const totH = wallH + (S.roof === "Flat" ? 200 : apexmm);
     const sc = Math.min((VW - 2 * m) / widmm, (VH - 2 * m) / totH);
-    const w = widmm * sc, eh = S.studH * sc;
+    const w = widmm * sc, eh = wallH * sc;
     const x0 = (VW - w) / 2, base = VH - m, eave = base - eh, apexP = apexmm * sc;
-    return { longFace, wall, widmm, sc, w, eh, x0, base, eave, apexP };
-  }, [S.L, S.W, S.studH, S.roof, S.pitch, S.face]);
+    const firstFloorY = S.storeys === 2 ? base - S.studH * sc : null;
+    return { longFace, wall, widmm, sc, w, eh, x0, base, eave, apexP, firstFloorY };
+  }, [S.L, S.W, S.studH, S.roof, S.pitch, S.face, S.storeys, S.floorDepth]);
 
   const { longFace, wall, widmm, sc, w, x0, base, eave, apexP } = data;
 

@@ -220,6 +220,15 @@ export function applyAction(store: StoreLike, action: AgentAction): ActionResult
       store.removePartition(action.id);
       return { ok: true, message: `Removed partition #${action.id}`, highlight: null };
     }
+    case "updatePartition": {
+      const patch: Partial<Partition> = {};
+      (["dir", "off", "start", "len", "type", "door", "doorW", "doorOff"] as const).forEach((k) => {
+        const v = (action as Record<string, unknown>)[k];
+        if (v !== undefined) (patch as Record<string, unknown>)[k] = v;
+      });
+      store.updatePartition(action.id, patch);
+      return { ok: true, message: `Updated partition #${action.id}`, highlight: `part-${action.id}` };
+    }
     case "applyTemplate": {
       store.loadTemplate(action.index);
       return { ok: true, message: `Loaded template #${action.index}`, highlight: "building" };

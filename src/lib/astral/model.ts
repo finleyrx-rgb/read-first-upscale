@@ -91,7 +91,7 @@ export function footRule(S: AstralState): RuleResult {
 
 export function qtys(S: AstralState) {
   const Lm = S.L / 1000, Wm = S.W / 1000, Hm = S.studH / 1000;
-  const perim = 2 * (Lm + Wm), wallA = perim * Hm, floorA = Lm * Wm;
+  const perim = 2 * (Lm + Wm), wallA = perim * Hm * S.storeys, floorA = Lm * Wm * S.storeys;
   const roofA = S.roof === "Flat" ? floorA * 1.05 : (floorA / Math.cos((S.pitch * Math.PI) / 180)) * 1.06;
   return {
     perim: perim.toFixed(1),
@@ -100,7 +100,7 @@ export function qtys(S: AstralState) {
     roofA: roofA.toFixed(0),
     concrete: (floorA * 0.1 + perim * 0.05).toFixed(1),
     mesh: Math.ceil(floorA / 12.5),
-    studsLm: Math.round((perim / (S.spacing / 1000)) * Hm + perim * 3),
+    studsLm: Math.round((perim / (S.spacing / 1000)) * Hm * S.storeys + perim * 3 * S.storeys),
     purlinsLm: Math.round(roofA / 0.9),
     roofingM2: Math.round(roofA),
     cladM2: Math.round(wallA * 0.86),

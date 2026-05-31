@@ -83,6 +83,18 @@ export const ActionSchema = z.discriminatedUnion("verb", [
     doorOff: z.number().int().default(0),
   }),
   z.object({
+    verb: z.literal("updatePartition"),
+    id: z.number().int(),
+    dir: z.enum(["Across width", "Along length"]).optional(),
+    off: z.number().int().optional(),
+    start: z.number().int().optional(),
+    len: z.number().int().min(200).optional(),
+    type: z.enum(["Partition", "Structural", "Wet"]).optional(),
+    door: z.boolean().optional(),
+    doorW: z.number().int().optional(),
+    doorOff: z.number().int().optional(),
+  }),
+  z.object({
     verb: z.literal("removePartition"),
     id: z.number().int(),
   }),

@@ -154,7 +154,10 @@ function IntentPanel() {
       {typo && (
         <>
           <div className="dream-section-h">Selected typology</div>
-          <div className="dream-typ-mini" style={{ backgroundImage: `url(${typo.hero})` }}>
+          <div className="dream-typ-mini">
+            <svg viewBox="0 0 64 40" aria-hidden="true">
+              <path d={typo.glyph} fill="none" stroke="currentColor" strokeWidth="1.25" strokeLinejoin="round" strokeLinecap="round" />
+            </svg>
             <span>{typo.title}</span>
           </div>
         </>

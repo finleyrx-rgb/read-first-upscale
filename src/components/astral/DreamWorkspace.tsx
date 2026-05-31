@@ -8,17 +8,20 @@ import {
   type DreamReference,
 } from "@/lib/astral/dream";
 
-function TypologyCard({ t, selected, onSelect }: {
-  t: typeof TYPOLOGIES[number]; selected: boolean; onSelect: () => void;
+function TypologyCard({ t, index, selected, onSelect }: {
+  t: typeof TYPOLOGIES[number]; index: number; selected: boolean; onSelect: () => void;
 }) {
   return (
     <button type="button" className={`dream-typ${selected ? " sel" : ""}`} onClick={onSelect}>
-      <div className="hero" style={{ backgroundImage: `url(${t.hero})` }} />
-      <div className="meta">
-        <div className="ttl">{t.title}</div>
-        <div className="chips">{t.qualities.map((q) => <span key={q}>{q}</span>)}</div>
-        <div className="note">{t.notes}</div>
+      <div className="dream-typ-row">
+        <span className="dream-typ-num">{String(index + 1).padStart(2, "0")}</span>
+        <svg className="dream-typ-glyph" viewBox="0 0 64 40" aria-hidden="true">
+          <path d={t.glyph} fill="none" stroke="currentColor" strokeWidth="1.25" strokeLinejoin="round" strokeLinecap="round" />
+        </svg>
       </div>
+      <div className="dream-typ-ttl">{t.title}</div>
+      <div className="dream-typ-chips">{t.qualities.map((q) => <span key={q}>{q}</span>)}</div>
+      <div className="dream-typ-note">{t.notes}</div>
     </button>
   );
 }

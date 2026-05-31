@@ -44,11 +44,13 @@ export function SectionView() {
       ? S.L * Math.tan((S.pitch * Math.PI) / 180)
       : (S.W / 2) * Math.tan((S.pitch * Math.PI) / 180);
   const slabT = 100, footing = 200;
-  const totH = S.studH + (S.roof === "Flat" ? 200 : apexmm) + slabT + footing;
+  const wallH = S.studH * S.storeys + S.floorDepth * (S.storeys - 1);
+  const totH = wallH + (S.roof === "Flat" ? 200 : apexmm) + slabT + footing;
   const sc = Math.min((VW - 2 * m) / widmm, (VH - 2 * m) / totH);
-  const w = widmm * sc, eh = S.studH * sc;
+  const w = widmm * sc, eh = wallH * sc;
   const x0 = (VW - w) / 2, base = VH - m - footing * sc;
   const eave = base - eh, apexP = apexmm * sc;
+  const firstFloorY = S.storeys === 2 ? base - S.studH * sc : null;
   const tag = cut === "cross" ? "A" : "B";
 
   let rpts: [number, number][];

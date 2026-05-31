@@ -31,6 +31,7 @@ export function SectionView() {
     L: s.L, W: s.W, studH: s.studH, eave: s.eave, spacing: s.spacing,
     roof: s.roof, pitch: s.pitch, cut: s.cut, cutPos: s.cutPos,
     openings: s.openings, insul: s.insul, struct: s.struct, cover: s.cover,
+    storeys: s.storeys, floorDepth: s.floorDepth,
   })));
 
   const cut = S.cut === "long" ? "long" : "cross";

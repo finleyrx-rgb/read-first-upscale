@@ -118,11 +118,16 @@ export function buildModel(S: AstralState): Model {
   const add = (n: ModelNode) => { byId[n.id] = n; return n; };
 
   const site = add(mk("site", "Site", "Site", null, { wind: S.wind, found: S.found }));
-  const bld = add(mk("building", "Building", S.type, "site", { type: S.type, L: S.L, W: S.W, studH: S.studH, spacing: S.spacing }, { footprint: { L: S.L, W: S.W } }));
+  const bld = add(mk("building", "Building", S.type, "site", { type: S.type, L: S.L, W: S.W, studH: S.studH, spacing: S.spacing, storeys: S.storeys, floorDepth: S.floorDepth }, { footprint: { L: S.L, W: S.W } }));
   site.children.push("building");
 
   const slab = add(mk("slab", "Slab", "Slab / Foundation", "building", { found: S.found }, { outline: { L: S.L, W: S.W } }));
   bld.children.push(slab.id);
+
+  if (S.storeys === 2) {
+    const sf = add(mk("suspended-floor", "SuspendedFloor", "Intermediate floor", "building", { depth: S.floorDepth }));
+    bld.children.push(sf.id);
+  }
 
   (["N", "S", "E", "W"] as const).forEach((w) => {
     const wall = add(mk(`wall-${w}`, "Wall", WALLNAME[w], "building", { wall: w, type: "External", length: wallLen(S, w), height: S.studH, studSpec: studRule(S).v }));

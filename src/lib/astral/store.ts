@@ -268,9 +268,18 @@ export const useAstral = create<AstralStore>((set, get) => ({
       head: defaultHead("Window", s.studH), sill: defaultSill("Window"),
     }],
   })),
-  updateOpening: (id, patch) => set((s) => ({
-    openings: s.openings.map((o) => (o.id === id ? { ...o, ...patch } : o)),
-  })),
+  updateOpening: (id, patch) => set((s) => {
+    const wallLen = (w: WallKey) => (w === "N" || w === "S" ? s.L : s.W);
+    const openings = s.openings.map((o) => {
+      if (o.id !== id) return o;
+      const next = { ...o, ...patch };
+      const wl = wallLen(next.wall);
+      const width = Math.min(next.width, Math.max(400, wl - 200));
+      const off = Math.max(width / 2, Math.min(wl - width / 2, next.off));
+      return { ...next, width, off };
+    });
+    return { openings };
+  }),
   removeOpening: (id) => set((s) => ({ openings: s.openings.filter((o) => o.id !== id) })),
 
   addPartition: () => set((s) => ({

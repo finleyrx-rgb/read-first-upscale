@@ -83,6 +83,18 @@ export const ActionSchema = z.discriminatedUnion("verb", [
     doorOff: z.number().int().default(0),
   }),
   z.object({
+    verb: z.literal("updatePartition"),
+    id: z.number().int(),
+    dir: z.enum(["Across width", "Along length"]).optional(),
+    off: z.number().int().optional(),
+    start: z.number().int().optional(),
+    len: z.number().int().min(200).optional(),
+    type: z.enum(["Partition", "Structural", "Wet"]).optional(),
+    door: z.boolean().optional(),
+    doorW: z.number().int().optional(),
+    doorOff: z.number().int().optional(),
+  }),
+  z.object({
     verb: z.literal("removePartition"),
     id: z.number().int(),
   }),
@@ -207,6 +219,15 @@ export function applyAction(store: StoreLike, action: AgentAction): ActionResult
     case "removePartition": {
       store.removePartition(action.id);
       return { ok: true, message: `Removed partition #${action.id}`, highlight: null };
+    }
+    case "updatePartition": {
+      const patch: Partial<Partition> = {};
+      (["dir", "off", "start", "len", "type", "door", "doorW", "doorOff"] as const).forEach((k) => {
+        const v = (action as Record<string, unknown>)[k];
+        if (v !== undefined) (patch as Record<string, unknown>)[k] = v;
+      });
+      store.updatePartition(action.id, patch);
+      return { ok: true, message: `Updated partition #${action.id}`, highlight: `part-${action.id}` };
     }
     case "applyTemplate": {
       store.loadTemplate(action.index);

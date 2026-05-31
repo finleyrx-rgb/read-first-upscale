@@ -199,6 +199,15 @@ export function SectionView() {
         <line x1={x0} y1={eave} x2={x0 + w} y2={eave} stroke="#8a7c5e" strokeWidth={1.1} />
         <line x1={x0} y1={eave + 4} x2={x0 + w} y2={eave + 4} stroke="#8a7c5e" strokeWidth={0.7} />
 
+        {/* intermediate floor band (2-storey) */}
+        {firstFloorY !== null && (
+          <g pointerEvents="none">
+            <rect x={x0} y={firstFloorY - 3} width={w} height={6} fill="#c9a84c" fillOpacity={0.35} stroke="#7a4a16" strokeWidth={0.8} />
+            <line x1={x0 - 6} y1={firstFloorY} x2={x0 + w + 6} y2={firstFloorY} stroke="#7a4a16" strokeWidth={0.6} strokeDasharray="4 2" />
+            <text x={x0 + w + 10} y={firstFloorY + 2} fill="#7a4a16" fontSize={7} fontFamily={MONO}>1st floor</text>
+          </g>
+        )}
+
         {/* roof envelope */}
         <polyline points={rpts.map((p) => p.join(",")).join(" ")} fill="#efeadd" stroke={INK} strokeWidth={1.2}
           data-node-id="roof" data-node-type="RoofSystem" />

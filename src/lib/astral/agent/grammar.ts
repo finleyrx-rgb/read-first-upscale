@@ -249,5 +249,13 @@ export function applyAction(store: StoreLike, action: AgentAction): ActionResult
       store.setSel(action.id);
       return { ok: true, message: action.id ? `Selected ${action.id}` : "Deselected", highlight: action.id };
     }
+    case "setStoreys": {
+      const p: Partial<AstralState> = {};
+      if (action.storeys !== undefined) p.storeys = action.storeys;
+      if (action.floorDepth !== undefined) p.floorDepth = action.floorDepth;
+      store.patch(p);
+      return { ok: true, message: `Storeys updated (${Object.keys(p).join(", ")})`, highlight: "building" };
+    }
   }
+  return { ok: false, message: "Unknown action verb", highlight: null };
 }

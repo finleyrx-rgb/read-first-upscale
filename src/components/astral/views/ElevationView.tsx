@@ -20,6 +20,7 @@ export function ElevationView() {
     clad: s.clad, cladCol: s.cladCol, roofCol: s.roofCol,
     eave: s.eave, parapet: s.parapet, units: s.units,
     openings: s.openings, face: s.face, layer: s.layer,
+    storeys: s.storeys, floorDepth: s.floorDepth,
   })));
 
   const data = useMemo(() => {

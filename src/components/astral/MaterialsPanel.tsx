@@ -2,6 +2,7 @@
 // derived from the current model and exposes CSV/XLSX export.
 
 import { useMemo, useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 import { useAstral } from "@/lib/astral/store";
 import { buildTakeoff } from "@/lib/astral/takeoff";
 import { exportMaterialsCSV, exportMaterialsXLSX } from "@/lib/astral/materialsExport";

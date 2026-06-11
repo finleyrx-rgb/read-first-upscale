@@ -2,6 +2,7 @@
 // derived from the current model and exposes CSV/XLSX export.
 
 import { useMemo, useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 import { useAstral } from "@/lib/astral/store";
 import { buildTakeoff } from "@/lib/astral/takeoff";
 import { exportMaterialsCSV, exportMaterialsXLSX } from "@/lib/astral/materialsExport";
@@ -38,8 +39,12 @@ const TABS = ["Studs", "Doors & Windows", "Lintels", "Bracing", "Fixings", "Clad
 type Tab = typeof TABS[number];
 
 export function MaterialsPanel() {
-  const S = useAstral((s) => s);
-  const t = useMemo(() => buildTakeoff(S), [S]);
+  const S = useAstral(useShallow((s) => s));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const t = useMemo(() => buildTakeoff(S), [
+    S.L, S.W, S.studH, S.spacing, S.wind, S.openings, S.parts, S.units, S.storeys,
+    S.found, S.subfloor, S.floorDepth, S.roof, S.pitch, S.cover, S.struct, S.clad, S.eave,
+  ]);
   const [tab, setTab] = useState<Tab>("Studs");
 
   return (

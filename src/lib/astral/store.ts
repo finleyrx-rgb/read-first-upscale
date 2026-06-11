@@ -233,6 +233,25 @@ export type AstralStore = AstralState & Actions;
 
 let nid = 100;
 
+/** Reseed the local ID counter past any externally supplied openings/parts. */
+function reseedNid(s: Pick<AstralState, "openings" | "parts">) {
+  const maxOpen = s.openings.reduce((m, o) => Math.max(m, o.id), 0);
+  const maxPart = s.parts.reduce((m, p) => Math.max(m, p.id), 0);
+  const next = Math.max(maxOpen, maxPart) + 1;
+  if (next > nid) nid = next;
+}
+
+/** Clamp a partition's geometry to the current footprint. Mirrors clampToDims. */
+function clampPartition(p: Partition, L: number, W: number): Partition {
+  const runMax = p.dir === "Across width" ? W : L;
+  const posMax = p.dir === "Across width" ? L : W;
+  const off = Math.max(0, Math.min(posMax, p.off));
+  const start = Math.max(0, Math.min(Math.max(0, runMax - 200), p.start));
+  const len = Math.max(200, Math.min(runMax - start, p.len));
+  const doorOff = Math.max(0, Math.min(runMax, p.doorOff));
+  return { ...p, off, start, len, doorOff };
+}
+
 const dimKeys = new Set(["L", "W"]);
 
 /** Read URL share param (?p=...) or localStorage. Browser-only — never call in SSR. */
@@ -264,6 +283,8 @@ export const useAstral = create<AstralStore>((set, get) => ({
     if (p.unit) saveUnit(p.unit);
     set(p);
     if ("L" in p || "W" in p) set((s) => clampToDims(s) as Partial<AstralState>);
+    // Reseed nid past any externally supplied ids (project load, share token, agent bulk-insert).
+    if (p.openings || p.parts) reseedNid(get());
   },
 
   addOpening: () => set((s) => ({
@@ -294,7 +315,7 @@ export const useAstral = create<AstralStore>((set, get) => ({
     }],
   })),
   updatePartition: (id, patch) => set((s) => ({
-    parts: s.parts.map((p) => (p.id === id ? { ...p, ...patch } : p)),
+    parts: s.parts.map((p) => (p.id === id ? clampPartition({ ...p, ...patch }, s.L, s.W) : p)),
   })),
   removePartition: (id) => set((s) => ({ parts: s.parts.filter((p) => p.id !== id) })),
 
@@ -302,13 +323,14 @@ export const useAstral = create<AstralStore>((set, get) => ({
     const t = TEMPLATES[idx];
     if (!t) return;
     const tp = t.s;
+    const openings = tp.ops.map((o) => ({
+      id: nid++, kind: o[0] as Opening["kind"], wall: o[1] as WallKey, off: o[2] as number, width: o[3] as number,
+    }));
     set({
       type: tp.type, L: tp.L, W: tp.W, studH: tp.studH,
       roof: tp.roof, pitch: tp.pitch, struct: tp.struct,
       clad: tp.clad, cover: tp.cover,
-      openings: tp.ops.map((o) => ({
-        id: nid++, kind: o[0] as Opening["kind"], wall: o[1] as WallKey, off: o[2] as number, width: o[3] as number,
-      })),
+      openings,
       parts: [],
       units: ("units" in tp ? (tp as { units: 1 | 2 | 3 }).units : 1),
       parapet: false,
@@ -316,6 +338,7 @@ export const useAstral = create<AstralStore>((set, get) => ({
       sel: null, detailFor: null,
       view: get().view === "detail" ? "plan" : get().view,
     });
+    reseedNid(get());
   },
 
   applyType: (type) => {
@@ -344,13 +367,7 @@ export const useAstral = create<AstralStore>((set, get) => ({
 }));
 
 // Bump the local ID counter past anything we just loaded.
-{
-  const s = useAstral.getState();
-  const maxOpen = s.openings.reduce((m, o) => Math.max(m, o.id), 0);
-  const maxPart = s.parts.reduce((m, p) => Math.max(m, p.id), 0);
-  if (maxOpen + 1 > nid) nid = maxOpen + 1;
-  if (maxPart + 1 > nid) nid = maxPart + 1;
-}
+reseedNid(useAstral.getState());
 
 // Autosave: debounced write of the current project to localStorage. Skips UI fields.
 if (typeof window !== "undefined") {

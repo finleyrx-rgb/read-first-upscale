@@ -15,6 +15,7 @@ export function Inspector() {
   const S = useAstral(useShallow((s) => s));
   const sel = S.sel;
   // buildModel is heavy — depend only on the geometry/finish keys it reads.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const M = useMemo(() => buildModel(S), [
     S.type, S.L, S.W, S.studH, S.spacing, S.eave, S.roof, S.pitch, S.cover, S.struct,
     S.found, S.units, S.parapet, S.storeys, S.subfloor, S.floorDepth,

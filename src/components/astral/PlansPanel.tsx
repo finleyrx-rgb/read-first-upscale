@@ -432,6 +432,15 @@ export function PlansPanel({ projectId }: { projectId: string | null }) {
                       {a.summary && (
                         <div style={{ fontSize: 11, opacity: 0.8, marginTop: 4 }}>{a.summary}</div>
                       )}
+                      <div style={{ marginTop: 4 }}>
+                        <button
+                          style={{ ...BTN, fontSize: 10, padding: "3px 6px" }}
+                          onClick={() => compareOnCanvas(a)}
+                          title="Switch the canvas to Astral's equivalent view so you can compare it side-by-side with the source page above"
+                        >
+                          ↔ Compare on canvas
+                        </button>
+                      </div>
                       {a.notes && a.notes.length > 0 && (
                         <ul style={{ fontSize: 11, margin: "4px 0", paddingLeft: 16 }}>
                           {a.notes.map((n, i) => (

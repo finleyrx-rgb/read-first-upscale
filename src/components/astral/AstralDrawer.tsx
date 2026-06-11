@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { useAgent, type ChatMessage } from "@/lib/astral/agent/client";
+import { useAstral } from "@/lib/astral/store";
 
 function actionLabel(a: { verb: string } & Record<string, unknown>): string {
   const parts: string[] = [a.verb];
@@ -51,6 +52,7 @@ export function AstralDrawer({ projectKey }: { projectKey: string }) {
   const loadHistory = useAgent((s) => s.loadHistory);
   const saveHistory = useAgent((s) => s.saveHistory);
   const clear = useAgent((s) => s.clear);
+  const mode = useAstral((s) => s.mode);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -86,9 +88,11 @@ export function AstralDrawer({ projectKey }: { projectKey: string }) {
       <aside className={`astral-drawer ${open ? "is-open" : ""}`} aria-hidden={!open}>
         <header className="astral-drawer-h">
           <div>
-            <div className="astral-drawer-t">Astral · AI agent</div>
+            <div className="astral-drawer-t">Astral · {mode === "dream" ? "Dream partner" : "AI agent"}</div>
             <div className="astral-muted" style={{ fontSize: 11 }}>
-              NZS 3604 / E2 aware · strict action grammar
+              {mode === "dream"
+                ? "Thinking-with · spatial qualities · no model edits"
+                : "NZS 3604 / E2 aware · strict action grammar"}
             </div>
           </div>
           <div className="astral-drawer-tools">
@@ -99,13 +103,27 @@ export function AstralDrawer({ projectKey }: { projectKey: string }) {
         <div className="astral-drawer-scroll" ref={scrollRef}>
           {messages.length === 0 && (
             <div className="astral-empty">
-              <p>Ask Astral to change the model — every action lands as a confirmable patch in the timeline.</p>
-              <ul>
-                <li>"Make this a 6×4 sleepout"</li>
-                <li>"Add a 1500mm window on the north wall at 2000mm"</li>
-                <li>"Switch to framing plan"</li>
-                <li>"Why is this wall flagged SED?"</li>
-              </ul>
+              {mode === "dream" ? (
+                <>
+                  <p>Hi — I'm Astral. Tell me what you'd like to build, sketch a feeling, or describe the place. I'll think it through with you.</p>
+                  <ul>
+                    <li>"A small bach for two, facing the sea"</li>
+                    <li>"I want it to feel held and warm in winter"</li>
+                    <li>"What's the difference between a cabin and a sleepout?"</li>
+                    <li>"Crystallise this into something I can build"</li>
+                  </ul>
+                </>
+              ) : (
+                <>
+                  <p>Ask Astral to change the model — every action lands as a confirmable patch in the timeline.</p>
+                  <ul>
+                    <li>"Make this a 6×4 sleepout"</li>
+                    <li>"Add a 1500mm window on the north wall at 2000mm"</li>
+                    <li>"Switch to framing plan"</li>
+                    <li>"Why is this wall flagged SED?"</li>
+                  </ul>
+                </>
+              )}
             </div>
           )}
           {messages.map((m) => <Bubble key={m.id} m={m} onRewind={rewindTo} />)}

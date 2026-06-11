@@ -114,37 +114,54 @@ export const useAgent = create<AgentClient>((set, get) => ({
       .slice(-16)
       .map((m) => ({ role: m.role as "user" | "assistant", content: m.content }));
 
-    try {
-      const res = await astralAgentTurn({
-        data: {
-          message,
-          history,
-          state: snapshot(useAstral.getState() as AstralState) as Record<string, unknown>,
-          selectedId: useAstral.getState().sel,
-        },
-      });
+    const isDream = useAstral.getState().mode === "dream";
 
-      // Apply each action client-side; collect last highlight id.
+    try {
+      let text = "";
+      let error: string | undefined;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const actionsForLog: any[] = [];
       let highlight: string | null = null;
-      const store = useAstral.getState();
-      for (const a of res.actions) {
-        try {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const r = applyAction(store as any, a);
-          if (r.highlight) highlight = r.highlight;
-        } catch (e) {
-          console.error("applyAction failed", a, e);
+
+      if (isDream) {
+        const { astralDreamTurn } = await import("../dreamAgent.functions");
+        const { applyDreamAction } = await import("./dreamGrammar");
+        const { useDream } = await import("../dream");
+        const dreamSnap = JSON.parse(JSON.stringify(useDream.getState())) as Record<string, unknown>;
+        const res = await astralDreamTurn({ data: { message, history, dream: dreamSnap } });
+        text = res.text; error = res.error;
+        for (const a of res.actions) {
+          try { applyDreamAction(a); actionsForLog.push(a); }
+          catch (e) { console.error("applyDreamAction failed", a, e); }
+        }
+      } else {
+        const res = await astralAgentTurn({
+          data: {
+            message, history,
+            state: snapshot(useAstral.getState() as AstralState) as Record<string, unknown>,
+            selectedId: useAstral.getState().sel,
+          },
+        });
+        text = res.text; error = res.error;
+        const store = useAstral.getState();
+        for (const a of res.actions) {
+          try {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const r = applyAction(store as any, a);
+            if (r.highlight) highlight = r.highlight;
+            actionsForLog.push(a);
+          } catch (e) { console.error("applyAction failed", a, e); }
         }
       }
 
       const finalMsg: ChatMessage = {
         id: pending.id,
         role: "assistant",
-        content: res.text || (res.actions.length ? "Done." : "—"),
-        actions: res.actions,
-        snapshot: res.actions.length ? preSnap : undefined,
+        content: text || (actionsForLog.length ? "Done." : "—"),
+        actions: actionsForLog,
+        snapshot: !isDream && actionsForLog.length ? preSnap : undefined,
         ts: Date.now(),
-        error: res.error,
+        error,
       };
       set((s) => ({
         messages: s.messages.map((m) => (m.id === pending.id ? finalMsg : m)),

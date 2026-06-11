@@ -1,6 +1,6 @@
 // Plan — architectural layer. Ported from drawPlan() in public/astral.html.
 
-import { useAstral } from "@/lib/astral/store";
+import { useAstral, overlappingOpeningIds } from "@/lib/astral/store";
 import { useShallow } from "zustand/react/shallow";
 import { WALLNAME, type WallKey } from "@/lib/astral/constants";
 import { KIND_COL, cladHex, openPlace, planGeom, wallLen } from "@/lib/astral/geom";

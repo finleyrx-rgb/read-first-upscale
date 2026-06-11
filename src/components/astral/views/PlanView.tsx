@@ -38,29 +38,43 @@ export function PlanView() {
         <rect x={x0 + tt} y={y0 + tt} width={w - 2 * tt} height={h - 2 * tt}
           fill="none" stroke="#1d2a2a" strokeWidth={1} />
 
-        {S.openings.map((o) => {
-          const pl = openPlace(S, o, g);
-          const stroke = KIND_COL[o.kind];
-          const sw = o.kind === "Garage" ? 3 : 2.2;
-          if (pl.horiz) {
-            const ax = Math.max(x0, Math.min(x0 + w - pl.owid, pl.cx - pl.owid / 2));
+        {(() => {
+          const overlaps = overlappingOpeningIds(S.openings);
+          return S.openings.map((o) => {
+            const pl = openPlace(S, o, g);
+            const stroke = overlaps.has(o.id) ? "#c93535" : KIND_COL[o.kind];
+            const sw = o.kind === "Garage" ? 3 : 2.2;
+            const halo = overlaps.has(o.id)
+              ? <title>Overlaps another opening on this wall</title>
+              : null;
+            if (pl.horiz) {
+              const ax = Math.max(x0, Math.min(x0 + w - pl.owid, pl.cx - pl.owid / 2));
+              return (
+                <g key={o.id}>
+                  <rect x={ax} y={pl.cy - tt / 2 - 1} width={pl.owid} height={tt + 2} fill="#fbf9f3" />
+                  {overlaps.has(o.id) && (
+                    <rect x={ax - 2} y={pl.cy - tt / 2 - 3} width={pl.owid + 4} height={tt + 6}
+                      fill="none" stroke="#c93535" strokeWidth={0.6} strokeDasharray="3 2" />
+                  )}
+                  <line x1={ax} y1={pl.cy} x2={ax + pl.owid} y2={pl.cy} stroke={stroke} strokeWidth={sw}
+                    data-node-id={`opening-${o.id}`} data-node-type="Opening">{halo}</line>
+                </g>
+              );
+            }
+            const ay = Math.max(y0, Math.min(y0 + h - pl.owid, pl.cy - pl.owid / 2));
             return (
               <g key={o.id}>
-                <rect x={ax} y={pl.cy - tt / 2 - 1} width={pl.owid} height={tt + 2} fill="#fbf9f3" />
-                <line x1={ax} y1={pl.cy} x2={ax + pl.owid} y2={pl.cy} stroke={stroke} strokeWidth={sw}
-                  data-node-id={`opening-${o.id}`} data-node-type="Opening" />
+                <rect x={pl.cx - tt / 2 - 1} y={ay} width={tt + 2} height={pl.owid} fill="#fbf9f3" />
+                {overlaps.has(o.id) && (
+                  <rect x={pl.cx - tt / 2 - 3} y={ay - 2} width={tt + 6} height={pl.owid + 4}
+                    fill="none" stroke="#c93535" strokeWidth={0.6} strokeDasharray="3 2" />
+                )}
+                <line x1={pl.cx} y1={ay} x2={pl.cx} y2={ay + pl.owid} stroke={stroke} strokeWidth={sw}
+                  data-node-id={`opening-${o.id}`} data-node-type="Opening">{halo}</line>
               </g>
             );
-          }
-          const ay = Math.max(y0, Math.min(y0 + h - pl.owid, pl.cy - pl.owid / 2));
-          return (
-            <g key={o.id}>
-              <rect x={pl.cx - tt / 2 - 1} y={ay} width={tt + 2} height={pl.owid} fill="#fbf9f3" />
-              <line x1={pl.cx} y1={ay} x2={pl.cx} y2={ay + pl.owid} stroke={stroke} strokeWidth={sw}
-                data-node-id={`opening-${o.id}`} data-node-type="Opening" />
-            </g>
-          );
-        })}
+          });
+        })()}
 
         {S.parts.map((p) => {
           const across = p.dir === "Across width";

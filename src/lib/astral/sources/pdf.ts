@@ -1,13 +1,6 @@
 // Client-side PDF → page-image rendering using pdfjs-dist.
-// Each call renders one page to a JPEG data URL suitable for the vision LLM.
-
-import * as pdfjs from "pdfjs-dist";
-// Vite serves the worker as a URL; set once at module load.
-import workerSrc from "pdfjs-dist/build/pdf.worker.min.mjs?url";
-
-if (typeof window !== "undefined") {
-  pdfjs.GlobalWorkerOptions.workerSrc = workerSrc;
-}
+// pdfjs-dist references browser globals (DOMMatrix, etc.) at module load,
+// so we lazy-import it inside the function to keep SSR safe.
 
 export type RenderedPage = {
   index: number; // 1-based
@@ -16,11 +9,27 @@ export type RenderedPage = {
   height: number;
 };
 
+let workerConfigured = false;
+async function loadPdfjs() {
+  const pdfjs = await import("pdfjs-dist");
+  if (!workerConfigured) {
+    const workerSrc = (await import("pdfjs-dist/build/pdf.worker.min.mjs?url"))
+      .default;
+    pdfjs.GlobalWorkerOptions.workerSrc = workerSrc;
+    workerConfigured = true;
+  }
+  return pdfjs;
+}
+
 /** Render every page of a PDF file as JPEG data URLs. */
 export async function renderPdfPages(
   file: File,
   opts: { scale?: number; quality?: number } = {},
 ): Promise<RenderedPage[]> {
+  if (typeof window === "undefined") {
+    throw new Error("renderPdfPages must run in the browser");
+  }
+  const pdfjs = await loadPdfjs();
   const scale = opts.scale ?? 1.4;
   const quality = opts.quality ?? 0.78;
   const buf = await file.arrayBuffer();
@@ -46,7 +55,6 @@ export async function renderPdfPages(
     }
   } finally {
     try {
-      // pdfjs v6: cleanup on the loading task / document
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       await (doc as any).cleanup?.();
     } catch {

@@ -274,6 +274,49 @@ export function PlansPanel({ projectId }: { projectId: string | null }) {
         the extracted model is approximate and every patch is reviewable before it is applied.
       </div>
 
+      {/* Phase C4 — Elaboration shortcuts. Once the model has been populated
+          from source plans, the user can generate more drawings than the
+          original set contained, all watermarked "ELABORATED FROM SOURCE". */}
+      <div
+        style={{
+          padding: 8,
+          border: "1px dashed var(--astral-line, #ccc)",
+          borderRadius: 4,
+          background: "#fafaf7",
+          display: "grid",
+          gap: 6,
+        }}
+      >
+        <div style={{ fontFamily: "var(--astral-mono)", fontSize: 11, fontWeight: 700 }}>
+          Elaborate from extracted model
+        </div>
+        <div style={{ fontSize: 10, opacity: 0.7 }}>
+          Generates more drawings than the source set contained — all four elevations, sections,
+          construction details, framing &amp; foundation plans. Watermarked accordingly.
+        </div>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+          <button style={BTN} onClick={() => jumpTo("elevation", "arch", "front")}>
+            ▢ All elevations
+          </button>
+          <button style={BTN} onClick={() => jumpTo("section", undefined, undefined)}>
+            ⊢ Sections
+          </button>
+          <button style={BTN} onClick={() => jumpTo("detail")}>
+            ◇ Details
+          </button>
+          <button style={BTN} onClick={() => jumpTo("plan", "framing")}>
+            ▦ Framing plan
+          </button>
+          <button style={BTN} onClick={() => jumpTo("plan", "foundation")}>
+            ▤ Foundation plan
+          </button>
+          <span style={{ flex: 1 }} />
+          <button style={{ ...BTN, fontWeight: 700 }} onClick={elaborateAll}>
+            📄 Full elaborated PDF set
+          </button>
+        </div>
+      </div>
+
       {sources.length === 0 && (
         <div style={{ fontSize: 12, opacity: 0.6, padding: 12, textAlign: "center" }}>
           No plans uploaded yet. Drop a multi-page PDF (consent set, MultiProof, etc.) to begin.

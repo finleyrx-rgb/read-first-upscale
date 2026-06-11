@@ -40,6 +40,7 @@ type Tab = typeof TABS[number];
 
 export function MaterialsPanel() {
   const S = useAstral(useShallow((s) => s));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const t = useMemo(() => buildTakeoff(S), [
     S.L, S.W, S.studH, S.spacing, S.wind, S.openings, S.parts, S.units, S.storeys,
     S.found, S.subfloor, S.floorDepth, S.roof, S.pitch, S.cover, S.struct, S.clad, S.eave,

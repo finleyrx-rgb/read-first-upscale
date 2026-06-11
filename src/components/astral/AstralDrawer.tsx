@@ -52,6 +52,7 @@ export function AstralDrawer({ projectKey }: { projectKey: string }) {
   const loadHistory = useAgent((s) => s.loadHistory);
   const saveHistory = useAgent((s) => s.saveHistory);
   const clear = useAgent((s) => s.clear);
+  const mode = useAstral((s) => s.mode);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 

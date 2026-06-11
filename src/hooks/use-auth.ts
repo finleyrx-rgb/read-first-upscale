@@ -16,7 +16,9 @@ export function useAuth(): AuthState {
 
   useEffect(() => {
     // Listener FIRST so we don't miss the initial event.
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
       setState({ user: session?.user ?? null, session, loading: false });
     });
     // Then read the persisted session.

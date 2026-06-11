@@ -5,7 +5,11 @@ import type { ReactNode } from "react";
 import { useAstral } from "@/lib/astral/store";
 
 export function OptRow<T extends string | number>({
-  label, values, current, onPick, small,
+  label,
+  values,
+  current,
+  onPick,
+  small,
 }: {
   label: string;
   values: readonly T[];
@@ -40,7 +44,11 @@ function fromDisplay(val: number, unit: "m" | "mm") {
 }
 
 export function DimInput({
-  label, getMM, setMM, minMM, maxMM,
+  label,
+  getMM,
+  setMM,
+  minMM,
+  maxMM,
 }: {
   label?: string;
   getMM: () => number;
@@ -72,22 +80,44 @@ export function DimInput({
 }
 
 export function SliderRow({
-  label, value, min, max, onChange, suffix = "°",
+  label,
+  value,
+  min,
+  max,
+  onChange,
+  suffix = "°",
 }: {
-  label: string; value: number; min: number; max: number; onChange: (v: number) => void; suffix?: string;
+  label: string;
+  value: number;
+  min: number;
+  max: number;
+  onChange: (v: number) => void;
+  suffix?: string;
 }) {
   return (
     <div className="astral-q">
       <label>{`${label} — ${value}${suffix}`}</label>
-      <input type="range" min={min} max={max} value={value} onChange={(e) => onChange(+e.target.value)} />
+      <input
+        type="range"
+        min={min}
+        max={max}
+        value={value}
+        onChange={(e) => onChange(+e.target.value)}
+      />
     </div>
   );
 }
 
 export function Swatches<T extends { n: string; h: string }>({
-  label, list, current, onPick,
+  label,
+  list,
+  current,
+  onPick,
 }: {
-  label: string; list: readonly T[]; current: string; onPick: (n: string) => void;
+  label: string;
+  list: readonly T[];
+  current: string;
+  onPick: (n: string) => void;
 }) {
   return (
     <div className="astral-q">

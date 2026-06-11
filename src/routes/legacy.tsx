@@ -20,7 +20,14 @@ function LegacyPage() {
     <iframe
       src="/astral.html"
       title="Project Astral (legacy)"
-      style={{ position: "fixed", inset: 0, width: "100vw", height: "100vh", border: "none", background: "#f3efe6" }}
+      style={{
+        position: "fixed",
+        inset: 0,
+        width: "100vw",
+        height: "100vh",
+        border: "none",
+        background: "#f3efe6",
+      }}
     />
   );
 }

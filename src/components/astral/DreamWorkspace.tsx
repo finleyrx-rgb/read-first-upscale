@@ -4,23 +4,46 @@
 import { useEffect, useRef, useState } from "react";
 import { useAstral } from "@/lib/astral/store";
 import {
-  TYPOLOGIES, SPATIAL_QUALITIES, useDream, crystallise, canCrystallise,
+  TYPOLOGIES,
+  SPATIAL_QUALITIES,
+  useDream,
+  crystallise,
+  canCrystallise,
   type DreamReference,
 } from "@/lib/astral/dream";
 
-function TypologyCard({ t, index, selected, onSelect }: {
-  t: typeof TYPOLOGIES[number]; index: number; selected: boolean; onSelect: () => void;
+function TypologyCard({
+  t,
+  index,
+  selected,
+  onSelect,
+}: {
+  t: (typeof TYPOLOGIES)[number];
+  index: number;
+  selected: boolean;
+  onSelect: () => void;
 }) {
   return (
     <button type="button" className={`dream-typ${selected ? " sel" : ""}`} onClick={onSelect}>
       <div className="dream-typ-row">
         <span className="dream-typ-num">{String(index + 1).padStart(2, "0")}</span>
         <svg className="dream-typ-glyph" viewBox="0 0 64 40" aria-hidden="true">
-          <path d={t.glyph} fill="none" stroke="currentColor" strokeWidth="1.25" strokeLinejoin="round" strokeLinecap="round" />
+          <path
+            d={t.glyph}
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.25"
+            strokeLinejoin="round"
+            strokeLinecap="round"
+          />
         </svg>
       </div>
       <div className="dream-typ-ttl">{t.title}</div>
-      <div className="dream-typ-chips">{t.qualities.map((q) => <span key={q}>{q}</span>)}</div>
+      <div className="dream-typ-chips">
+        {t.qualities.map((q) => (
+          <span key={q}>{q}</span>
+        ))}
+      </div>
       <div className="dream-typ-note">{t.notes}</div>
     </button>
   );
@@ -37,8 +60,8 @@ function Moodboard() {
   function onDrop(e: React.DragEvent) {
     e.preventDefault();
     const rect = boardRef.current?.getBoundingClientRect();
-    const x = (e.clientX - (rect?.left ?? 0)) - 80;
-    const y = (e.clientY - (rect?.top ?? 0)) - 80;
+    const x = e.clientX - (rect?.left ?? 0) - 80;
+    const y = e.clientY - (rect?.top ?? 0) - 80;
     const files = Array.from(e.dataTransfer.files ?? []);
     files.forEach((f) => {
       if (!f.type.startsWith("image/")) return;
@@ -53,8 +76,12 @@ function Moodboard() {
   function addNote() {
     const rect = boardRef.current?.getBoundingClientRect();
     add({
-      kind: "note", text: "New note", x: (rect?.width ?? 600) / 2 - 90, y: 40,
-      w: 180, h: 110,
+      kind: "note",
+      text: "New note",
+      x: (rect?.width ?? 600) / 2 - 90,
+      y: 40,
+      w: 180,
+      h: 110,
     });
   }
 
@@ -67,7 +94,9 @@ function Moodboard() {
     if (!drag) return;
     update(drag.id, { x: e.clientX - drag.dx, y: e.clientY - drag.dy });
   }
-  function endDrag() { setDrag(null); }
+  function endDrag() {
+    setDrag(null);
+  }
 
   return (
     <div
@@ -79,7 +108,9 @@ function Moodboard() {
       onPointerUp={endDrag}
     >
       <div className="dream-board-tools">
-        <button type="button" className="astral-btn ghost sm" onClick={addNote}>+ Note</button>
+        <button type="button" className="astral-btn ghost sm" onClick={addNote}>
+          + Note
+        </button>
         <span className="astral-muted" style={{ fontSize: 11 }}>
           Drop images here · drag to arrange
         </span>
@@ -113,9 +144,14 @@ function Moodboard() {
           <button
             type="button"
             className="dream-ref-rm"
-            onClick={(e) => { e.stopPropagation(); remove(r.id); }}
+            onClick={(e) => {
+              e.stopPropagation();
+              remove(r.id);
+            }}
             onPointerDown={(e) => e.stopPropagation()}
-          >✕</button>
+          >
+            ✕
+          </button>
         </div>
       ))}
     </div>
@@ -148,7 +184,9 @@ function IntentPanel() {
             type="button"
             className={`dream-chip${qualities.includes(q) ? " on" : ""}`}
             onClick={() => toggleQ(q)}
-          >{q}</button>
+          >
+            {q}
+          </button>
         ))}
       </div>
       {typo && (
@@ -156,7 +194,14 @@ function IntentPanel() {
           <div className="dream-section-h">Selected typology</div>
           <div className="dream-typ-mini">
             <svg viewBox="0 0 64 40" aria-hidden="true">
-              <path d={typo.glyph} fill="none" stroke="currentColor" strokeWidth="1.25" strokeLinejoin="round" strokeLinecap="round" />
+              <path
+                d={typo.glyph}
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.25"
+                strokeLinejoin="round"
+                strokeLinecap="round"
+              />
             </svg>
             <span>{typo.title}</span>
           </div>
@@ -170,13 +215,17 @@ function IntentPanel() {
           const r = crystallise();
           if (!r.ok) alert(r.message);
         }}
-        title={enabled ? "Translate this dream into a starting build" : "Pick a typology, write intent, or add 3+ moodboard items"}
+        title={
+          enabled
+            ? "Translate this dream into a starting build"
+            : "Pick a typology, write intent, or add 3+ moodboard items"
+        }
       >
         ✦ Crystallise → Build
       </button>
       <p className="astral-muted" style={{ fontSize: 11, lineHeight: 1.5 }}>
-        Concept synthesis — the agent will propose an initial buildable model,
-        and you can refine it in Build mode.
+        Concept synthesis — the agent will propose an initial buildable model, and you can refine it
+        in Build mode.
       </p>
     </div>
   );
@@ -208,7 +257,9 @@ function TypologyRail() {
 
 export function DreamWorkspace() {
   const hydrate = useDream((s) => s.hydrate);
-  useEffect(() => { hydrate(); }, [hydrate]);
+  useEffect(() => {
+    hydrate();
+  }, [hydrate]);
   return (
     <div className="dream-root">
       <TypologyRail />
@@ -218,32 +269,44 @@ export function DreamWorkspace() {
   );
 }
 
-export function WelcomeCard({ onDismiss }: { onDismiss: () => void }) {
-  const patch = useAstral((s) => s.patch);
-  const loadTemplate = useAstral((s) => s.loadTemplate);
+export function WelcomeCard({
+  onDismiss,
+  onAction,
+}: {
+  onDismiss: () => void;
+  onAction?: (kind: "template" | "upload" | "sketch") => void;
+}) {
+  const handle = (kind: "template" | "upload" | "sketch") => {
+    if (onAction) onAction(kind);
+    else onDismiss();
+  };
   return (
     <div className="dream-welcome-backdrop" onClick={onDismiss}>
       <div className="dream-welcome" onClick={(e) => e.stopPropagation()}>
-        <h1>Welcome to <em>Astral</em>.</h1>
-        <p>Start from a feeling, a sketch, or a template.</p>
+        <h1>
+          Welcome to <em>Astral</em>.
+        </h1>
+        <p>Pick a way in. You can switch to Dream mode any time from the header.</p>
         <div className="dream-welcome-opts">
-          <button type="button" onClick={() => { patch({ mode: "dream" }); onDismiss(); }}>
-            <span className="ic">✦</span>
-            <span className="t">I'm dreaming</span>
-            <span className="s">Open a moodboard and explore</span>
-          </button>
-          <button type="button" onClick={() => { patch({ mode: "build" }); onDismiss(); }}>
-            <span className="ic">✎</span>
-            <span className="t">I have a sketch</span>
-            <span className="s">Upload and transcribe it</span>
-          </button>
-          <button type="button" onClick={() => { loadTemplate(0); patch({ mode: "build" }); onDismiss(); }}>
+          <button type="button" onClick={() => handle("template")}>
             <span className="ic">▢</span>
-            <span className="t">I want to start building</span>
-            <span className="s">Loads a default 10×8 garage</span>
+            <span className="t">Start from a template</span>
+            <span className="s">Default 10×8 garage — refine from there</span>
+          </button>
+          <button type="button" onClick={() => handle("upload")}>
+            <span className="ic">📄</span>
+            <span className="t">Upload existing plans</span>
+            <span className="s">PDF / image — extract & elaborate</span>
+          </button>
+          <button type="button" onClick={() => handle("sketch")}>
+            <span className="ic">✎</span>
+            <span className="t">Sketch a quick idea</span>
+            <span className="s">Photograph a napkin sketch</span>
           </button>
         </div>
-        <button type="button" className="dream-welcome-skip" onClick={onDismiss}>Skip</button>
+        <button type="button" className="dream-welcome-skip" onClick={onDismiss}>
+          Skip
+        </button>
       </div>
     </div>
   );

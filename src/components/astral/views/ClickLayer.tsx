@@ -16,19 +16,32 @@ export function ClickLayer({ children }: { children: ReactNode }) {
     let n = e.target as Element | null;
     while (n && n !== e.currentTarget) {
       const cut = n.getAttribute?.("data-section-cut") as CutKey | null;
-      if (cut) { patch({ cut, view: "section" }); return; }
+      if (cut) {
+        patch({ cut, view: "section" });
+        return;
+      }
       const callout = n.getAttribute?.("data-callout-key");
       if (callout) {
         const nodeId = n.getAttribute("data-callout-node");
-        if (nodeId) { setSel(nodeId); setDetailFor(nodeId); }
+        if (nodeId) {
+          setSel(nodeId);
+          setDetailFor(nodeId);
+        }
         patch({ view: "detail" });
         return;
       }
       const nodeId = n.getAttribute?.("data-node-id");
-      if (nodeId) { setSel(nodeId); return; }
+      if (nodeId) {
+        setSel(nodeId);
+        return;
+      }
       n = n.parentNode as Element | null;
     }
   };
 
-  return <div onClick={onClick} style={{ position: "relative" }}>{children}</div>;
+  return (
+    <div onClick={onClick} style={{ position: "relative" }}>
+      {children}
+    </div>
+  );
 }

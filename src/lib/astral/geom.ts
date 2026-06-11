@@ -44,15 +44,34 @@ export function planGeom(S: Pick<AstralState, "L" | "W">) {
   return { sc, w, h, x0, y0, tt };
 }
 
-export function openPlace(S: Pick<AstralState, "L" | "W">, o: Opening, g: ReturnType<typeof planGeom>) {
+export function openPlace(
+  S: Pick<AstralState, "L" | "W">,
+  o: Opening,
+  g: ReturnType<typeof planGeom>,
+) {
   const { sc, w, h, x0, y0 } = g;
   const fr = openFrac(S, o);
   const owid = Math.min(o.width, wallLen(S, o.wall) * 0.95) * sc;
-  let horiz = true, cx = 0, cy = 0;
-  if (o.wall === "N") { horiz = true; cx = x0 + fr * w; cy = y0; }
-  else if (o.wall === "S") { horiz = true; cx = x0 + fr * w; cy = y0 + h; }
-  else if (o.wall === "W") { horiz = false; cx = x0; cy = y0 + fr * h; }
-  else { horiz = false; cx = x0 + w; cy = y0 + fr * h; }
+  let horiz = true,
+    cx = 0,
+    cy = 0;
+  if (o.wall === "N") {
+    horiz = true;
+    cx = x0 + fr * w;
+    cy = y0;
+  } else if (o.wall === "S") {
+    horiz = true;
+    cx = x0 + fr * w;
+    cy = y0 + h;
+  } else if (o.wall === "W") {
+    horiz = false;
+    cx = x0;
+    cy = y0 + fr * h;
+  } else {
+    horiz = false;
+    cx = x0 + w;
+    cy = y0 + fr * h;
+  }
   return { horiz, cx, cy, owid };
 }
 
@@ -69,7 +88,9 @@ export function nogRows(studH: number): number {
 
 export function braceLayout(S: Pick<AstralState, "L" | "W" | "openings">, wall: WallKey) {
   const len = wallLen(S, wall);
-  const ops = S.openings.filter((o) => o.wall === wall).map((o) => [o.off - o.width / 2, o.off + o.width / 2] as const);
+  const ops = S.openings
+    .filter((o) => o.wall === wall)
+    .map((o) => [o.off - o.width / 2, o.off + o.width / 2] as const);
   const clear = (a: number, b: number) => !ops.some(([s, e]) => b > s && a < e);
   const pw = 900;
   const cand = [200, (len - pw) / 2, len - pw - 200];

@@ -1,15 +1,21 @@
 // ControlBar — Plan/Elevation/Section/Detail + layer + face/cut + unit toggles.
 
 import { useAstral } from "@/lib/astral/store";
-import type {
-  CutKey, FaceKey, LayerKey, ViewKey,
-} from "@/lib/astral/constants";
+import type { CutKey, FaceKey, LayerKey, ViewKey } from "@/lib/astral/constants";
 
 type Pill<T extends string> = readonly (readonly [T, string])[];
 
 function PillRow<T extends string>({
-  items, current, onPick, small,
-}: { items: Pill<T>; current: T; onPick: (k: T) => void; small?: boolean }) {
+  items,
+  current,
+  onPick,
+  small,
+}: {
+  items: Pill<T>;
+  current: T;
+  onPick: (k: T) => void;
+  small?: boolean;
+}) {
   return (
     <div className="astral-pillrow">
       {items.map(([k, label]) => (
@@ -26,16 +32,27 @@ function PillRow<T extends string>({
 }
 
 const VIEWS: Pill<ViewKey> = [
-  ["plan", "Plan"], ["elevation", "Elevation"], ["section", "Section"], ["axon", "Axon · 3D"], ["detail", "Detail"],
+  ["plan", "Plan"],
+  ["elevation", "Elevation"],
+  ["section", "Section"],
+  ["axon", "Axon · 3D"],
+  ["detail", "Detail"],
 ] as const;
 const LAYERS: Pill<LayerKey> = [
-  ["arch", "Architectural"], ["framing", "Framing"], ["foundation", "Concrete"], ["services", "Services"],
+  ["arch", "Architectural"],
+  ["framing", "Framing"],
+  ["foundation", "Concrete"],
+  ["services", "Services"],
 ] as const;
 const FACES: Pill<FaceKey> = [
-  ["front", "Front"], ["back", "Back"], ["left", "Left"], ["right", "Right"],
+  ["front", "Front"],
+  ["back", "Back"],
+  ["left", "Left"],
+  ["right", "Right"],
 ] as const;
 const CUTS: Pill<CutKey> = [
-  ["cross", "A–A cross"], ["long", "B–B long"],
+  ["cross", "A–A cross"],
+  ["long", "B–B long"],
 ] as const;
 
 export function ControlBar() {
@@ -94,7 +111,15 @@ export function ControlBar() {
             onChange={(e) => set("cutPos", Number(e.target.value) / 100)}
             style={{ flex: 1, accentColor: "#1d2a2a" }}
           />
-          <span style={{ fontSize: 11, fontFamily: "IBM Plex Mono", color: "#3c4a47", minWidth: 56, textAlign: "right" }}>
+          <span
+            style={{
+              fontSize: 11,
+              fontFamily: "IBM Plex Mono",
+              color: "#3c4a47",
+              minWidth: 56,
+              textAlign: "right",
+            }}
+          >
             {cutAtMM}mm
           </span>
         </div>

@@ -6,13 +6,13 @@ import { z } from "zod";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 export const fetchSharedProject = createServerFn({ method: "GET" })
-  .inputValidator((input: { token: string }) =>
-    z.object({ token: z.string().uuid() }).parse(input),
-  )
+  .inputValidator((input: { token: string }) => z.object({ token: z.string().uuid() }).parse(input))
   .handler(async ({ data }) => {
     const { data: row, error } = await supabaseAdmin
       .from("projects")
-      .select("id,name,address,start_date,finish_date,notes,snapshot,is_public,share_token,updated_at")
+      .select(
+        "id,name,address,start_date,finish_date,notes,snapshot,is_public,share_token,updated_at",
+      )
       .eq("share_token", data.token)
       .eq("is_public", true)
       .maybeSingle();

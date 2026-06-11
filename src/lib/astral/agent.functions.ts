@@ -13,10 +13,12 @@ import { ASTRAL_KNOWLEDGE } from "./agent/knowledge";
 const TurnInput = z.object({
   message: z.string().min(1).max(4000),
   history: z
-    .array(z.object({
-      role: z.enum(["user", "assistant"]),
-      content: z.string(),
-    }))
+    .array(
+      z.object({
+        role: z.enum(["user", "assistant"]),
+        content: z.string(),
+      }),
+    )
     .max(40)
     .default([]),
   state: z.record(z.string(), z.unknown()),
@@ -82,9 +84,7 @@ export const astralAgentTurn = createServerFn({ method: "POST" })
       "```json",
       stateSummary,
       "```",
-      data.selectedId
-        ? `\n## Currently selected element: \`${data.selectedId}\``
-        : "",
+      data.selectedId ? `\n## Currently selected element: \`${data.selectedId}\`` : "",
     ].join("\n");
 
     try {

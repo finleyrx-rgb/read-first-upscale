@@ -156,7 +156,11 @@ export function applyAction(store: StoreLike, action: AgentAction): ActionResult
       if (action.studH !== undefined) p.studH = action.studH;
       if (action.spacing !== undefined) p.spacing = action.spacing;
       store.patch(p);
-      return { ok: true, message: `Footprint updated (${Object.keys(p).join(", ")})`, highlight: "building" };
+      return {
+        ok: true,
+        message: `Footprint updated (${Object.keys(p).join(", ")})`,
+        highlight: "building",
+      };
     }
     case "setRoof": {
       const p: Partial<AstralState> = {};
@@ -169,10 +173,12 @@ export function applyAction(store: StoreLike, action: AgentAction): ActionResult
     }
     case "setFinishes": {
       const p: Partial<AstralState> = {};
-      (["clad", "cladCol", "roofCol", "lining", "floor", "insul", "joinery"] as const).forEach((k) => {
-        const v = (action as Record<string, unknown>)[k];
-        if (v !== undefined) (p as Record<string, unknown>)[k] = v;
-      });
+      (["clad", "cladCol", "roofCol", "lining", "floor", "insul", "joinery"] as const).forEach(
+        (k) => {
+          const v = (action as Record<string, unknown>)[k];
+          if (v !== undefined) (p as Record<string, unknown>)[k] = v;
+        },
+      );
       store.patch(p);
       return { ok: true, message: "Finishes updated", highlight: null };
     }
@@ -191,12 +197,19 @@ export function applyAction(store: StoreLike, action: AgentAction): ActionResult
       const all = store.getState().openings;
       const fresh = all[all.length - 1];
       const patch: Partial<Opening> = {
-        kind: action.kind, wall: action.wall, off: action.off, width: action.width,
+        kind: action.kind,
+        wall: action.wall,
+        off: action.off,
+        width: action.width,
       };
       if (action.head !== undefined) patch.head = action.head;
       if (action.sill !== undefined) patch.sill = action.sill;
       store.updateOpening(fresh.id, patch);
-      return { ok: true, message: `Added ${action.kind} on ${action.wall} wall`, highlight: `opening-${fresh.id}` };
+      return {
+        ok: true,
+        message: `Added ${action.kind} on ${action.wall} wall`,
+        highlight: `opening-${fresh.id}`,
+      };
     }
     case "updateOpening": {
       const patch: Partial<Opening> = {};
@@ -205,7 +218,11 @@ export function applyAction(store: StoreLike, action: AgentAction): ActionResult
         if (v !== undefined) (patch as Record<string, unknown>)[k] = v;
       });
       store.updateOpening(action.id, patch);
-      return { ok: true, message: `Updated opening #${action.id}`, highlight: `opening-${action.id}` };
+      return {
+        ok: true,
+        message: `Updated opening #${action.id}`,
+        highlight: `opening-${action.id}`,
+      };
     }
     case "removeOpening": {
       store.removeOpening(action.id);
@@ -216,10 +233,20 @@ export function applyAction(store: StoreLike, action: AgentAction): ActionResult
       const all = store.getState().parts;
       const fresh = all[all.length - 1];
       store.updatePartition(fresh.id, {
-        dir: action.dir, off: action.off, start: action.start, len: action.len,
-        type: action.type, door: action.door, doorW: action.doorW, doorOff: action.doorOff || Math.round(action.len / 2),
+        dir: action.dir,
+        off: action.off,
+        start: action.start,
+        len: action.len,
+        type: action.type,
+        door: action.door,
+        doorW: action.doorW,
+        doorOff: action.doorOff || Math.round(action.len / 2),
       });
-      return { ok: true, message: `Added ${action.type.toLowerCase()} partition`, highlight: `part-${fresh.id}` };
+      return {
+        ok: true,
+        message: `Added ${action.type.toLowerCase()} partition`,
+        highlight: `part-${fresh.id}`,
+      };
     }
     case "removePartition": {
       store.removePartition(action.id);
@@ -232,7 +259,11 @@ export function applyAction(store: StoreLike, action: AgentAction): ActionResult
         if (v !== undefined) (patch as Record<string, unknown>)[k] = v;
       });
       store.updatePartition(action.id, patch);
-      return { ok: true, message: `Updated partition #${action.id}`, highlight: `part-${action.id}` };
+      return {
+        ok: true,
+        message: `Updated partition #${action.id}`,
+        highlight: `part-${action.id}`,
+      };
     }
     case "applyTemplate": {
       store.loadTemplate(action.index);
@@ -243,18 +274,30 @@ export function applyAction(store: StoreLike, action: AgentAction): ActionResult
       if (action.view) p.view = action.view;
       if (action.layer) p.layer = action.layer;
       store.patch(p);
-      return { ok: true, message: `View → ${action.view ?? store.getState().view} / ${action.layer ?? store.getState().layer}`, highlight: null };
+      return {
+        ok: true,
+        message: `View → ${action.view ?? store.getState().view} / ${action.layer ?? store.getState().layer}`,
+        highlight: null,
+      };
     }
     case "selectElement": {
       store.setSel(action.id);
-      return { ok: true, message: action.id ? `Selected ${action.id}` : "Deselected", highlight: action.id };
+      return {
+        ok: true,
+        message: action.id ? `Selected ${action.id}` : "Deselected",
+        highlight: action.id,
+      };
     }
     case "setStoreys": {
       const p: Partial<AstralState> = {};
       if (action.storeys !== undefined) p.storeys = action.storeys;
       if (action.floorDepth !== undefined) p.floorDepth = action.floorDepth;
       store.patch(p);
-      return { ok: true, message: `Storeys updated (${Object.keys(p).join(", ")})`, highlight: "building" };
+      return {
+        ok: true,
+        message: `Storeys updated (${Object.keys(p).join(", ")})`,
+        highlight: "building",
+      };
     }
   }
   return { ok: false, message: "Unknown action verb", highlight: null };

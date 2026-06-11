@@ -2,9 +2,7 @@
 // Replaces the legacy mutable global `S` in public/astral.html.
 
 import { create } from "zustand";
-import type {
-  CutKey, FaceKey, LayerKey, UnitKey, ViewKey, WallKey,
-} from "./constants";
+import type { CutKey, FaceKey, LayerKey, UnitKey, ViewKey, WallKey } from "./constants";
 import { TEMPLATES } from "./constants";
 import { DEFAULT_WALL_TYPES, type WallType } from "./wallTypes";
 
@@ -40,10 +38,16 @@ export function overlappingOpeningIds(openings: Opening[]): Set<number> {
   (Object.values(walls) as Opening[][]).forEach((list) => {
     for (let i = 0; i < list.length; i++) {
       for (let j = i + 1; j < list.length; j++) {
-        const a = list[i], b = list[j];
-        const a1 = a.off - a.width / 2, a2 = a.off + a.width / 2;
-        const b1 = b.off - b.width / 2, b2 = b.off + b.width / 2;
-        if (a2 > b1 && b2 > a1) { bad.add(a.id); bad.add(b.id); }
+        const a = list[i],
+          b = list[j];
+        const a1 = a.off - a.width / 2,
+          a2 = a.off + a.width / 2;
+        const b1 = b.off - b.width / 2,
+          b2 = b.off + b.width / 2;
+        if (a2 > b1 && b2 > a1) {
+          bad.add(a.id);
+          bad.add(b.id);
+        }
       }
     }
   });
@@ -137,12 +141,18 @@ export function readStoredUnit(): UnitKey {
   try {
     const v = window.localStorage.getItem(UNIT_KEY);
     if (v === "m" || v === "mm") return v;
-  } catch { /* noop */ }
+  } catch {
+    /* noop */
+  }
   return "m";
 }
 function saveUnit(u: UnitKey) {
   if (typeof window === "undefined") return;
-  try { window.localStorage.setItem(UNIT_KEY, u); } catch { /* noop */ }
+  try {
+    window.localStorage.setItem(UNIT_KEY, u);
+  } catch {
+    /* noop */
+  }
 }
 
 export const INITIAL_STATE: AstralState = {
@@ -267,7 +277,9 @@ export function readBootstrap(): Partial<AstralState> | null {
     }
     const ls = window.localStorage.getItem("astral.project.v1");
     if (ls) return JSON.parse(ls) as Partial<AstralState>;
-  } catch { /* noop */ }
+  } catch {
+    /* noop */
+  }
   return null;
 }
 
@@ -287,36 +299,57 @@ export const useAstral = create<AstralStore>((set, get) => ({
     if (p.openings || p.parts) reseedNid(get());
   },
 
-  addOpening: () => set((s) => ({
-    openings: [...s.openings, {
-      id: nid++, kind: "Window", wall: "N", off: Math.round(s.L / 2), width: 1200,
-      head: defaultHead("Window", s.studH), sill: defaultSill("Window"),
-    }],
-  })),
-  updateOpening: (id, patch) => set((s) => {
-    const wallLen = (w: WallKey) => (w === "N" || w === "S" ? s.L : s.W);
-    const openings = s.openings.map((o) => {
-      if (o.id !== id) return o;
-      const next = { ...o, ...patch };
-      const wl = wallLen(next.wall);
-      const width = Math.min(next.width, Math.max(400, wl - 200));
-      const off = Math.max(width / 2, Math.min(wl - width / 2, next.off));
-      return { ...next, width, off };
-    });
-    return { openings };
-  }),
+  addOpening: () =>
+    set((s) => ({
+      openings: [
+        ...s.openings,
+        {
+          id: nid++,
+          kind: "Window",
+          wall: "N",
+          off: Math.round(s.L / 2),
+          width: 1200,
+          head: defaultHead("Window", s.studH),
+          sill: defaultSill("Window"),
+        },
+      ],
+    })),
+  updateOpening: (id, patch) =>
+    set((s) => {
+      const wallLen = (w: WallKey) => (w === "N" || w === "S" ? s.L : s.W);
+      const openings = s.openings.map((o) => {
+        if (o.id !== id) return o;
+        const next = { ...o, ...patch };
+        const wl = wallLen(next.wall);
+        const width = Math.min(next.width, Math.max(400, wl - 200));
+        const off = Math.max(width / 2, Math.min(wl - width / 2, next.off));
+        return { ...next, width, off };
+      });
+      return { openings };
+    }),
   removeOpening: (id) => set((s) => ({ openings: s.openings.filter((o) => o.id !== id) })),
 
-  addPartition: () => set((s) => ({
-    parts: [...s.parts, {
-      id: nid++, dir: "Across width", off: Math.round(s.L / 2),
-      start: 0, len: s.W, type: "Partition",
-      door: true, doorW: 810, doorOff: Math.round(s.W / 2),
-    }],
-  })),
-  updatePartition: (id, patch) => set((s) => ({
-    parts: s.parts.map((p) => (p.id === id ? clampPartition({ ...p, ...patch }, s.L, s.W) : p)),
-  })),
+  addPartition: () =>
+    set((s) => ({
+      parts: [
+        ...s.parts,
+        {
+          id: nid++,
+          dir: "Across width",
+          off: Math.round(s.L / 2),
+          start: 0,
+          len: s.W,
+          type: "Partition",
+          door: true,
+          doorW: 810,
+          doorOff: Math.round(s.W / 2),
+        },
+      ],
+    })),
+  updatePartition: (id, patch) =>
+    set((s) => ({
+      parts: s.parts.map((p) => (p.id === id ? clampPartition({ ...p, ...patch }, s.L, s.W) : p)),
+    })),
   removePartition: (id) => set((s) => ({ parts: s.parts.filter((p) => p.id !== id) })),
 
   loadTemplate: (idx) => {
@@ -324,18 +357,29 @@ export const useAstral = create<AstralStore>((set, get) => ({
     if (!t) return;
     const tp = t.s;
     const openings = tp.ops.map((o) => ({
-      id: nid++, kind: o[0] as Opening["kind"], wall: o[1] as WallKey, off: o[2] as number, width: o[3] as number,
+      id: nid++,
+      kind: o[0] as Opening["kind"],
+      wall: o[1] as WallKey,
+      off: o[2] as number,
+      width: o[3] as number,
     }));
     set({
-      type: tp.type, L: tp.L, W: tp.W, studH: tp.studH,
-      roof: tp.roof, pitch: tp.pitch, struct: tp.struct,
-      clad: tp.clad, cover: tp.cover,
+      type: tp.type,
+      L: tp.L,
+      W: tp.W,
+      studH: tp.studH,
+      roof: tp.roof,
+      pitch: tp.pitch,
+      struct: tp.struct,
+      clad: tp.clad,
+      cover: tp.cover,
       openings,
       parts: [],
-      units: ("units" in tp ? (tp as { units: 1 | 2 | 3 }).units : 1),
+      units: "units" in tp ? (tp as { units: 1 | 2 | 3 }).units : 1,
       parapet: false,
       wallTypes: { ...DEFAULT_WALL_TYPES },
-      sel: null, detailFor: null,
+      sel: null,
+      detailFor: null,
       view: get().view === "detail" ? "plan" : get().view,
     });
     reseedNid(get());
@@ -348,7 +392,13 @@ export const useAstral = create<AstralStore>((set, get) => ({
     let openings = s.openings;
     if (gl && !hasG) {
       openings = [
-        { id: nid++, kind: "Garage", wall: "W", off: Math.round(s.W / 2), width: Math.min(5000, Math.round(s.W * 0.6)) },
+        {
+          id: nid++,
+          kind: "Garage",
+          wall: "W",
+          off: Math.round(s.W / 2),
+          width: Math.min(5000, Math.round(s.W * 0.6)),
+        },
         ...openings,
       ];
     }
@@ -371,7 +421,17 @@ reseedNid(useAstral.getState());
 
 // Autosave: debounced write of the current project to localStorage. Skips UI fields.
 if (typeof window !== "undefined") {
-  const UI_KEYS = new Set(["view", "layer", "face", "cut", "cutPos", "step", "sel", "detailFor", "unit"]);
+  const UI_KEYS = new Set([
+    "view",
+    "layer",
+    "face",
+    "cut",
+    "cutPos",
+    "step",
+    "sel",
+    "detailFor",
+    "unit",
+  ]);
   let t: number | null = null;
   useAstral.subscribe((s) => {
     if (t) window.clearTimeout(t);
@@ -384,8 +444,9 @@ if (typeof window !== "undefined") {
           out[k] = v;
         });
         window.localStorage.setItem("astral.project.v1", JSON.stringify(out));
-      } catch { /* noop */ }
+      } catch {
+        /* noop */
+      }
     }, 400);
   });
 }
-

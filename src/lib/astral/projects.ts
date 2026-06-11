@@ -52,13 +52,18 @@ function buildSnapshot(state: AstralState, meta: ProjectMetaInput): ProjectSnaps
 export async function listProjects(): Promise<ProjectMeta[]> {
   const { data, error } = await supabase
     .from("projects")
-    .select("id,name,address,start_date,finish_date,notes,share_token,is_public,created_at,updated_at")
+    .select(
+      "id,name,address,start_date,finish_date,notes,share_token,is_public,created_at,updated_at",
+    )
     .order("updated_at", { ascending: false });
   if (error) throw error;
   return (data ?? []) as ProjectMeta[];
 }
 
-export async function createProject(state: AstralState, meta: ProjectMetaInput): Promise<ProjectMeta> {
+export async function createProject(
+  state: AstralState,
+  meta: ProjectMetaInput,
+): Promise<ProjectMeta> {
   const { data: u, error: uerr } = await supabase.auth.getUser();
   if (uerr || !u.user) throw new Error("Sign in to save projects");
   const { data, error } = await supabase
@@ -72,13 +77,19 @@ export async function createProject(state: AstralState, meta: ProjectMetaInput):
       notes: meta.notes ?? null,
       snapshot: buildSnapshot(state, meta) as never,
     })
-    .select("id,name,address,start_date,finish_date,notes,share_token,is_public,created_at,updated_at")
+    .select(
+      "id,name,address,start_date,finish_date,notes,share_token,is_public,created_at,updated_at",
+    )
     .single();
   if (error) throw error;
   return data as ProjectMeta;
 }
 
-export async function updateProject(id: string, state: AstralState, meta: ProjectMetaInput): Promise<ProjectMeta> {
+export async function updateProject(
+  id: string,
+  state: AstralState,
+  meta: ProjectMetaInput,
+): Promise<ProjectMeta> {
   const { data, error } = await supabase
     .from("projects")
     .update({
@@ -90,18 +101,16 @@ export async function updateProject(id: string, state: AstralState, meta: Projec
       snapshot: buildSnapshot(state, meta) as never,
     })
     .eq("id", id)
-    .select("id,name,address,start_date,finish_date,notes,share_token,is_public,created_at,updated_at")
+    .select(
+      "id,name,address,start_date,finish_date,notes,share_token,is_public,created_at,updated_at",
+    )
     .single();
   if (error) throw error;
   return data as ProjectMeta;
 }
 
 export async function loadProject(id: string): Promise<ProjectRow> {
-  const { data, error } = await supabase
-    .from("projects")
-    .select("*")
-    .eq("id", id)
-    .single();
+  const { data, error } = await supabase.from("projects").select("*").eq("id", id).single();
   if (error) throw error;
   return data as unknown as ProjectRow;
 }
@@ -116,7 +125,9 @@ export async function setProjectShared(id: string, isPublic: boolean): Promise<P
     .from("projects")
     .update({ is_public: isPublic })
     .eq("id", id)
-    .select("id,name,address,start_date,finish_date,notes,share_token,is_public,created_at,updated_at")
+    .select(
+      "id,name,address,start_date,finish_date,notes,share_token,is_public,created_at,updated_at",
+    )
     .single();
   if (error) throw error;
   return data as ProjectMeta;

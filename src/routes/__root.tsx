@@ -78,17 +78,37 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "Lovable App" },
-      { name: "description", content: "First Read generates detailed architectural drawings and material takeoffs from user input." },
+      {
+        name: "description",
+        content:
+          "First Read generates detailed architectural drawings and material takeoffs from user input.",
+      },
       { name: "author", content: "Lovable" },
       { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "First Read generates detailed architectural drawings and material takeoffs from user input." },
+      {
+        property: "og:description",
+        content:
+          "First Read generates detailed architectural drawings and material takeoffs from user input.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@Lovable" },
       { name: "twitter:title", content: "Lovable App" },
-      { name: "twitter:description", content: "First Read generates detailed architectural drawings and material takeoffs from user input." },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/5f56981b-8e4f-497f-90e1-ad46e1d0f3f5/id-preview-2dc3a9ca--cebee96b-a709-47c9-923f-422b589bcf5f.lovable.app-1780171844401.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/5f56981b-8e4f-497f-90e1-ad46e1d0f3f5/id-preview-2dc3a9ca--cebee96b-a709-47c9-923f-422b589bcf5f.lovable.app-1780171844401.png" },
+      {
+        name: "twitter:description",
+        content:
+          "First Read generates detailed architectural drawings and material takeoffs from user input.",
+      },
+      {
+        property: "og:image",
+        content:
+          "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/5f56981b-8e4f-497f-90e1-ad46e1d0f3f5/id-preview-2dc3a9ca--cebee96b-a709-47c9-923f-422b589bcf5f.lovable.app-1780171844401.png",
+      },
+      {
+        name: "twitter:image",
+        content:
+          "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/5f56981b-8e4f-497f-90e1-ad46e1d0f3f5/id-preview-2dc3a9ca--cebee96b-a709-47c9-923f-422b589bcf5f.lovable.app-1780171844401.png",
+      },
     ],
     links: [
       {

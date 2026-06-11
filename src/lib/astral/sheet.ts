@@ -36,25 +36,25 @@ export const SHEET_SERIES: Record<string, string> = {
 type SheetDef = { prefix: string; title: string; scale: string; byFace?: boolean };
 
 export const SHEETS: Record<string, SheetDef> = {
-  cover:                { prefix: "A0", title: "Drawing Register",       scale: "NTS" },
-  plan_arch:            { prefix: "A1", title: "Floor Plan",             scale: "1:100" },
-  plan_foundation:      { prefix: "A1", title: "Foundation Plan",        scale: "1:100" },
-  plan_framing:         { prefix: "A1", title: "Framing Plan",           scale: "1:100" },
-  plan_services:        { prefix: "A1", title: "Services Plan",          scale: "1:100" },
-  elevation_arch:       { prefix: "A2", title: "Elevation",              scale: "1:100", byFace: true },
-  elevation_foundation: { prefix: "A2", title: "Concrete Elevation",     scale: "1:100", byFace: true },
-  elevation_framing:    { prefix: "A2", title: "Framing Elevation",      scale: "1:50",  byFace: true },
-  section_cross:        { prefix: "A3", title: "Cross Section",          scale: "1:50" },
-  section_long:         { prefix: "A3", title: "Longitudinal Section",   scale: "1:50" },
-  schedule_openings:    { prefix: "A4", title: "Door / Window Schedule", scale: "NTS" },
-  schedule_lintels:     { prefix: "A4", title: "Lintel Schedule",        scale: "NTS" },
-  schedule_bracing:     { prefix: "A4", title: "Bracing Schedule",       scale: "NTS" },
-  schedule_areas:       { prefix: "A4", title: "Areas & Fixings",        scale: "NTS" },
-  schedule_studs:       { prefix: "A4", title: "Stud Takeoff",           scale: "NTS" },
-  detail_wall:          { prefix: "A5", title: "Wall Framing Detail",    scale: "1:5" },
-  detail_roof:          { prefix: "A5", title: "Eave Detail",            scale: "1:10" },
-  detail_slab:          { prefix: "A5", title: "Slab Edge Detail",       scale: "1:5" },
-  detail_opening:       { prefix: "A5", title: "Lintel / Head Detail",   scale: "1:5" },
+  cover: { prefix: "A0", title: "Drawing Register", scale: "NTS" },
+  plan_arch: { prefix: "A1", title: "Floor Plan", scale: "1:100" },
+  plan_foundation: { prefix: "A1", title: "Foundation Plan", scale: "1:100" },
+  plan_framing: { prefix: "A1", title: "Framing Plan", scale: "1:100" },
+  plan_services: { prefix: "A1", title: "Services Plan", scale: "1:100" },
+  elevation_arch: { prefix: "A2", title: "Elevation", scale: "1:100", byFace: true },
+  elevation_foundation: { prefix: "A2", title: "Concrete Elevation", scale: "1:100", byFace: true },
+  elevation_framing: { prefix: "A2", title: "Framing Elevation", scale: "1:50", byFace: true },
+  section_cross: { prefix: "A3", title: "Cross Section", scale: "1:50" },
+  section_long: { prefix: "A3", title: "Longitudinal Section", scale: "1:50" },
+  schedule_openings: { prefix: "A4", title: "Door / Window Schedule", scale: "NTS" },
+  schedule_lintels: { prefix: "A4", title: "Lintel Schedule", scale: "NTS" },
+  schedule_bracing: { prefix: "A4", title: "Bracing Schedule", scale: "NTS" },
+  schedule_areas: { prefix: "A4", title: "Areas & Fixings", scale: "NTS" },
+  schedule_studs: { prefix: "A4", title: "Stud Takeoff", scale: "NTS" },
+  detail_wall: { prefix: "A5", title: "Wall Framing Detail", scale: "1:5" },
+  detail_roof: { prefix: "A5", title: "Eave Detail", scale: "1:10" },
+  detail_slab: { prefix: "A5", title: "Slab Edge Detail", scale: "1:5" },
+  detail_opening: { prefix: "A5", title: "Lintel / Head Detail", scale: "1:5" },
 };
 
 const SHEET_FACES = ["front", "back", "left", "right"] as const;
@@ -98,20 +98,29 @@ export function getSheetMeta(S: AstralState, detailType?: string): SheetMeta {
   let generic = false;
 
   if (S.view === "plan") {
-    key = S.layer === "framing" ? "plan_framing"
-      : S.layer === "foundation" ? "plan_foundation"
-      : S.layer === "services" ? "plan_services"
-      : "plan_arch";
+    key =
+      S.layer === "framing"
+        ? "plan_framing"
+        : S.layer === "foundation"
+          ? "plan_foundation"
+          : S.layer === "services"
+            ? "plan_services"
+            : "plan_arch";
   } else if (S.view === "elevation") {
-    key = S.layer === "framing" ? "elevation_framing"
-      : S.layer === "foundation" ? "elevation_foundation"
-      : "elevation_arch";
+    key =
+      S.layer === "framing"
+        ? "elevation_framing"
+        : S.layer === "foundation"
+          ? "elevation_foundation"
+          : "elevation_arch";
     face = S.face;
   } else if (S.view === "section") {
     key = S.cut === "long" ? "section_long" : "section_cross";
   } else {
-    if (!detailType) { key = "detail_wall"; generic = true; }
-    else if (detailType === "RoofSystem") key = "detail_roof";
+    if (!detailType) {
+      key = "detail_wall";
+      generic = true;
+    } else if (detailType === "RoofSystem") key = "detail_roof";
     else if (detailType === "Slab") key = "detail_slab";
     else if (detailType === "Opening") key = "detail_opening";
     else key = "detail_wall";

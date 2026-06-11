@@ -4,7 +4,11 @@
 import { useState } from "react";
 import { useAstral } from "@/lib/astral/store";
 import {
-  shareUrl, listPresets, savePreset, deletePreset, type NamedPreset,
+  shareUrl,
+  listPresets,
+  savePreset,
+  deletePreset,
+  type NamedPreset,
 } from "@/lib/astral/persistence";
 import { exportCurrentPNG, exportAllPDF, exportBOMCsv } from "@/lib/astral/exporters";
 
@@ -44,8 +48,11 @@ export function ExportBar() {
     try {
       await exportCurrentPNG(`astral-${useAstral.getState().view}.png`);
       flash("PNG downloaded");
-    } catch (e) { flash(`PNG failed: ${(e as Error).message}`); }
-    finally { setBusy(null); }
+    } catch (e) {
+      flash(`PNG failed: ${(e as Error).message}`);
+    } finally {
+      setBusy(null);
+    }
   };
 
   const onPDF = async () => {
@@ -53,8 +60,11 @@ export function ExportBar() {
     try {
       await exportAllPDF("astral-drawing-set.pdf");
       flash("PDF set downloaded");
-    } catch (e) { flash(`PDF failed: ${(e as Error).message}`); }
-    finally { setBusy(null); }
+    } catch (e) {
+      flash(`PDF failed: ${(e as Error).message}`);
+    } finally {
+      setBusy(null);
+    }
   };
 
   const onCSV = () => {
@@ -95,11 +105,17 @@ export function ExportBar() {
         flexWrap: "wrap",
       }}
     >
-      <span style={{ fontFamily: "var(--astral-mono)", fontSize: 11, opacity: 0.7, marginRight: 4 }}>
+      <span
+        style={{ fontFamily: "var(--astral-mono)", fontSize: 11, opacity: 0.7, marginRight: 4 }}
+      >
         project
       </span>
-      <button style={BTN} onClick={onShare}>🔗 Share link</button>
-      <button style={BTN} onClick={onSavePreset}>＋ Save preset</button>
+      <button style={BTN} onClick={onShare}>
+        🔗 Share link
+      </button>
+      <button style={BTN} onClick={onSavePreset}>
+        ＋ Save preset
+      </button>
       {presets.length > 0 && (
         <select
           style={{ ...BTN, padding: "6px 8px" }}
@@ -113,11 +129,15 @@ export function ExportBar() {
         >
           <option value="">Load preset…</option>
           {presets.map((p) => (
-            <option key={p.name} value={p.name}>↻ {p.name}</option>
+            <option key={p.name} value={p.name}>
+              ↻ {p.name}
+            </option>
           ))}
           <option disabled>──────────</option>
           {presets.map((p) => (
-            <option key={`d-${p.name}`} value={`del:${p.name}`}>✕ delete “{p.name}”</option>
+            <option key={`d-${p.name}`} value={`del:${p.name}`}>
+              ✕ delete “{p.name}”
+            </option>
           ))}
         </select>
       )}
@@ -131,10 +151,18 @@ export function ExportBar() {
       <button style={BTN} onClick={onPDF} disabled={busy !== null}>
         {busy === "pdf" ? "rendering sheets…" : "📄 PDF set"}
       </button>
-      <button style={BTN} onClick={onCSV} disabled={busy !== null}>📊 CSV</button>
+      <button style={BTN} onClick={onCSV} disabled={busy !== null}>
+        📊 CSV
+      </button>
 
       {msg && (
-        <span style={{ fontFamily: "var(--astral-mono)", fontSize: 11, color: "var(--astral-ok, #3f7d54)" }}>
+        <span
+          style={{
+            fontFamily: "var(--astral-mono)",
+            fontSize: 11,
+            color: "var(--astral-ok, #3f7d54)",
+          }}
+        >
           {msg}
         </span>
       )}

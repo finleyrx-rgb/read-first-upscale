@@ -93,7 +93,10 @@ export async function listRenders(projectId: string): Promise<RenderRow[]> {
 
 export async function deleteRender(row: RenderRow): Promise<void> {
   if (row.storage_path) {
-    await supabase.storage.from(BUCKET).remove([row.storage_path]).catch(() => {});
+    await supabase.storage
+      .from(BUCKET)
+      .remove([row.storage_path])
+      .catch(() => {});
   }
   const { error } = await supabase.from("project_renders").delete().eq("id", row.id);
   if (error) throw error;

@@ -22,19 +22,41 @@ function NorthPoint({ x, y }: { x: number; y: number }) {
   return (
     <g pointerEvents="none">
       <circle cx={x} cy={y} r={11} fill="#fbf9f3" stroke="#cfc6b4" strokeWidth={0.8} />
-      <path d={`M ${x} ${y - 9} L ${x + 4} ${y + 5} L ${x} ${y + 1} L ${x - 4} ${y + 5} Z`} fill={INK} />
-      <text x={x} y={y + 18} fill="#7a6f57" fontSize={7} fontFamily={MONO} textAnchor="middle">N</text>
+      <path
+        d={`M ${x} ${y - 9} L ${x + 4} ${y + 5} L ${x} ${y + 1} L ${x - 4} ${y + 5} Z`}
+        fill={INK}
+      />
+      <text x={x} y={y + 18} fill="#7a6f57" fontSize={7} fontFamily={MONO} textAnchor="middle">
+        N
+      </text>
     </g>
   );
 }
 
-function SectionTag({ x, y, dir, tag, cut }: { x: number; y: number; dir: "left" | "right"; tag: string; cut: "cross" | "long" }) {
+function SectionTag({
+  x,
+  y,
+  dir,
+  tag,
+  cut,
+}: {
+  x: number;
+  y: number;
+  dir: "left" | "right";
+  tag: string;
+  cut: "cross" | "long";
+}) {
   const d = dir === "left" ? -1 : 1;
   return (
     <g data-section-cut={cut} style={{ cursor: "pointer" }}>
       <circle cx={x} cy={y} r={10} fill="#fbf9f3" stroke={INK} strokeWidth={1} />
-      <text x={x} y={y + 3.2} fill={INK} fontSize={8.5} fontFamily={MONO} textAnchor="middle">{tag}</text>
-      <path d={`M ${x + 10 * d} ${y - 6} L ${x + 18 * d} ${y} L ${x + 10 * d} ${y + 6} Z`} fill={INK} />
+      <text x={x} y={y + 3.2} fill={INK} fontSize={8.5} fontFamily={MONO} textAnchor="middle">
+        {tag}
+      </text>
+      <path
+        d={`M ${x + 10 * d} ${y - 6} L ${x + 18 * d} ${y} L ${x + 10 * d} ${y + 6} Z`}
+        fill={INK}
+      />
     </g>
   );
 }
@@ -50,15 +72,31 @@ function SectionMarkers() {
   return (
     <g>
       {/* A–A cross — vertical */}
-      <line x1={ax} y1={y0 - 44} x2={ax} y2={y0 + h + 44}
-        stroke={INK} strokeWidth={aActive ? 1 : 0.7} strokeDasharray="10 3 2 3"
-        opacity={aActive ? 1 : 0.55} pointerEvents="none" />
+      <line
+        x1={ax}
+        y1={y0 - 44}
+        x2={ax}
+        y2={y0 + h + 44}
+        stroke={INK}
+        strokeWidth={aActive ? 1 : 0.7}
+        strokeDasharray="10 3 2 3"
+        opacity={aActive ? 1 : 0.55}
+        pointerEvents="none"
+      />
       <SectionTag x={ax} y={y0 - 44} dir="left" tag="A" cut="cross" />
       <SectionTag x={ax} y={y0 + h + 44} dir="right" tag="A" cut="cross" />
       {/* B–B long — horizontal */}
-      <line x1={x0 - 46} y1={by} x2={x0 + w + 46} y2={by}
-        stroke={INK} strokeWidth={bActive ? 1 : 0.7} strokeDasharray="10 3 2 3"
-        opacity={bActive ? 1 : 0.55} pointerEvents="none" />
+      <line
+        x1={x0 - 46}
+        y1={by}
+        x2={x0 + w + 46}
+        y2={by}
+        stroke={INK}
+        strokeWidth={bActive ? 1 : 0.7}
+        strokeDasharray="10 3 2 3"
+        opacity={bActive ? 1 : 0.55}
+        pointerEvents="none"
+      />
       <SectionTag x={x0 - 46} y={by} dir="left" tag="B" cut="long" />
       <SectionTag x={x0 + w + 46} y={by} dir="right" tag="B" cut="long" />
     </g>
@@ -68,45 +106,111 @@ function SectionMarkers() {
 // (Legacy partition-type swatch removed — wall types now rendered via
 // WallLegend.tsx using the new §7.1 master-plan taxonomy.)
 
-function CalloutBubble({ bx, by, tx, ty, k, nodeId }:
-  { bx: number; by: number; tx: number; ty: number; k: string; nodeId?: string }) {
+function CalloutBubble({
+  bx,
+  by,
+  tx,
+  ty,
+  k,
+  nodeId,
+}: {
+  bx: number;
+  by: number;
+  tx: number;
+  ty: number;
+  k: string;
+  nodeId?: string;
+}) {
   const r = calloutRef(k);
   return (
     <g>
-      <line x1={bx} y1={by} x2={tx} y2={ty} stroke={ORANGE} strokeWidth={0.6}
-        strokeDasharray="3 2" pointerEvents="none" />
+      <line
+        x1={bx}
+        y1={by}
+        x2={tx}
+        y2={ty}
+        stroke={ORANGE}
+        strokeWidth={0.6}
+        strokeDasharray="3 2"
+        pointerEvents="none"
+      />
       <circle cx={tx} cy={ty} r={2} fill={ORANGE} pointerEvents="none" />
       <g data-callout-key={k} data-callout-node={nodeId || ""} style={{ cursor: "pointer" }}>
         <circle cx={bx} cy={by} r={11} fill="#fbf9f3" stroke={ORANGE} strokeWidth={1} />
         <line x1={bx - 11} y1={by} x2={bx + 11} y2={by} stroke={ORANGE} strokeWidth={0.7} />
-        <text x={bx} y={by - 2.5} fill={ORANGE} fontSize={8} fontFamily={MONO} textAnchor="middle">{r.ref}</text>
-        <text x={bx} y={by + 8.5} fill={ORANGE} fontSize={6.5} fontFamily={MONO} textAnchor="middle">{r.sheet}</text>
+        <text x={bx} y={by - 2.5} fill={ORANGE} fontSize={8} fontFamily={MONO} textAnchor="middle">
+          {r.ref}
+        </text>
+        <text
+          x={bx}
+          y={by + 8.5}
+          fill={ORANGE}
+          fontSize={6.5}
+          fontFamily={MONO}
+          textAnchor="middle"
+        >
+          {r.sheet}
+        </text>
       </g>
     </g>
   );
 }
 
 function PlanCallouts() {
-  const S = useAstral(useShallow((s) => ({
-    L: s.L, W: s.W, openings: s.openings, parts: s.parts, eave: s.eave, layer: s.layer,
-  })));
+  const S = useAstral(
+    useShallow((s) => ({
+      L: s.L,
+      W: s.W,
+      openings: s.openings,
+      parts: s.parts,
+      eave: s.eave,
+      layer: s.layer,
+    })),
+  );
   const g = planGeom(S);
   const { w, h, x0, y0, sc } = g;
   const bigOp = [...S.openings].sort((a, b) => b.width - a.width)[0];
   const out: React.ReactNode[] = [];
 
   if (S.layer !== "foundation") {
-    out.push(<CalloutBubble key="wall" bx={x0 + w + 34} by={y0 + h - 12}
-      tx={x0 + w * 0.32} ty={y0 + h - 6} k="detail_wall" nodeId="wall-S" />);
+    out.push(
+      <CalloutBubble
+        key="wall"
+        bx={x0 + w + 34}
+        by={y0 + h - 12}
+        tx={x0 + w * 0.32}
+        ty={y0 + h - 6}
+        k="detail_wall"
+        nodeId="wall-S"
+      />,
+    );
     const eo = (S.eave || 450) * sc;
-    out.push(<CalloutBubble key="roof" bx={x0 + w + 34} by={y0 - 22}
-      tx={x0 + w + eo * 0.5} ty={y0 - eo * 0.5} k="detail_roof" nodeId="roof" />);
+    out.push(
+      <CalloutBubble
+        key="roof"
+        bx={x0 + w + 34}
+        by={y0 - 22}
+        tx={x0 + w + eo * 0.5}
+        ty={y0 - eo * 0.5}
+        k="detail_roof"
+        nodeId="roof"
+      />,
+    );
     if (bigOp) {
       const pl = openPlace(S, bigOp, g);
-      const bx = pl.cx + (pl.horiz ? 0 : (bigOp.wall === "W" ? -32 : 32));
+      const bx = pl.cx + (pl.horiz ? 0 : bigOp.wall === "W" ? -32 : 32);
       const by = pl.cy + (pl.horiz ? (bigOp.wall === "N" ? -26 : 26) : 0);
-      out.push(<CalloutBubble key="lintel" bx={bx} by={by} tx={pl.cx} ty={pl.cy}
-        k="detail_opening" nodeId={`opening-${bigOp.id}`} />);
+      out.push(
+        <CalloutBubble
+          key="lintel"
+          bx={bx}
+          by={by}
+          tx={pl.cx}
+          ty={pl.cy}
+          k="detail_opening"
+          nodeId={`opening-${bigOp.id}`}
+        />,
+      );
     }
     // Partition junction callouts — first 2 partitions only to avoid clutter.
     S.parts.slice(0, 2).forEach((p, i) => {
@@ -115,14 +219,41 @@ function PlanCallouts() {
       const py = across ? y0 + ((p.start + p.len / 2) / S.W) * h : y0 + (p.off / S.W) * h;
       const bx = x0 - 36;
       const by = y0 + h * (0.25 + i * 0.35);
-      out.push(<CalloutBubble key={`part-${p.id}`} bx={bx} by={by} tx={px} ty={py}
-        k="detail_wall" nodeId={`part-${p.id}`} />);
+      out.push(
+        <CalloutBubble
+          key={`part-${p.id}`}
+          bx={bx}
+          by={by}
+          tx={px}
+          ty={py}
+          k="detail_wall"
+          nodeId={`part-${p.id}`}
+        />,
+      );
     });
   } else {
-    out.push(<CalloutBubble key="slab1" bx={x0 + w + 34} by={y0 + h + 18}
-      tx={x0 + w - 6} ty={y0 + h - 6} k="detail_slab" nodeId="slab" />);
-    out.push(<CalloutBubble key="slab2" bx={x0 - 34} by={y0 + h * 0.5}
-      tx={x0 + 6} ty={y0 + h * 0.5} k="detail_slab" nodeId="slab" />);
+    out.push(
+      <CalloutBubble
+        key="slab1"
+        bx={x0 + w + 34}
+        by={y0 + h + 18}
+        tx={x0 + w - 6}
+        ty={y0 + h - 6}
+        k="detail_slab"
+        nodeId="slab"
+      />,
+    );
+    out.push(
+      <CalloutBubble
+        key="slab2"
+        bx={x0 - 34}
+        by={y0 + h * 0.5}
+        tx={x0 + 6}
+        ty={y0 + h * 0.5}
+        k="detail_slab"
+        nodeId="slab"
+      />,
+    );
   }
   return <g>{out}</g>;
 }
@@ -134,20 +265,41 @@ function DetailKey() {
     ["detail_slab", "Slab"],
     ["detail_opening", "Lintel"],
   ] as const;
-  const bx = 474, by = 98, rh = 13;
+  const bx = 474,
+    by = 98,
+    rh = 13;
   return (
     <g pointerEvents="none">
-      <rect x={bx - 4} y={by - 12} width={120} height={items.length * rh + 8}
-        fill="#fbf9f3" stroke="#cfc6b4" strokeWidth={0.8} rx={4} opacity={0.94} />
-      <text x={bx} y={by - 2} fill="#3c4a47" fontSize={7.5} fontFamily={MONO}
-        letterSpacing="0.1em">DETAIL KEY</text>
+      <rect
+        x={bx - 4}
+        y={by - 12}
+        width={120}
+        height={items.length * rh + 8}
+        fill="#fbf9f3"
+        stroke="#cfc6b4"
+        strokeWidth={0.8}
+        rx={4}
+        opacity={0.94}
+      />
+      <text x={bx} y={by - 2} fill="#3c4a47" fontSize={7.5} fontFamily={MONO} letterSpacing="0.1em">
+        DETAIL KEY
+      </text>
       {items.map(([k, lab], i) => {
         const r = calloutRef(k);
         const yy = by + 9 + i * rh;
         return (
           <g key={k}>
-            <circle cx={bx + 5} cy={yy - 2} r={4.5} fill="#fbf9f3" stroke={ORANGE} strokeWidth={0.7} />
-            <text x={bx + 15} y={yy + 1.5} fill={INK} fontSize={8.5} fontFamily={MONO}>{r.sheet} · {lab}</text>
+            <circle
+              cx={bx + 5}
+              cy={yy - 2}
+              r={4.5}
+              fill="#fbf9f3"
+              stroke={ORANGE}
+              strokeWidth={0.7}
+            />
+            <text x={bx + 15} y={yy + 1.5} fill={INK} fontSize={8.5} fontFamily={MONO}>
+              {r.sheet} · {lab}
+            </text>
           </g>
         );
       })}
@@ -170,42 +322,96 @@ export function PlanAnnotations() {
 /** Eave / opening / slab callouts for elevation views. */
 export function ElevationCallouts() {
   const S = useAstral(useShallow((s) => ({ face: s.face, openings: s.openings })));
-  const VW = 600, VH = 440;
-  const ox = 80, oy = 70, ow = VW - 160, oh = VH - 160;
-  const wallKey = S.face === "front" ? "S" : S.face === "back" ? "N" : S.face === "left" ? "W" : "E";
+  const VW = 600,
+    VH = 440;
+  const ox = 80,
+    oy = 70,
+    ow = VW - 160,
+    oh = VH - 160;
+  const wallKey =
+    S.face === "front" ? "S" : S.face === "back" ? "N" : S.face === "left" ? "W" : "E";
   const faceOp = S.openings.filter((o) => o.wall === wallKey).sort((a, b) => b.width - a.width)[0];
   return (
     <g>
-      <CalloutBubble bx={ox + ow + 30} by={oy - 6} tx={ox + ow - 10} ty={oy + 8}
-        k="detail_roof" nodeId="roof" />
+      <CalloutBubble
+        bx={ox + ow + 30}
+        by={oy - 6}
+        tx={ox + ow - 10}
+        ty={oy + 8}
+        k="detail_roof"
+        nodeId="roof"
+      />
       {faceOp && (
-        <CalloutBubble bx={ox + ow + 30} by={oy + oh * 0.45}
-          tx={ox + ow * 0.55} ty={oy + oh * 0.55}
-          k="detail_opening" nodeId={`opening-${faceOp.id}`} />
+        <CalloutBubble
+          bx={ox + ow + 30}
+          by={oy + oh * 0.45}
+          tx={ox + ow * 0.55}
+          ty={oy + oh * 0.55}
+          k="detail_opening"
+          nodeId={`opening-${faceOp.id}`}
+        />
       )}
-      <CalloutBubble bx={ox - 30} by={oy + oh + 8} tx={ox + 8} ty={oy + oh - 4}
-        k="detail_slab" nodeId="slab" />
+      <CalloutBubble
+        bx={ox - 30}
+        by={oy + oh + 8}
+        tx={ox + 8}
+        ty={oy + oh - 4}
+        k="detail_slab"
+        nodeId="slab"
+      />
       {/* wall body — mid-height, opposite side */}
-      <CalloutBubble bx={ox - 30} by={oy + oh * 0.45}
-        tx={ox + 12} ty={oy + oh * 0.55} k="detail_wall" nodeId={`wall-${wallKey}`} />
+      <CalloutBubble
+        bx={ox - 30}
+        by={oy + oh * 0.45}
+        tx={ox + 12}
+        ty={oy + oh * 0.55}
+        k="detail_wall"
+        nodeId={`wall-${wallKey}`}
+      />
     </g>
   );
 }
 
 /** Roof / wall / slab callouts for the SectionView (§7.2 cross-references). */
 export function SectionCallouts({
-  x0, w, base, eave, apex,
+  x0,
+  w,
+  base,
+  eave,
+  apex,
 }: {
-  x0: number; w: number; base: number; eave: number; apex: number;
+  x0: number;
+  w: number;
+  base: number;
+  eave: number;
+  apex: number;
 }) {
   return (
     <g>
-      <CalloutBubble bx={x0 + w + 34} by={apex - 6}
-        tx={x0 + w / 2 + 6} ty={apex + 4} k="detail_roof" nodeId="roof" />
-      <CalloutBubble bx={x0 - 34} by={(eave + base) / 2}
-        tx={x0 + 4} ty={(eave + base) / 2} k="detail_wall" nodeId="wall-S" />
-      <CalloutBubble bx={x0 - 34} by={base + 26}
-        tx={x0 + 6} ty={base - 4} k="detail_slab" nodeId="slab" />
+      <CalloutBubble
+        bx={x0 + w + 34}
+        by={apex - 6}
+        tx={x0 + w / 2 + 6}
+        ty={apex + 4}
+        k="detail_roof"
+        nodeId="roof"
+      />
+      <CalloutBubble
+        bx={x0 - 34}
+        by={(eave + base) / 2}
+        tx={x0 + 4}
+        ty={(eave + base) / 2}
+        k="detail_wall"
+        nodeId="wall-S"
+      />
+      <CalloutBubble
+        bx={x0 - 34}
+        by={base + 26}
+        tx={x0 + 6}
+        ty={base - 4}
+        k="detail_slab"
+        nodeId="slab"
+      />
     </g>
   );
 }

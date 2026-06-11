@@ -14,9 +14,10 @@ import {
   signedUrl,
   type ProjectSource,
 } from "@/lib/astral/sources/sources";
-import type { PageAnalysis } from "@/lib/astral/sources/types";
+import type { PageAnalysis, PageKind } from "@/lib/astral/sources/types";
 import { analyzePlanPage } from "@/lib/astral/planAnalysis.functions";
 import { applyAction, type AgentAction } from "@/lib/astral/agent/grammar";
+import { exportAllPDF } from "@/lib/astral/exporters";
 
 const BTN: React.CSSProperties = {
   padding: "6px 10px",
@@ -167,14 +168,58 @@ export function PlansPanel({ projectId }: { projectId: string | null }) {
       if (!action) return;
       try {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        applyAction(store as any, action);
+        applyAction(store as void as any, action);
         applied++;
       } catch (e) {
         console.error("apply failed", action, e);
       }
     });
+    // Mark the project as elaborated-from-source so every sheet carries the
+    // "ELABORATED FROM SOURCE PLAN" watermark instead of "CONCEPT".
+    if (applied > 0) store.patch({ sourceElaborated: true, mode: "build" });
     alert(`Applied ${applied}/${sel.size} actions to the live model.`);
     setPicked((m) => ({ ...m, [s.id]: new Set() }));
+  }
+
+  /** Map a source page's kind to a Build-view patch so the user can compare the
+   *  uploaded page to Astral's equivalent rendering of the live model. */
+  function compareOnCanvas(a: PageAnalysis) {
+    const patch: Record<string, unknown> = { mode: "build", detailFor: null };
+    const faceMap: Record<string, "front" | "back" | "left" | "right"> = {
+      S: "front", N: "back", W: "left", E: "right",
+    };
+    switch (a.kind as PageKind) {
+      case "floor-plan":
+        patch.view = "plan"; patch.layer = "arch"; break;
+      case "elevation":
+        patch.view = "elevation"; patch.layer = "arch";
+        if (a.faceCompass && faceMap[a.faceCompass]) patch.face = faceMap[a.faceCompass];
+        break;
+      case "section":
+        patch.view = "section"; patch.cut = "cross"; break;
+      case "detail":
+        patch.view = "detail"; break;
+      case "schedule":
+      default:
+        patch.view = "plan"; patch.layer = "arch";
+    }
+    useAstral.getState().patch(patch);
+  }
+
+  async function elaborateAll() {
+    useAstral.getState().patch({ sourceElaborated: true });
+    try {
+      await exportAllPDF("astral-elaborated-set.pdf");
+    } catch (e) {
+      alert(`Elaboration export failed: ${(e as Error).message}`);
+    }
+  }
+
+  function jumpTo(view: string, layer?: string, face?: string) {
+    const p: Record<string, unknown> = { mode: "build", view, detailFor: null };
+    if (layer) p.layer = layer;
+    if (face) p.face = face;
+    useAstral.getState().patch(p);
   }
 
   async function remove(s: LocalSource) {

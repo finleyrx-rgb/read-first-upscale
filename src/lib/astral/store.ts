@@ -283,6 +283,8 @@ export const useAstral = create<AstralStore>((set, get) => ({
     if (p.unit) saveUnit(p.unit);
     set(p);
     if ("L" in p || "W" in p) set((s) => clampToDims(s) as Partial<AstralState>);
+    // Reseed nid past any externally supplied ids (project load, share token, agent bulk-insert).
+    if (p.openings || p.parts) reseedNid(get());
   },
 
   addOpening: () => set((s) => ({
@@ -313,7 +315,7 @@ export const useAstral = create<AstralStore>((set, get) => ({
     }],
   })),
   updatePartition: (id, patch) => set((s) => ({
-    parts: s.parts.map((p) => (p.id === id ? { ...p, ...patch } : p)),
+    parts: s.parts.map((p) => (p.id === id ? clampPartition({ ...p, ...patch }, s.L, s.W) : p)),
   })),
   removePartition: (id) => set((s) => ({ parts: s.parts.filter((p) => p.id !== id) })),
 
@@ -321,13 +323,14 @@ export const useAstral = create<AstralStore>((set, get) => ({
     const t = TEMPLATES[idx];
     if (!t) return;
     const tp = t.s;
+    const openings = tp.ops.map((o) => ({
+      id: nid++, kind: o[0] as Opening["kind"], wall: o[1] as WallKey, off: o[2] as number, width: o[3] as number,
+    }));
     set({
       type: tp.type, L: tp.L, W: tp.W, studH: tp.studH,
       roof: tp.roof, pitch: tp.pitch, struct: tp.struct,
       clad: tp.clad, cover: tp.cover,
-      openings: tp.ops.map((o) => ({
-        id: nid++, kind: o[0] as Opening["kind"], wall: o[1] as WallKey, off: o[2] as number, width: o[3] as number,
-      })),
+      openings,
       parts: [],
       units: ("units" in tp ? (tp as { units: 1 | 2 | 3 }).units : 1),
       parapet: false,
@@ -335,6 +338,7 @@ export const useAstral = create<AstralStore>((set, get) => ({
       sel: null, detailFor: null,
       view: get().view === "detail" ? "plan" : get().view,
     });
+    reseedNid(get());
   },
 
   applyType: (type) => {

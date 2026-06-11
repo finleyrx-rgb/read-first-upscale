@@ -72,7 +72,8 @@ export async function deleteSource(s: ProjectSource): Promise<void> {
 export async function saveAnalysis(id: string, analysis: PageAnalysis[]): Promise<void> {
   const { error } = await supabase
     .from("project_sources")
-    .update({ analysis: analysis as unknown as Record<string, unknown> })
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    .update({ analysis: analysis as any })
     .eq("id", id);
   if (error) throw error;
 }

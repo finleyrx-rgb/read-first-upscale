@@ -45,7 +45,13 @@ export async function renderPdfPages(
       page.cleanup();
     }
   } finally {
-    await doc.destroy();
+    try {
+      // pdfjs v6: cleanup on the loading task / document
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await (doc as any).cleanup?.();
+    } catch {
+      /* noop */
+    }
   }
   return pages;
 }

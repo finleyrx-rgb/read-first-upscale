@@ -1471,3 +1471,8 @@
   .astral-wrap, .dream-root { padding-bottom: 80px; }
   .astral-sheet { width: 100vw; }
 }
+
+@media (max-width: 720px) {
+  .astral-brand .mark { font-size: 18px; }
+  .astral-top-v2 .astral-top-left { gap: 8px; min-width: 0; flex: 1; }
+}

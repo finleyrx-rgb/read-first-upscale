@@ -163,7 +163,7 @@ export function SheetFrame() {
       <T x={C[0] + 8} y={479} t="PROJECT ASTRAL" s={14} f="Fraunces" w={700} />
       <T x={C[0] + 8} y={492} t={PROJECT.tagline} s={7.5} c="#7a6f57" />
       <T x={C[0] + 8} y={503} t={PROJECT.consent} s={7.5} c="#bf6b2c" />
-      <T x={C[0] + 8} y={512} t="concept / indicative — not for construction" s={6.5} c="#9a8f78" />
+      <T x={C[0] + 8} y={512} t={S.sourceElaborated ? "elaborated from source plan — review against original" : "concept / indicative — not for construction"} s={6.5} c="#9a8f78" />
       {/* col 1 — project */}
       <T x={C[1] + 8} y={470} t="PROJECT" s={7} c="#9a8f78" />
       <T

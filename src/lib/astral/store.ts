@@ -128,6 +128,10 @@ export type AstralState = {
   step: number;
   sel: string | null;
   detailFor: string | null;
+
+  /** True once the model has had patches applied from an uploaded source plan.
+   *  Switches sheet watermarks from "CONCEPT" to "ELABORATED FROM SOURCE". */
+  sourceElaborated?: boolean;
 };
 
 const UNIT_KEY = "astral.unit";
@@ -197,6 +201,7 @@ export const INITIAL_STATE: AstralState = {
   step: 0,
   sel: null,
   detailFor: null,
+  sourceElaborated: false,
 };
 
 /** Auto-trim openings + partitions so they fit inside L × W. */

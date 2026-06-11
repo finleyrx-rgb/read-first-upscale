@@ -14,9 +14,10 @@ import {
   signedUrl,
   type ProjectSource,
 } from "@/lib/astral/sources/sources";
-import type { PageAnalysis } from "@/lib/astral/sources/types";
+import type { PageAnalysis, PageKind } from "@/lib/astral/sources/types";
 import { analyzePlanPage } from "@/lib/astral/planAnalysis.functions";
 import { applyAction, type AgentAction } from "@/lib/astral/agent/grammar";
+import { exportAllPDF } from "@/lib/astral/exporters";
 
 const BTN: React.CSSProperties = {
   padding: "6px 10px",
@@ -167,14 +168,58 @@ export function PlansPanel({ projectId }: { projectId: string | null }) {
       if (!action) return;
       try {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        applyAction(store as any, action);
+        applyAction(store as unknown as Parameters<typeof applyAction>[0], action);
         applied++;
       } catch (e) {
         console.error("apply failed", action, e);
       }
     });
+    // Mark the project as elaborated-from-source so every sheet carries the
+    // "ELABORATED FROM SOURCE PLAN" watermark instead of "CONCEPT".
+    if (applied > 0) store.patch({ sourceElaborated: true, mode: "build" });
     alert(`Applied ${applied}/${sel.size} actions to the live model.`);
     setPicked((m) => ({ ...m, [s.id]: new Set() }));
+  }
+
+  /** Map a source page's kind to a Build-view patch so the user can compare the
+   *  uploaded page to Astral's equivalent rendering of the live model. */
+  function compareOnCanvas(a: PageAnalysis) {
+    const patch: Record<string, unknown> = { mode: "build", detailFor: null };
+    const faceMap: Record<string, "front" | "back" | "left" | "right"> = {
+      S: "front", N: "back", W: "left", E: "right",
+    };
+    switch (a.kind as PageKind) {
+      case "floor-plan":
+        patch.view = "plan"; patch.layer = "arch"; break;
+      case "elevation":
+        patch.view = "elevation"; patch.layer = "arch";
+        if (a.faceCompass && faceMap[a.faceCompass]) patch.face = faceMap[a.faceCompass];
+        break;
+      case "section":
+        patch.view = "section"; patch.cut = "cross"; break;
+      case "detail":
+        patch.view = "detail"; break;
+      case "schedule":
+      default:
+        patch.view = "plan"; patch.layer = "arch";
+    }
+    useAstral.getState().patch(patch);
+  }
+
+  async function elaborateAll() {
+    useAstral.getState().patch({ sourceElaborated: true });
+    try {
+      await exportAllPDF("astral-elaborated-set.pdf");
+    } catch (e) {
+      alert(`Elaboration export failed: ${(e as Error).message}`);
+    }
+  }
+
+  function jumpTo(view: string, layer?: string, face?: string) {
+    const p: Record<string, unknown> = { mode: "build", view, detailFor: null };
+    if (layer) p.layer = layer;
+    if (face) p.face = face;
+    useAstral.getState().patch(p);
   }
 
   async function remove(s: LocalSource) {
@@ -227,6 +272,49 @@ export function PlansPanel({ projectId }: { projectId: string | null }) {
       >
         Source plans are the original author's IP. Astral analyses them for your working use only —
         the extracted model is approximate and every patch is reviewable before it is applied.
+      </div>
+
+      {/* Phase C4 — Elaboration shortcuts. Once the model has been populated
+          from source plans, the user can generate more drawings than the
+          original set contained, all watermarked "ELABORATED FROM SOURCE". */}
+      <div
+        style={{
+          padding: 8,
+          border: "1px dashed var(--astral-line, #ccc)",
+          borderRadius: 4,
+          background: "#fafaf7",
+          display: "grid",
+          gap: 6,
+        }}
+      >
+        <div style={{ fontFamily: "var(--astral-mono)", fontSize: 11, fontWeight: 700 }}>
+          Elaborate from extracted model
+        </div>
+        <div style={{ fontSize: 10, opacity: 0.7 }}>
+          Generates more drawings than the source set contained — all four elevations, sections,
+          construction details, framing &amp; foundation plans. Watermarked accordingly.
+        </div>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+          <button style={BTN} onClick={() => jumpTo("elevation", "arch", "front")}>
+            ▢ All elevations
+          </button>
+          <button style={BTN} onClick={() => jumpTo("section", undefined, undefined)}>
+            ⊢ Sections
+          </button>
+          <button style={BTN} onClick={() => jumpTo("detail")}>
+            ◇ Details
+          </button>
+          <button style={BTN} onClick={() => jumpTo("plan", "framing")}>
+            ▦ Framing plan
+          </button>
+          <button style={BTN} onClick={() => jumpTo("plan", "foundation")}>
+            ▤ Foundation plan
+          </button>
+          <span style={{ flex: 1 }} />
+          <button style={{ ...BTN, fontWeight: 700 }} onClick={elaborateAll}>
+            📄 Full elaborated PDF set
+          </button>
+        </div>
       </div>
 
       {sources.length === 0 && (
@@ -344,6 +432,15 @@ export function PlansPanel({ projectId }: { projectId: string | null }) {
                       {a.summary && (
                         <div style={{ fontSize: 11, opacity: 0.8, marginTop: 4 }}>{a.summary}</div>
                       )}
+                      <div style={{ marginTop: 4 }}>
+                        <button
+                          style={{ ...BTN, fontSize: 10, padding: "3px 6px" }}
+                          onClick={() => compareOnCanvas(a)}
+                          title="Switch the canvas to Astral's equivalent view so you can compare it side-by-side with the source page above"
+                        >
+                          ↔ Compare on canvas
+                        </button>
+                      </div>
                       {a.notes && a.notes.length > 0 && (
                         <ul style={{ fontSize: 11, margin: "4px 0", paddingLeft: 16 }}>
                           {a.notes.map((n, i) => (

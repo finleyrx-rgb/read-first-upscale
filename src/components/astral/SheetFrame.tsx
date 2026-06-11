@@ -24,14 +24,20 @@ function T({ x, y, t, s = 9, c = INK, f = "IBM Plex Mono", a = "start", w }: TPr
 }
 
 export function SheetFrame() {
-  const S = useAstral((s) => s);
+  const S = useAstral(useShallow((s) => s));
   const detailFor = S.detailFor;
 
   const detailType = useMemo(() => {
     if (S.view !== "detail" || !detailFor) return undefined;
     const M = buildModel(S);
     return M.byId[detailFor]?.type;
-  }, [S, detailFor]);
+    // Only re-derive when the inputs that actually feed buildModel change.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    S.view, detailFor, S.type, S.L, S.W, S.studH, S.spacing, S.roof, S.pitch, S.cover,
+    S.struct, S.found, S.units, S.parapet, S.storeys, S.subfloor, S.floorDepth,
+    S.wallTypes, S.openings, S.parts,
+  ]);
 
   const meta = useMemo(() => getSheetMeta(S, detailType), [S, detailType]);
 

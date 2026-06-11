@@ -269,7 +269,7 @@ function ResCard({ label, r }: { label: string; r: RuleResult }) {
 }
 
 function StepResolve() {
-  const S = useAstral((s) => s);
+  const S = useAstral(useShallow((s) => s));
   const garage = [...S.openings].filter((o) => o.kind === "Garage").sort((a, b) => b.width - a.width)[0];
   const lintelMax = Math.max(810, ...S.openings.filter((o) => o.kind !== "Garage").map((o) => o.width), 0);
   return (

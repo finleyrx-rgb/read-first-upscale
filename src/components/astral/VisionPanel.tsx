@@ -24,6 +24,7 @@ import {
   readFileAsDataUrl,
   type RenderRow,
 } from "@/lib/astral/vision/renders";
+import { PlansPanel } from "./PlansPanel";
 
 const BTN: React.CSSProperties = {
   padding: "6px 10px",
@@ -70,7 +71,7 @@ function stateSnapshot(s: AstralState) {
 export function VisionPanel({ projectId }: { projectId: string | null }) {
   const { user } = useAuth();
   const state = useAstral();
-  const [tab, setTab] = useState<"sketch" | "render">("sketch");
+  const [tab, setTab] = useState<"plans" | "sketch" | "render">("plans");
 
   // --- sketch flow ---
   const [sketchUrl, setSketchUrl] = useState<string | null>(null);
@@ -212,22 +213,30 @@ export function VisionPanel({ projectId }: { projectId: string | null }) {
       <header style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
         <strong style={{ fontFamily: "var(--astral-mono)", fontSize: 12 }}>Vision</strong>
         <span style={{ opacity: 0.6, fontSize: 11 }}>
-          sketch → model · site photo → concept render
+          plans · sketch · site render
         </span>
         <span style={{ flex: 1 }} />
+        <button
+          style={{ ...BTN, fontWeight: tab === "plans" ? 700 : 400 }}
+          onClick={() => setTab("plans")}
+        >
+          📄 Plans
+        </button>
         <button
           style={{ ...BTN, fontWeight: tab === "sketch" ? 700 : 400 }}
           onClick={() => setTab("sketch")}
         >
-          ✎ Sketch import
+          ✎ Sketch
         </button>
         <button
           style={{ ...BTN, fontWeight: tab === "render" ? 700 : 400 }}
           onClick={() => setTab("render")}
         >
-          🌄 Site render
+          🌄 Render
         </button>
       </header>
+
+      {tab === "plans" && <PlansPanel projectId={projectId} />}
 
       {tab === "sketch" && (
         <div style={{ display: "grid", gap: 8 }}>

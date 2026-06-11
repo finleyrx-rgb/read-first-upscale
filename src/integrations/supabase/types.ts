@@ -55,6 +55,45 @@ export type Database = {
           },
         ]
       }
+      project_sources: {
+        Row: {
+          analysis: Json
+          id: string
+          kind: string
+          original_filename: string
+          page_count: number
+          project_id: string
+          storage_path: string
+          updated_at: string
+          uploaded_at: string
+          user_id: string
+        }
+        Insert: {
+          analysis?: Json
+          id?: string
+          kind: string
+          original_filename: string
+          page_count?: number
+          project_id: string
+          storage_path: string
+          updated_at?: string
+          uploaded_at?: string
+          user_id: string
+        }
+        Update: {
+          analysis?: Json
+          id?: string
+          kind?: string
+          original_filename?: string
+          page_count?: number
+          project_id?: string
+          storage_path?: string
+          updated_at?: string
+          uploaded_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       projects: {
         Row: {
           address: string | null

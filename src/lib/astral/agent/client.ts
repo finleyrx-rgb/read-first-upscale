@@ -45,10 +45,30 @@ export type AgentClient = AgentClientState & AgentClientActions;
 
 const HISTORY_KEY = "astral.agent.history.v1";
 const SERIALIZABLE_KEYS: (keyof AstralState)[] = [
-  "type", "wind", "found", "L", "W", "studH", "spacing", "eave",
-  "roof", "pitch", "cover", "struct", "roofCol",
-  "joinery", "clad", "cladCol", "lining", "floor", "insul",
-  "units", "parapet", "wallTypes", "openings", "parts",
+  "type",
+  "wind",
+  "found",
+  "L",
+  "W",
+  "studH",
+  "spacing",
+  "eave",
+  "roof",
+  "pitch",
+  "cover",
+  "struct",
+  "roofCol",
+  "joinery",
+  "clad",
+  "cladCol",
+  "lining",
+  "floor",
+  "insul",
+  "units",
+  "parapet",
+  "wallTypes",
+  "openings",
+  "parts",
 ];
 
 function snapshot(s: AstralState): Partial<AstralState> {
@@ -89,14 +109,20 @@ export const useAgent = create<AgentClient>((set, get) => ({
       const raw = window.localStorage.getItem(`${HISTORY_KEY}:${key}`);
       if (raw) set({ messages: JSON.parse(raw) as ChatMessage[] });
       else set({ messages: [] });
-    } catch { /* noop */ }
+    } catch {
+      /* noop */
+    }
   },
   saveHistory: (key) => {
     if (typeof window === "undefined") return;
     try {
-      const msgs = get().messages.filter((m) => !m.pending).slice(-80);
+      const msgs = get()
+        .messages.filter((m) => !m.pending)
+        .slice(-80);
       window.localStorage.setItem(`${HISTORY_KEY}:${key}`, JSON.stringify(msgs));
-    } catch { /* noop */ }
+    } catch {
+      /* noop */
+    }
   },
   clear: () => set({ messages: [] }),
 
@@ -104,13 +130,17 @@ export const useAgent = create<AgentClient>((set, get) => ({
     if (!message.trim() || get().busy) return;
     const userMsg: ChatMessage = { id: uid(), role: "user", content: message, ts: Date.now() };
     const pending: ChatMessage = {
-      id: uid(), role: "assistant", content: "Thinking…", ts: Date.now(), pending: true,
+      id: uid(),
+      role: "assistant",
+      content: "Thinking…",
+      ts: Date.now(),
+      pending: true,
     };
     set((s) => ({ messages: [...s.messages, userMsg, pending], busy: true, draft: "" }));
 
     const preSnap = snapshot(useAstral.getState() as AstralState);
-    const history = get().messages
-      .filter((m) => !m.pending && (m.role === "user" || m.role === "assistant"))
+    const history = get()
+      .messages.filter((m) => !m.pending && (m.role === "user" || m.role === "assistant"))
       .slice(-16)
       .map((m) => ({ role: m.role as "user" | "assistant", content: m.content }));
 
@@ -127,22 +157,32 @@ export const useAgent = create<AgentClient>((set, get) => ({
         const { astralDreamTurn } = await import("../dreamAgent.functions");
         const { applyDreamAction } = await import("./dreamGrammar");
         const { useDream } = await import("../dream");
-        const dreamSnap = JSON.parse(JSON.stringify(useDream.getState())) as Record<string, unknown>;
+        const dreamSnap = JSON.parse(JSON.stringify(useDream.getState())) as Record<
+          string,
+          unknown
+        >;
         const res = await astralDreamTurn({ data: { message, history, dream: dreamSnap } });
-        text = res.text; error = res.error;
+        text = res.text;
+        error = res.error;
         for (const a of res.actions) {
-          try { applyDreamAction(a); actionsForLog.push(a); }
-          catch (e) { console.error("applyDreamAction failed", a, e); }
+          try {
+            applyDreamAction(a);
+            actionsForLog.push(a);
+          } catch (e) {
+            console.error("applyDreamAction failed", a, e);
+          }
         }
       } else {
         const res = await astralAgentTurn({
           data: {
-            message, history,
+            message,
+            history,
             state: snapshot(useAstral.getState() as AstralState) as Record<string, unknown>,
             selectedId: useAstral.getState().sel,
           },
         });
-        text = res.text; error = res.error;
+        text = res.text;
+        error = res.error;
         const store = useAstral.getState();
         for (const a of res.actions) {
           try {
@@ -150,7 +190,9 @@ export const useAgent = create<AgentClient>((set, get) => ({
             const r = applyAction(store as any, a);
             if (r.highlight) highlight = r.highlight;
             actionsForLog.push(a);
-          } catch (e) { console.error("applyAction failed", a, e); }
+          } catch (e) {
+            console.error("applyAction failed", a, e);
+          }
         }
       }
 
@@ -174,7 +216,11 @@ export const useAgent = create<AgentClient>((set, get) => ({
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
       const errMsg: ChatMessage = {
-        id: pending.id, role: "assistant", content: `⚠ ${msg}`, error: msg, ts: Date.now(),
+        id: pending.id,
+        role: "assistant",
+        content: `⚠ ${msg}`,
+        error: msg,
+        ts: Date.now(),
       };
       set((s) => ({
         messages: s.messages.map((m) => (m.id === pending.id ? errMsg : m)),
@@ -189,7 +235,10 @@ export const useAgent = create<AgentClient>((set, get) => ({
     useAstral.getState().patch(msg.snapshot);
     // Truncate history at this message so the timeline reflects the rewind.
     set((s) => ({
-      messages: s.messages.slice(0, s.messages.findIndex((m) => m.id === messageId)),
+      messages: s.messages.slice(
+        0,
+        s.messages.findIndex((m) => m.id === messageId),
+      ),
     }));
   },
 }));

@@ -15,9 +15,7 @@ import { jsPDF } from "jspdf";
 import { useAstral, type AstralState } from "./store";
 import { qtys, buildModel } from "./model";
 import { buildTakeoff, type Takeoff } from "./takeoff";
-import {
-  SHEETS, SHEET_INDEX, SHEET_SERIES, COMPASS, PROJECT, getSheetMeta,
-} from "./sheet";
+import { SHEETS, SHEET_INDEX, SHEET_SERIES, COMPASS, PROJECT, getSheetMeta } from "./sheet";
 
 // ---------- helpers ----------
 
@@ -43,7 +41,8 @@ async function svgToPng(svg: SVGSVGElement, scale = 2): Promise<string> {
     const img = new Image();
     img.onload = () => {
       const cv = document.createElement("canvas");
-      cv.width = Math.round(w); cv.height = Math.round(h);
+      cv.width = Math.round(w);
+      cv.height = Math.round(h);
       const ctx = cv.getContext("2d");
       if (!ctx) return reject(new Error("no 2d context"));
       ctx.fillStyle = "#ffffff";
@@ -60,9 +59,14 @@ function downloadBlob(data: string | Blob, filename: string, mime?: string) {
   const blob = typeof data === "string" ? new Blob([data], { type: mime || "text/plain" }) : data;
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
-  a.href = url; a.download = filename;
-  document.body.appendChild(a); a.click();
-  setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 100);
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => {
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }, 100);
 }
 
 function dataUrlToBlob(dataUrl: string): Blob {
@@ -84,9 +88,19 @@ export async function exportCurrentPNG(filename = "astral-sheet.png"): Promise<v
 // ---------- PDF set ----------
 
 type SheetSpec =
-  | { kind: "svg"; sheetKey: string; label: string; patch: Partial<AstralState> & { detailFor?: string | null } }
+  | {
+      kind: "svg";
+      sheetKey: string;
+      label: string;
+      patch: Partial<AstralState> & { detailFor?: string | null };
+    }
   | { kind: "cover"; sheetKey: "cover"; label: string }
-  | { kind: "schedule"; sheetKey: string; label: string; render: (pdf: jsPDF, S: AstralState, T: Takeoff, pageW: number, pageH: number) => void };
+  | {
+      kind: "schedule";
+      sheetKey: string;
+      label: string;
+      render: (pdf: jsPDF, S: AstralState, T: Takeoff, pageW: number, pageH: number) => void;
+    };
 
 function sheetNumber(key: string, face?: string): string {
   const ref = SHEETS[key]?.byFace ? `${key}@${face || "front"}` : key;
@@ -97,7 +111,7 @@ function sheetNumber(key: string, face?: string): string {
 
 function buildSheetSet(S: AstralState): SheetSpec[] {
   const M = buildModel(S);
-  const wallId = `wall-${(S.openings[0]?.wall ?? "S")}`;
+  const wallId = `wall-${S.openings[0]?.wall ?? "S"}`;
   const wallNode = M.byId[wallId] ? wallId : M.byId["wall-S"] ? "wall-S" : "building";
   const firstOpening = S.openings[0] ? `opening-${S.openings[0].id}` : null;
 
@@ -105,22 +119,46 @@ function buildSheetSet(S: AstralState): SheetSpec[] {
   set.push({ kind: "cover", sheetKey: "cover", label: "Drawing Register" });
 
   // A1 plans
-  set.push({ kind: "svg", sheetKey: "plan_arch",       label: "Floor Plan",       patch: { view: "plan", layer: "arch",       detailFor: null } });
-  set.push({ kind: "svg", sheetKey: "plan_foundation", label: "Foundation Plan",  patch: { view: "plan", layer: "foundation", detailFor: null } });
-  set.push({ kind: "svg", sheetKey: "plan_framing",    label: "Framing Plan",     patch: { view: "plan", layer: "framing",    detailFor: null } });
-  set.push({ kind: "svg", sheetKey: "plan_services",   label: "Services Plan",    patch: { view: "plan", layer: "services",   detailFor: null } });
+  set.push({
+    kind: "svg",
+    sheetKey: "plan_arch",
+    label: "Floor Plan",
+    patch: { view: "plan", layer: "arch", detailFor: null },
+  });
+  set.push({
+    kind: "svg",
+    sheetKey: "plan_foundation",
+    label: "Foundation Plan",
+    patch: { view: "plan", layer: "foundation", detailFor: null },
+  });
+  set.push({
+    kind: "svg",
+    sheetKey: "plan_framing",
+    label: "Framing Plan",
+    patch: { view: "plan", layer: "framing", detailFor: null },
+  });
+  set.push({
+    kind: "svg",
+    sheetKey: "plan_services",
+    label: "Services Plan",
+    patch: { view: "plan", layer: "services", detailFor: null },
+  });
 
   // A2 elevations — arch, framing, foundation × 4 faces
   const faces = ["front", "back", "left", "right"] as const;
   (["arch", "framing", "foundation"] as const).forEach((lyr) => {
     faces.forEach((f) => {
-      const key = lyr === "framing" ? "elevation_framing"
-        : lyr === "foundation" ? "elevation_foundation"
-        : "elevation_arch";
+      const key =
+        lyr === "framing"
+          ? "elevation_framing"
+          : lyr === "foundation"
+            ? "elevation_foundation"
+            : "elevation_arch";
       const compass = COMPASS[f];
       const layerName = lyr === "arch" ? "" : ` (${lyr})`;
       set.push({
-        kind: "svg", sheetKey: key,
+        kind: "svg",
+        sheetKey: key,
         label: `${compass} Elevation${layerName}`,
         patch: { view: "elevation", layer: lyr, face: f, detailFor: null },
       });
@@ -128,22 +166,77 @@ function buildSheetSet(S: AstralState): SheetSpec[] {
   });
 
   // A3 sections
-  set.push({ kind: "svg", sheetKey: "section_cross", label: "Cross Section A–A", patch: { view: "section", cut: "cross", detailFor: null } });
-  set.push({ kind: "svg", sheetKey: "section_long",  label: "Longitudinal Section B–B", patch: { view: "section", cut: "long",  detailFor: null } });
+  set.push({
+    kind: "svg",
+    sheetKey: "section_cross",
+    label: "Cross Section A–A",
+    patch: { view: "section", cut: "cross", detailFor: null },
+  });
+  set.push({
+    kind: "svg",
+    sheetKey: "section_long",
+    label: "Longitudinal Section B–B",
+    patch: { view: "section", cut: "long", detailFor: null },
+  });
 
   // A4 schedules
-  set.push({ kind: "schedule", sheetKey: "schedule_openings", label: "Door / Window Schedule", render: renderOpeningsSchedule });
-  set.push({ kind: "schedule", sheetKey: "schedule_lintels",  label: "Lintel Schedule",        render: renderLintelSchedule });
-  set.push({ kind: "schedule", sheetKey: "schedule_bracing",  label: "Bracing Schedule",       render: renderBracingSchedule });
-  set.push({ kind: "schedule", sheetKey: "schedule_areas",    label: "Areas & Fixings",        render: renderAreasFixingsSchedule });
-  set.push({ kind: "schedule", sheetKey: "schedule_studs",    label: "Stud Takeoff",           render: renderStudSchedule });
+  set.push({
+    kind: "schedule",
+    sheetKey: "schedule_openings",
+    label: "Door / Window Schedule",
+    render: renderOpeningsSchedule,
+  });
+  set.push({
+    kind: "schedule",
+    sheetKey: "schedule_lintels",
+    label: "Lintel Schedule",
+    render: renderLintelSchedule,
+  });
+  set.push({
+    kind: "schedule",
+    sheetKey: "schedule_bracing",
+    label: "Bracing Schedule",
+    render: renderBracingSchedule,
+  });
+  set.push({
+    kind: "schedule",
+    sheetKey: "schedule_areas",
+    label: "Areas & Fixings",
+    render: renderAreasFixingsSchedule,
+  });
+  set.push({
+    kind: "schedule",
+    sheetKey: "schedule_studs",
+    label: "Stud Takeoff",
+    render: renderStudSchedule,
+  });
 
   // A5 details — wall, eave, slab, opening (skip opening if no openings)
-  set.push({ kind: "svg", sheetKey: "detail_wall",    label: "Wall Framing Detail", patch: { view: "detail", detailFor: wallNode } });
-  set.push({ kind: "svg", sheetKey: "detail_roof",    label: "Eave Detail",         patch: { view: "detail", detailFor: "roof" } });
-  set.push({ kind: "svg", sheetKey: "detail_slab",    label: "Slab Edge Detail",    patch: { view: "detail", detailFor: "slab" } });
+  set.push({
+    kind: "svg",
+    sheetKey: "detail_wall",
+    label: "Wall Framing Detail",
+    patch: { view: "detail", detailFor: wallNode },
+  });
+  set.push({
+    kind: "svg",
+    sheetKey: "detail_roof",
+    label: "Eave Detail",
+    patch: { view: "detail", detailFor: "roof" },
+  });
+  set.push({
+    kind: "svg",
+    sheetKey: "detail_slab",
+    label: "Slab Edge Detail",
+    patch: { view: "detail", detailFor: "slab" },
+  });
   if (firstOpening) {
-    set.push({ kind: "svg", sheetKey: "detail_opening", label: "Lintel / Head Detail", patch: { view: "detail", detailFor: firstOpening } });
+    set.push({
+      kind: "svg",
+      sheetKey: "detail_opening",
+      label: "Lintel / Head Detail",
+      patch: { view: "detail", detailFor: firstOpening },
+    });
   }
   return set;
 }
@@ -162,7 +255,9 @@ function drawWatermark(pdf: jsPDF, pageW: number, pageH: number) {
     // jsPDF exposes GState on the constructor for opacity control
     const Ctor = (jsPDF as unknown as { GState?: new (o: { opacity: number }) => unknown }).GState;
     if (Ctor) {
-      (pdf as unknown as { setGState: (s: unknown) => void }).setGState(new Ctor({ opacity: 0.08 }));
+      (pdf as unknown as { setGState: (s: unknown) => void }).setGState(
+        new Ctor({ opacity: 0.08 }),
+      );
     }
   } catch {
     /* opacity not supported — fall back to faint colour */
@@ -170,12 +265,10 @@ function drawWatermark(pdf: jsPDF, pageW: number, pageH: number) {
   pdf.setTextColor(190, 110, 60);
   pdf.setFont("helvetica", "bold");
   pdf.setFontSize(64);
-  pdf.text(
-    "CONCEPT — INDICATIVE, NOT FOR CONSTRUCTION",
-    pageW / 2,
-    pageH / 2,
-    { align: "center", angle: 30 },
-  );
+  pdf.text("CONCEPT — INDICATIVE, NOT FOR CONSTRUCTION", pageW / 2, pageH / 2, {
+    align: "center",
+    angle: 30,
+  });
   pdf.restoreGraphicsState();
 }
 
@@ -192,7 +285,8 @@ type ChromeInfo = {
 function drawChrome(pdf: jsPDF, pageW: number, pageH: number, S: AstralState, info: ChromeInfo) {
   const margin = 8;
   // outer frame
-  pdf.setDrawColor(INK); pdf.setLineWidth(0.5);
+  pdf.setDrawColor(INK);
+  pdf.setLineWidth(0.5);
   pdf.rect(margin, margin, pageW - 2 * margin, pageH - 2 * margin);
 
   // title block band along the bottom
@@ -200,63 +294,97 @@ function drawChrome(pdf: jsPDF, pageW: number, pageH: number, S: AstralState, in
   const tbY = pageH - margin - tbH;
   pdf.setFillColor(251, 249, 243);
   pdf.rect(margin, tbY, pageW - 2 * margin, tbH, "F");
-  pdf.setDrawColor(INK); pdf.setLineWidth(0.4);
+  pdf.setDrawColor(INK);
+  pdf.setLineWidth(0.4);
   pdf.rect(margin, tbY, pageW - 2 * margin, tbH);
   pdf.line(margin, tbY + 7, pageW - margin, tbY + 7);
 
   // metadata strip
-  pdf.setFont("helvetica", "normal"); pdf.setFontSize(7);
+  pdf.setFont("helvetica", "normal");
+  pdf.setFontSize(7);
   pdf.setTextColor(SOFT);
   pdf.text("PROJECT ASTRAL · SPATIAL CONSTRUCTION SET", margin + 3, tbY + 5);
   pdf.text(`${info.series} SERIES · ${info.sheetNumber}`, pageW / 2, tbY + 5, { align: "center" });
-  pdf.text(`REV ${PROJECT.rev} · ISSUED ${PROJECT.date}`, pageW - margin - 3, tbY + 5, { align: "right" });
+  pdf.text(`REV ${PROJECT.rev} · ISSUED ${PROJECT.date}`, pageW - margin - 3, tbY + 5, {
+    align: "right",
+  });
 
   // main strip — identity / project / title / scale / sheet number
   const colW = (pageW - 2 * margin) / 5;
   const cx = (i: number) => margin + i * colW + 3;
   const baseY = tbY + 13;
 
-  pdf.setFontSize(9); pdf.setTextColor(INK); pdf.setFont("helvetica", "bold");
+  pdf.setFontSize(9);
+  pdf.setTextColor(INK);
+  pdf.setFont("helvetica", "bold");
   pdf.text("PROJECT ASTRAL", cx(0), baseY);
-  pdf.setFont("helvetica", "normal"); pdf.setFontSize(6.5); pdf.setTextColor(SOFT);
+  pdf.setFont("helvetica", "normal");
+  pdf.setFontSize(6.5);
+  pdf.setTextColor(SOFT);
   pdf.text(PROJECT.tagline, cx(0), baseY + 4);
   pdf.setTextColor(ACCENT);
   pdf.text(PROJECT.consent, cx(0), baseY + 9);
 
   // project
-  pdf.setFontSize(6.5); pdf.setTextColor(MUTED);
+  pdf.setFontSize(6.5);
+  pdf.setTextColor(MUTED);
   pdf.text("PROJECT", cx(1), baseY - 3);
-  pdf.setTextColor(INK); pdf.setFontSize(8); pdf.setFont("helvetica", "bold");
-  pdf.text(`${(S.type || "BUILDING").toUpperCase()} — ${PROJECT.location.toUpperCase()}`, cx(1), baseY + 2);
-  pdf.setFont("helvetica", "normal"); pdf.setFontSize(6.5); pdf.setTextColor(SOFT);
+  pdf.setTextColor(INK);
+  pdf.setFontSize(8);
+  pdf.setFont("helvetica", "bold");
+  pdf.text(
+    `${(S.type || "BUILDING").toUpperCase()} — ${PROJECT.location.toUpperCase()}`,
+    cx(1),
+    baseY + 2,
+  );
+  pdf.setFont("helvetica", "normal");
+  pdf.setFontSize(6.5);
+  pdf.setTextColor(SOFT);
   pdf.text(`${(S.L / 1000).toFixed(1)} × ${(S.W / 1000).toFixed(1)} m`, cx(1), baseY + 6);
   const hot = S.wind === "Extra High" || S.wind === "Cyclonic (SED)";
   pdf.setTextColor(hot ? ACCENT : SOFT);
   pdf.text(`WIND ZONE — ${S.wind.toUpperCase()}`, cx(1), baseY + 10);
 
   // drawing
-  pdf.setTextColor(MUTED); pdf.setFontSize(6.5);
+  pdf.setTextColor(MUTED);
+  pdf.setFontSize(6.5);
   pdf.text("DRAWING", cx(2), baseY - 3);
-  pdf.setTextColor(INK); pdf.setFont("helvetica", "bold"); pdf.setFontSize(9);
+  pdf.setTextColor(INK);
+  pdf.setFont("helvetica", "bold");
+  pdf.setFontSize(9);
   pdf.text(info.title.toUpperCase(), cx(2), baseY + 2);
   if (info.sub) {
-    pdf.setFont("helvetica", "normal"); pdf.setFontSize(6.5); pdf.setTextColor(ACCENT);
+    pdf.setFont("helvetica", "normal");
+    pdf.setFontSize(6.5);
+    pdf.setTextColor(ACCENT);
     pdf.text(info.sub.toUpperCase(), cx(2), baseY + 7);
   }
 
   // scale / date
-  pdf.setFont("helvetica", "normal"); pdf.setFontSize(6.5); pdf.setTextColor(MUTED);
+  pdf.setFont("helvetica", "normal");
+  pdf.setFontSize(6.5);
+  pdf.setTextColor(MUTED);
   pdf.text("SCALE", cx(3), baseY - 3);
-  pdf.setTextColor(INK); pdf.setFontSize(8); pdf.text(info.scale, cx(3), baseY + 2);
-  pdf.setTextColor(MUTED); pdf.setFontSize(6.5);
+  pdf.setTextColor(INK);
+  pdf.setFontSize(8);
+  pdf.text(info.scale, cx(3), baseY + 2);
+  pdf.setTextColor(MUTED);
+  pdf.setFontSize(6.5);
   pdf.text("DATE", cx(3), baseY + 7);
-  pdf.setTextColor(INK); pdf.text(PROJECT.date, cx(3), baseY + 11);
+  pdf.setTextColor(INK);
+  pdf.text(PROJECT.date, cx(3), baseY + 11);
 
   // sheet number
-  pdf.setTextColor(MUTED); pdf.setFontSize(6.5); pdf.text("SHEET", cx(4), baseY - 3);
-  pdf.setTextColor(INK); pdf.setFont("helvetica", "bold"); pdf.setFontSize(16);
+  pdf.setTextColor(MUTED);
+  pdf.setFontSize(6.5);
+  pdf.text("SHEET", cx(4), baseY - 3);
+  pdf.setTextColor(INK);
+  pdf.setFont("helvetica", "bold");
+  pdf.setFontSize(16);
   pdf.text(info.sheetNumber, cx(4), baseY + 6);
-  pdf.setFont("helvetica", "normal"); pdf.setFontSize(6.5); pdf.setTextColor(MUTED);
+  pdf.setFont("helvetica", "normal");
+  pdf.setFontSize(6.5);
+  pdf.setTextColor(MUTED);
   pdf.text(`${info.pageIndex} / ${info.pageTotal}`, cx(4), baseY + 11);
 
   drawWatermark(pdf, pageW, pageH);
@@ -264,52 +392,79 @@ function drawChrome(pdf: jsPDF, pageW: number, pageH: number, S: AstralState, in
 
 // ---------- schedule renderers ----------
 
-function tableHeader(pdf: jsPDF, x: number, y: number, cols: { label: string; w: number; align?: "L" | "R" | "C" }[]) {
-  pdf.setFont("helvetica", "bold"); pdf.setFontSize(7.5); pdf.setTextColor(INK);
+function tableHeader(
+  pdf: jsPDF,
+  x: number,
+  y: number,
+  cols: { label: string; w: number; align?: "L" | "R" | "C" }[],
+) {
+  pdf.setFont("helvetica", "bold");
+  pdf.setFontSize(7.5);
+  pdf.setTextColor(INK);
   let cx = x;
   cols.forEach((c) => {
     const tx = c.align === "R" ? cx + c.w - 1 : c.align === "C" ? cx + c.w / 2 : cx + 1;
-    pdf.text(c.label, tx, y, { align: c.align === "R" ? "right" : c.align === "C" ? "center" : "left" });
+    pdf.text(c.label, tx, y, {
+      align: c.align === "R" ? "right" : c.align === "C" ? "center" : "left",
+    });
     cx += c.w;
   });
-  pdf.setDrawColor(INK); pdf.setLineWidth(0.4);
+  pdf.setDrawColor(INK);
+  pdf.setLineWidth(0.4);
   pdf.line(x, y + 1.2, x + cols.reduce((a, c) => a + c.w, 0), y + 1.2);
 }
 
 function tableRow(
-  pdf: jsPDF, x: number, y: number,
+  pdf: jsPDF,
+  x: number,
+  y: number,
   cols: { value: string; w: number; align?: "L" | "R" | "C" }[],
 ) {
-  pdf.setFont("helvetica", "normal"); pdf.setFontSize(7.5); pdf.setTextColor(INK);
+  pdf.setFont("helvetica", "normal");
+  pdf.setFontSize(7.5);
+  pdf.setTextColor(INK);
   let cx = x;
   cols.forEach((c) => {
     const tx = c.align === "R" ? cx + c.w - 1 : c.align === "C" ? cx + c.w / 2 : cx + 1;
-    pdf.text(c.value, tx, y, { align: c.align === "R" ? "right" : c.align === "C" ? "center" : "left" });
+    pdf.text(c.value, tx, y, {
+      align: c.align === "R" ? "right" : c.align === "C" ? "center" : "left",
+    });
     cx += c.w;
   });
-  pdf.setDrawColor(RULE); pdf.setLineWidth(0.15);
+  pdf.setDrawColor(RULE);
+  pdf.setLineWidth(0.15);
   pdf.line(x, y + 1.2, x + cols.reduce((a, c) => a + c.w, 0), y + 1.2);
 }
 
 function scheduleHeader(pdf: jsPDF, pageW: number, title: string, note: string) {
-  pdf.setFont("helvetica", "bold"); pdf.setFontSize(13); pdf.setTextColor(INK);
+  pdf.setFont("helvetica", "bold");
+  pdf.setFontSize(13);
+  pdf.setTextColor(INK);
   pdf.text(title, 16, 22);
-  pdf.setFont("helvetica", "normal"); pdf.setFontSize(8); pdf.setTextColor(SOFT);
+  pdf.setFont("helvetica", "normal");
+  pdf.setFontSize(8);
+  pdf.setTextColor(SOFT);
   pdf.text(note, 16, 28);
-  pdf.setDrawColor(INK); pdf.setLineWidth(0.4);
+  pdf.setDrawColor(INK);
+  pdf.setLineWidth(0.4);
   pdf.line(16, 31, pageW - 16, 31);
 }
 
 function renderOpeningsSchedule(pdf: jsPDF, _S: AstralState, T: Takeoff, pageW: number) {
-  scheduleHeader(pdf, pageW, "DOOR / WINDOW SCHEDULE", "Indicative — refer to joinery supplier for confirmation");
+  scheduleHeader(
+    pdf,
+    pageW,
+    "DOOR / WINDOW SCHEDULE",
+    "Indicative — refer to joinery supplier for confirmation",
+  );
   const cols = [
-    { label: "REF",    w: 14, align: "L" as const },
-    { label: "TYPE",   w: 22 },
-    { label: "WALL",   w: 24 },
+    { label: "REF", w: 14, align: "L" as const },
+    { label: "TYPE", w: 22 },
+    { label: "WALL", w: 24 },
     { label: "W (mm)", w: 20, align: "R" as const },
     { label: "H (mm)", w: 20, align: "R" as const },
-    { label: "HEAD",   w: 20, align: "R" as const },
-    { label: "SILL",   w: 20, align: "R" as const },
+    { label: "HEAD", w: 20, align: "R" as const },
+    { label: "SILL", w: 20, align: "R" as const },
     { label: "OFFSET", w: 22, align: "R" as const },
     { label: "AREA m²", w: 22, align: "R" as const },
   ];
@@ -332,15 +487,20 @@ function renderOpeningsSchedule(pdf: jsPDF, _S: AstralState, T: Takeoff, pageW: 
 }
 
 function renderLintelSchedule(pdf: jsPDF, _S: AstralState, T: Takeoff, pageW: number) {
-  scheduleHeader(pdf, pageW, "LINTEL SCHEDULE", "Per NZS 3604 Table 8.10 — SED items flagged for engineer review");
+  scheduleHeader(
+    pdf,
+    pageW,
+    "LINTEL SCHEDULE",
+    "Per NZS 3604 Table 8.10 — SED items flagged for engineer review",
+  );
   const cols = [
-    { label: "REF",     w: 14 },
-    { label: "SIZE",    w: 80 },
+    { label: "REF", w: 14 },
+    { label: "SIZE", w: 80 },
     { label: "SPAN mm", w: 25, align: "R" as const },
-    { label: "COUNT",   w: 20, align: "R" as const },
+    { label: "COUNT", w: 20, align: "R" as const },
     { label: "EACH mm", w: 25, align: "R" as const },
     { label: "TOTAL lm", w: 25, align: "R" as const },
-    { label: "STATUS",  w: 25 },
+    { label: "STATUS", w: 25 },
   ];
   tableHeader(pdf, 16, 40, cols);
   let y = 46;
@@ -359,14 +519,19 @@ function renderLintelSchedule(pdf: jsPDF, _S: AstralState, T: Takeoff, pageW: nu
 }
 
 function renderBracingSchedule(pdf: jsPDF, _S: AstralState, T: Takeoff, pageW: number) {
-  scheduleHeader(pdf, pageW, "BRACING SCHEDULE", `Indicative P21 panels — total ${T.bracingTotalBU} BU achieved`);
+  scheduleHeader(
+    pdf,
+    pageW,
+    "BRACING SCHEDULE",
+    `Indicative P21 panels — total ${T.bracingTotalBU} BU achieved`,
+  );
   const cols = [
-    { label: "WALL",          w: 30 },
-    { label: "LENGTH mm",     w: 30, align: "R" as const },
-    { label: "AVAILABLE mm",  w: 30, align: "R" as const },
-    { label: "PANELS",        w: 25, align: "R" as const },
-    { label: "BU",            w: 25, align: "R" as const },
-    { label: "STATUS",        w: 30 },
+    { label: "WALL", w: 30 },
+    { label: "LENGTH mm", w: 30, align: "R" as const },
+    { label: "AVAILABLE mm", w: 30, align: "R" as const },
+    { label: "PANELS", w: 25, align: "R" as const },
+    { label: "BU", w: 25, align: "R" as const },
+    { label: "STATUS", w: 30 },
   ];
   tableHeader(pdf, 16, 40, cols);
   let y = 46;
@@ -385,16 +550,18 @@ function renderBracingSchedule(pdf: jsPDF, _S: AstralState, T: Takeoff, pageW: n
 
 function renderAreasFixingsSchedule(pdf: jsPDF, _S: AstralState, T: Takeoff, pageW: number) {
   scheduleHeader(pdf, pageW, "AREAS & FIXINGS", "Wastage allowance baked into order quantities");
-  pdf.setFont("helvetica", "bold"); pdf.setFontSize(9); pdf.setTextColor(INK);
+  pdf.setFont("helvetica", "bold");
+  pdf.setFontSize(9);
+  pdf.setTextColor(INK);
   pdf.text("CLADDING / LINING / ROOFING (m²)", 16, 38);
   const colsA = [
-    { label: "ITEM",      w: 50 },
-    { label: "GROSS",     w: 22, align: "R" as const },
-    { label: "OPENINGS",  w: 25, align: "R" as const },
-    { label: "NET",       w: 22, align: "R" as const },
-    { label: "WASTE %",   w: 22, align: "R" as const },
-    { label: "ORDER",     w: 22, align: "R" as const },
-    { label: "SPEC",      w: 60 },
+    { label: "ITEM", w: 50 },
+    { label: "GROSS", w: 22, align: "R" as const },
+    { label: "OPENINGS", w: 25, align: "R" as const },
+    { label: "NET", w: 22, align: "R" as const },
+    { label: "WASTE %", w: 22, align: "R" as const },
+    { label: "ORDER", w: 22, align: "R" as const },
+    { label: "SPEC", w: 60 },
   ];
   tableHeader(pdf, 16, 44, colsA);
   let y = 50;
@@ -412,14 +579,16 @@ function renderAreasFixingsSchedule(pdf: jsPDF, _S: AstralState, T: Takeoff, pag
   });
 
   y += 6;
-  pdf.setFont("helvetica", "bold"); pdf.setFontSize(9); pdf.setTextColor(INK);
+  pdf.setFont("helvetica", "bold");
+  pdf.setFontSize(9);
+  pdf.setTextColor(INK);
   pdf.text("FIXINGS / FASTENERS", 16, y);
   y += 6;
   const colsB = [
-    { label: "ITEM",  w: 130 },
-    { label: "QTY",   w: 25, align: "R" as const },
-    { label: "UNIT",  w: 20, align: "L" as const },
-    { label: "NOTE",  w: 60 },
+    { label: "ITEM", w: 130 },
+    { label: "QTY", w: 25, align: "R" as const },
+    { label: "UNIT", w: 20, align: "L" as const },
+    { label: "NOTE", w: 60 },
   ];
   tableHeader(pdf, 16, y, colsB);
   y += 6;
@@ -436,18 +605,20 @@ function renderAreasFixingsSchedule(pdf: jsPDF, _S: AstralState, T: Takeoff, pag
 
 function renderStudSchedule(pdf: jsPDF, S: AstralState, T: Takeoff, pageW: number) {
   scheduleHeader(
-    pdf, pageW, "STUD TAKEOFF",
+    pdf,
+    pageW,
+    "STUD TAKEOFF",
     `Studs @${S.spacing}mm c/c, ${T.studTotals.size} — totals: ${T.studTotals.studs_pcs} studs · ${T.studTotals.plates_lm}lm plates · ${T.studTotals.nogs_lm}lm nogs`,
   );
   const cols = [
-    { label: "WALL",     w: 28 },
+    { label: "WALL", w: 28 },
     { label: "LENGTH mm", w: 24, align: "R" as const },
-    { label: "COMMON",   w: 22, align: "R" as const },
-    { label: "JACK",     w: 20, align: "R" as const },
-    { label: "TRIMMER",  w: 22, align: "R" as const },
-    { label: "CORNER",   w: 22, align: "R" as const },
+    { label: "COMMON", w: 22, align: "R" as const },
+    { label: "JACK", w: 20, align: "R" as const },
+    { label: "TRIMMER", w: 22, align: "R" as const },
+    { label: "CORNER", w: 22, align: "R" as const },
     { label: "PLATES lm", w: 22, align: "R" as const },
-    { label: "NOGS lm",   w: 22, align: "R" as const },
+    { label: "NOGS lm", w: 22, align: "R" as const },
   ];
   tableHeader(pdf, 16, 40, cols);
   let y = 46;
@@ -468,22 +639,37 @@ function renderStudSchedule(pdf: jsPDF, S: AstralState, T: Takeoff, pageW: numbe
 
 // ---------- cover / register ----------
 
-function renderCover(pdf: jsPDF, S: AstralState, registry: { number: string; series: string; title: string }[], pageW: number, pageH: number) {
-  pdf.setFont("helvetica", "bold"); pdf.setFontSize(22); pdf.setTextColor(INK);
+function renderCover(
+  pdf: jsPDF,
+  S: AstralState,
+  registry: { number: string; series: string; title: string }[],
+  pageW: number,
+  pageH: number,
+) {
+  pdf.setFont("helvetica", "bold");
+  pdf.setFontSize(22);
+  pdf.setTextColor(INK);
   pdf.text("PROJECT ASTRAL", 16, 30);
-  pdf.setFont("helvetica", "normal"); pdf.setFontSize(10); pdf.setTextColor(SOFT);
+  pdf.setFont("helvetica", "normal");
+  pdf.setFontSize(10);
+  pdf.setTextColor(SOFT);
   pdf.text("Spatial construction set — building consent (concept)", 16, 37);
 
-  pdf.setDrawColor(INK); pdf.setLineWidth(0.4);
+  pdf.setDrawColor(INK);
+  pdf.setLineWidth(0.4);
   pdf.line(16, 42, pageW - 16, 42);
 
   // Project summary
   const q = qtys(S);
-  pdf.setFontSize(9); pdf.setTextColor(INK);
+  pdf.setFontSize(9);
+  pdf.setTextColor(INK);
   const rows = [
     ["Project type", S.type],
     ["Location", PROJECT.location],
-    ["Footprint", `${(S.L / 1000).toFixed(1)} × ${(S.W / 1000).toFixed(1)} m  (${q.floorA} m² floor)`],
+    [
+      "Footprint",
+      `${(S.L / 1000).toFixed(1)} × ${(S.W / 1000).toFixed(1)} m  (${q.floorA} m² floor)`,
+    ],
     ["Wind zone", S.wind],
     ["Foundation", S.found],
     ["Roof", `${S.roof}  ${S.pitch}°  · ${S.cover} (${S.roofCol})`],
@@ -494,21 +680,26 @@ function renderCover(pdf: jsPDF, S: AstralState, registry: { number: string; ser
   ];
   let y = 50;
   rows.forEach(([k, v]) => {
-    pdf.setTextColor(MUTED); pdf.setFont("helvetica", "normal"); pdf.setFontSize(7);
+    pdf.setTextColor(MUTED);
+    pdf.setFont("helvetica", "normal");
+    pdf.setFontSize(7);
     pdf.text(k.toUpperCase(), 16, y);
-    pdf.setTextColor(INK); pdf.setFontSize(9);
+    pdf.setTextColor(INK);
+    pdf.setFontSize(9);
     pdf.text(String(v), 60, y);
     y += 6;
   });
 
   // Drawing register table
   const tableY = y + 4;
-  pdf.setFont("helvetica", "bold"); pdf.setFontSize(11); pdf.setTextColor(INK);
+  pdf.setFont("helvetica", "bold");
+  pdf.setFontSize(11);
+  pdf.setTextColor(INK);
   pdf.text("DRAWING REGISTER", 16, tableY);
   const cols = [
-    { label: "SHEET",  w: 28 },
+    { label: "SHEET", w: 28 },
     { label: "SERIES", w: 36 },
-    { label: "TITLE",  w: 200 },
+    { label: "TITLE", w: 200 },
   ];
   tableHeader(pdf, 16, tableY + 8, cols);
   let ry = tableY + 14;
@@ -523,12 +714,18 @@ function renderCover(pdf: jsPDF, S: AstralState, registry: { number: string; ser
   });
 
   // Disclaimer
-  pdf.setFont("helvetica", "bold"); pdf.setFontSize(9); pdf.setTextColor(ACCENT);
+  pdf.setFont("helvetica", "bold");
+  pdf.setFontSize(9);
+  pdf.setTextColor(ACCENT);
   pdf.text("CONCEPT — INDICATIVE, NOT FOR CONSTRUCTION", 16, pageH - 40);
-  pdf.setFont("helvetica", "normal"); pdf.setFontSize(8); pdf.setTextColor(SOFT);
+  pdf.setFont("helvetica", "normal");
+  pdf.setFontSize(8);
+  pdf.setTextColor(SOFT);
   pdf.text(
     "This set is a parametric concept generated by Project Astral. Quantities, spans, and details are indicative only and must be confirmed by a licensed design professional and/or engineer before construction. SED items require PS1.",
-    16, pageH - 34, { maxWidth: pageW - 32 },
+    16,
+    pageH - 34,
+    { maxWidth: pageW - 32 },
   );
 }
 
@@ -537,8 +734,11 @@ function renderCover(pdf: jsPDF, S: AstralState, registry: { number: string; ser
 export async function exportAllPDF(filename = "astral-set.pdf"): Promise<void> {
   const store = useAstral.getState();
   const orig: Partial<AstralState> = {
-    view: store.view, layer: store.layer, face: store.face,
-    cut: store.cut, detailFor: store.detailFor,
+    view: store.view,
+    layer: store.layer,
+    face: store.face,
+    cut: store.cut,
+    detailFor: store.detailFor,
   };
 
   const set = buildSheetSet(store);
@@ -576,7 +776,8 @@ export async function exportAllPDF(filename = "astral-set.pdf"): Promise<void> {
           series: SHEET_SERIES.A0,
           title: "Drawing Register",
           scale: "NTS",
-          pageIndex, pageTotal: set.length,
+          pageIndex,
+          pageTotal: set.length,
         });
         continue;
       }
@@ -588,14 +789,16 @@ export async function exportAllPDF(filename = "astral-set.pdf"): Promise<void> {
           series: SHEET_SERIES[SHEETS[sheet.sheetKey]?.prefix || "A4"],
           title: SHEETS[sheet.sheetKey]?.title || sheet.label,
           scale: "NTS",
-          pageIndex, pageTotal: set.length,
+          pageIndex,
+          pageTotal: set.length,
         });
         continue;
       }
 
       // svg sheet — drive the live canvas, then snapshot
       useAstral.getState().patch(sheet.patch);
-      await nextFrame(); await nextFrame();
+      await nextFrame();
+      await nextFrame();
       // small extra settle for canvases with measurement-derived geometry
       await new Promise((r) => setTimeout(r, 30));
       const svg = findActiveSvg();
@@ -603,8 +806,12 @@ export async function exportAllPDF(filename = "astral-set.pdf"): Promise<void> {
       const png = await svgToPng(svg, 2);
       const vb = svg.viewBox.baseVal;
       const ar = (vb.width || 628) / (vb.height || 540);
-      let w = drawAreaW, h = drawAreaW / ar;
-      if (h > drawAreaH) { h = drawAreaH; w = h * ar; }
+      let w = drawAreaW,
+        h = drawAreaW / ar;
+      if (h > drawAreaH) {
+        h = drawAreaH;
+        w = h * ar;
+      }
       pdf.addImage(png, "PNG", (pageW - w) / 2, drawAreaY, w, h);
 
       // chrome on top
@@ -615,7 +822,8 @@ export async function exportAllPDF(filename = "astral-set.pdf"): Promise<void> {
         title: SHEETS[sheet.sheetKey]?.title || sheet.label,
         sub: meta.sub || undefined,
         scale: SHEETS[sheet.sheetKey]?.scale || meta.scale,
-        pageIndex, pageTotal: set.length,
+        pageIndex,
+        pageTotal: set.length,
       });
     }
 
@@ -668,10 +876,13 @@ export function exportBOMCsv(s: AstralState, filename = "astral-quantities.csv")
     ["Lining (m²)", String(q.liningM2)],
     ["Openings", q.joinery],
   ];
-  const openingRows = s.openings.map((o) => [
-    `Opening #${o.id}`,
-    `${o.kind} · ${o.wall} · off ${o.off}mm · w ${o.width}mm`,
-  ] as [string, string]);
+  const openingRows = s.openings.map(
+    (o) =>
+      [`Opening #${o.id}`, `${o.kind} · ${o.wall} · off ${o.off}mm · w ${o.width}mm`] as [
+        string,
+        string,
+      ],
+  );
   const all = [["Item", "Value"], ...rows, ["", ""], ...openingRows];
   const csv = all.map((r) => r.map(csvEscape).join(",")).join("\n");
   downloadBlob(csv, filename, "text/csv;charset=utf-8");

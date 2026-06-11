@@ -8,11 +8,20 @@ export const PROJECT_KEY = "astral.project.v1";
 export const PRESETS_KEY = "astral.presets.v1";
 
 const UI_KEYS: (keyof AstralState)[] = [
-  "view", "layer", "face", "cut", "step", "sel", "detailFor", "unit",
+  "view",
+  "layer",
+  "face",
+  "cut",
+  "step",
+  "sel",
+  "detailFor",
+  "unit",
 ];
 
-export type ProjectSnapshot = Omit<AstralState,
-  "view" | "layer" | "face" | "cut" | "step" | "sel" | "detailFor" | "unit">;
+export type ProjectSnapshot = Omit<
+  AstralState,
+  "view" | "layer" | "face" | "cut" | "step" | "sel" | "detailFor" | "unit"
+>;
 
 export function snapshot(s: AstralState): ProjectSnapshot {
   const out = { ...s } as Partial<AstralState>;
@@ -22,21 +31,29 @@ export function snapshot(s: AstralState): ProjectSnapshot {
 
 export function saveToStorage(s: AstralState): void {
   if (typeof window === "undefined") return;
-  try { window.localStorage.setItem(PROJECT_KEY, JSON.stringify(snapshot(s))); } catch { /* noop */ }
+  try {
+    window.localStorage.setItem(PROJECT_KEY, JSON.stringify(snapshot(s)));
+  } catch {
+    /* noop */
+  }
 }
 
 export function loadFromStorage(): Partial<AstralState> | null {
   if (typeof window === "undefined") return null;
   try {
     const v = window.localStorage.getItem(PROJECT_KEY);
-    return v ? JSON.parse(v) as Partial<AstralState> : null;
-  } catch { return null; }
+    return v ? (JSON.parse(v) as Partial<AstralState>) : null;
+  } catch {
+    return null;
+  }
 }
 
 // base64url for URL safety
 function toB64Url(str: string): string {
   return btoa(unescape(encodeURIComponent(str)))
-    .replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/, "");
 }
 function fromB64Url(str: string): string {
   const pad = str.length % 4 === 0 ? "" : "=".repeat(4 - (str.length % 4));
@@ -48,8 +65,11 @@ export function encodeShare(s: AstralState): string {
 }
 
 export function decodeShare(token: string): Partial<AstralState> | null {
-  try { return JSON.parse(fromB64Url(token)) as Partial<AstralState>; }
-  catch { return null; }
+  try {
+    return JSON.parse(fromB64Url(token)) as Partial<AstralState>;
+  } catch {
+    return null;
+  }
 }
 
 export function shareUrl(s: AstralState): string {
@@ -73,19 +93,29 @@ export function listPresets(): NamedPreset[] {
   if (typeof window === "undefined") return [];
   try {
     const v = window.localStorage.getItem(PRESETS_KEY);
-    return v ? JSON.parse(v) as NamedPreset[] : [];
-  } catch { return []; }
+    return v ? (JSON.parse(v) as NamedPreset[]) : [];
+  } catch {
+    return [];
+  }
 }
 
 export function savePreset(name: string, s: AstralState): NamedPreset[] {
   const list = listPresets().filter((p) => p.name !== name);
   list.push({ name, saved: Date.now(), data: snapshot(s) });
-  try { window.localStorage.setItem(PRESETS_KEY, JSON.stringify(list)); } catch { /* noop */ }
+  try {
+    window.localStorage.setItem(PRESETS_KEY, JSON.stringify(list));
+  } catch {
+    /* noop */
+  }
   return list;
 }
 
 export function deletePreset(name: string): NamedPreset[] {
   const list = listPresets().filter((p) => p.name !== name);
-  try { window.localStorage.setItem(PRESETS_KEY, JSON.stringify(list)); } catch { /* noop */ }
+  try {
+    window.localStorage.setItem(PRESETS_KEY, JSON.stringify(list));
+  } catch {
+    /* noop */
+  }
   return list;
 }

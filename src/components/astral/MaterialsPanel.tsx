@@ -36,26 +36,49 @@ const TD: React.CSSProperties = {
 const TDR: React.CSSProperties = { ...TD, textAlign: "right" };
 
 const TABS = ["Studs", "Doors & Windows", "Lintels", "Bracing", "Fixings", "Cladding"] as const;
-type Tab = typeof TABS[number];
+type Tab = (typeof TABS)[number];
 
 export function MaterialsPanel() {
   const S = useAstral(useShallow((s) => s));
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const t = useMemo(() => buildTakeoff(S), [
-    S.L, S.W, S.studH, S.spacing, S.wind, S.openings, S.parts, S.units, S.storeys,
-    S.found, S.subfloor, S.floorDepth, S.roof, S.pitch, S.cover, S.struct, S.clad, S.eave,
-  ]);
+  const t = useMemo(
+    () => buildTakeoff(S),
+    [
+      S.L,
+      S.W,
+      S.studH,
+      S.spacing,
+      S.wind,
+      S.openings,
+      S.parts,
+      S.units,
+      S.storeys,
+      S.found,
+      S.subfloor,
+      S.floorDepth,
+      S.roof,
+      S.pitch,
+      S.cover,
+      S.struct,
+      S.clad,
+      S.eave,
+    ],
+  );
   const [tab, setTab] = useState<Tab>("Studs");
 
   return (
-    <div style={{
-      border: "1px solid var(--astral-line, #ddd)",
-      background: "var(--astral-pa, #fafaf7)",
-      padding: 12,
-      marginTop: 12,
-      borderRadius: 6,
-    }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8, flexWrap: "wrap" }}>
+    <div
+      style={{
+        border: "1px solid var(--astral-line, #ddd)",
+        background: "var(--astral-pa, #fafaf7)",
+        padding: 12,
+        marginTop: 12,
+        borderRadius: 6,
+      }}
+    >
+      <div
+        style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8, flexWrap: "wrap" }}
+      >
         <strong style={{ fontFamily: "var(--astral-mono)", fontSize: 12, letterSpacing: 0.4 }}>
           MATERIALS &amp; SCHEDULES
         </strong>
@@ -63,8 +86,12 @@ export function MaterialsPanel() {
           indicative · walks the model · NZS 3604 in scope
         </span>
         <span style={{ flex: 1 }} />
-        <button style={BTN} onClick={() => exportMaterialsCSV(S)}>📊 CSV</button>
-        <button style={BTN} onClick={() => exportMaterialsXLSX(S)}>📈 XLSX</button>
+        <button style={BTN} onClick={() => exportMaterialsCSV(S)}>
+          📊 CSV
+        </button>
+        <button style={BTN} onClick={() => exportMaterialsXLSX(S)}>
+          📈 XLSX
+        </button>
       </div>
 
       <div style={{ display: "flex", gap: 4, flexWrap: "wrap", marginBottom: 8 }}>
@@ -76,7 +103,7 @@ export function MaterialsPanel() {
               ...BTN,
               background: tab === tb ? "var(--astral-ink, #1d2a2a)" : BTN.background,
               color: tab === tb ? "#fff" : "inherit",
-              borderColor: tab === tb ? "var(--astral-ink, #1d2a2a)" : BTN.border as string,
+              borderColor: tab === tb ? "var(--astral-ink, #1d2a2a)" : (BTN.border as string),
             }}
           >
             {tb}
@@ -87,19 +114,21 @@ export function MaterialsPanel() {
       <div style={{ overflowX: "auto" }}>
         {tab === "Studs" && (
           <table style={{ width: "100%", borderCollapse: "collapse" }}>
-            <thead><tr>
-              <th style={TH}>Wall</th>
-              <th style={{ ...TH, textAlign: "right" }}>Length</th>
-              <th style={{ ...TH, textAlign: "right" }}>H</th>
-              <th style={{ ...TH, textAlign: "right" }}>Spacing</th>
-              <th style={TH}>Size</th>
-              <th style={{ ...TH, textAlign: "right" }}>Common</th>
-              <th style={{ ...TH, textAlign: "right" }}>Jack</th>
-              <th style={{ ...TH, textAlign: "right" }}>Trimmer</th>
-              <th style={{ ...TH, textAlign: "right" }}>Corner</th>
-              <th style={{ ...TH, textAlign: "right" }}>Nogs (lm)</th>
-              <th style={{ ...TH, textAlign: "right" }}>Plates (lm)</th>
-            </tr></thead>
+            <thead>
+              <tr>
+                <th style={TH}>Wall</th>
+                <th style={{ ...TH, textAlign: "right" }}>Length</th>
+                <th style={{ ...TH, textAlign: "right" }}>H</th>
+                <th style={{ ...TH, textAlign: "right" }}>Spacing</th>
+                <th style={TH}>Size</th>
+                <th style={{ ...TH, textAlign: "right" }}>Common</th>
+                <th style={{ ...TH, textAlign: "right" }}>Jack</th>
+                <th style={{ ...TH, textAlign: "right" }}>Trimmer</th>
+                <th style={{ ...TH, textAlign: "right" }}>Corner</th>
+                <th style={{ ...TH, textAlign: "right" }}>Nogs (lm)</th>
+                <th style={{ ...TH, textAlign: "right" }}>Plates (lm)</th>
+              </tr>
+            </thead>
             <tbody>
               {t.studs.map((l) => (
                 <tr key={l.wall}>
@@ -121,7 +150,9 @@ export function MaterialsPanel() {
                 <td style={TDR} colSpan={3}></td>
                 <td style={{ ...TD, fontWeight: 600 }}>{t.studTotals.size}</td>
                 <td style={{ ...TDR, fontWeight: 600 }}>{t.studTotals.studs_pcs} pcs</td>
-                <td style={TDR} colSpan={3}>≈ {t.studTotals.studs_lm} lm</td>
+                <td style={TDR} colSpan={3}>
+                  ≈ {t.studTotals.studs_lm} lm
+                </td>
                 <td style={{ ...TDR, fontWeight: 600 }}>{t.studTotals.nogs_lm}</td>
                 <td style={{ ...TDR, fontWeight: 600 }}>{t.studTotals.plates_lm}</td>
               </tr>
@@ -131,15 +162,19 @@ export function MaterialsPanel() {
 
         {tab === "Doors & Windows" && (
           <table style={{ width: "100%", borderCollapse: "collapse" }}>
-            <thead><tr>
-              <th style={TH}>Ref</th><th style={TH}>Kind</th><th style={TH}>Wall</th>
-              <th style={{ ...TH, textAlign: "right" }}>W</th>
-              <th style={{ ...TH, textAlign: "right" }}>H</th>
-              <th style={{ ...TH, textAlign: "right" }}>Head</th>
-              <th style={{ ...TH, textAlign: "right" }}>Sill</th>
-              <th style={{ ...TH, textAlign: "right" }}>Off</th>
-              <th style={{ ...TH, textAlign: "right" }}>Area (m²)</th>
-            </tr></thead>
+            <thead>
+              <tr>
+                <th style={TH}>Ref</th>
+                <th style={TH}>Kind</th>
+                <th style={TH}>Wall</th>
+                <th style={{ ...TH, textAlign: "right" }}>W</th>
+                <th style={{ ...TH, textAlign: "right" }}>H</th>
+                <th style={{ ...TH, textAlign: "right" }}>Head</th>
+                <th style={{ ...TH, textAlign: "right" }}>Sill</th>
+                <th style={{ ...TH, textAlign: "right" }}>Off</th>
+                <th style={{ ...TH, textAlign: "right" }}>Area (m²)</th>
+              </tr>
+            </thead>
             <tbody>
               {t.openings.map((o) => (
                 <tr key={o.ref}>
@@ -160,14 +195,17 @@ export function MaterialsPanel() {
 
         {tab === "Lintels" && (
           <table style={{ width: "100%", borderCollapse: "collapse" }}>
-            <thead><tr>
-              <th style={TH}>Ref</th><th style={TH}>Size</th>
-              <th style={{ ...TH, textAlign: "right" }}>Span</th>
-              <th style={{ ...TH, textAlign: "right" }}>Count</th>
-              <th style={{ ...TH, textAlign: "right" }}>Length each</th>
-              <th style={{ ...TH, textAlign: "right" }}>Total (lm)</th>
-              <th style={TH}>SED</th>
-            </tr></thead>
+            <thead>
+              <tr>
+                <th style={TH}>Ref</th>
+                <th style={TH}>Size</th>
+                <th style={{ ...TH, textAlign: "right" }}>Span</th>
+                <th style={{ ...TH, textAlign: "right" }}>Count</th>
+                <th style={{ ...TH, textAlign: "right" }}>Length each</th>
+                <th style={{ ...TH, textAlign: "right" }}>Total (lm)</th>
+                <th style={TH}>SED</th>
+              </tr>
+            </thead>
             <tbody>
               {t.lintels.map((r) => (
                 <tr key={r.ref}>
@@ -177,7 +215,9 @@ export function MaterialsPanel() {
                   <td style={TDR}>{r.count}</td>
                   <td style={TDR}>{r.length_per_mm}</td>
                   <td style={TDR}>{r.total_lm}</td>
-                  <td style={TD}>{r.sed ? <span style={{ color: "var(--astral-warn, #c25a3a)" }}>SED</span> : ""}</td>
+                  <td style={TD}>
+                    {r.sed ? <span style={{ color: "var(--astral-warn, #c25a3a)" }}>SED</span> : ""}
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -186,14 +226,16 @@ export function MaterialsPanel() {
 
         {tab === "Bracing" && (
           <table style={{ width: "100%", borderCollapse: "collapse" }}>
-            <thead><tr>
-              <th style={TH}>Wall</th>
-              <th style={{ ...TH, textAlign: "right" }}>Length</th>
-              <th style={{ ...TH, textAlign: "right" }}>Available</th>
-              <th style={{ ...TH, textAlign: "right" }}>Panels</th>
-              <th style={{ ...TH, textAlign: "right" }}>BU</th>
-              <th style={TH}>SED</th>
-            </tr></thead>
+            <thead>
+              <tr>
+                <th style={TH}>Wall</th>
+                <th style={{ ...TH, textAlign: "right" }}>Length</th>
+                <th style={{ ...TH, textAlign: "right" }}>Available</th>
+                <th style={{ ...TH, textAlign: "right" }}>Panels</th>
+                <th style={{ ...TH, textAlign: "right" }}>BU</th>
+                <th style={TH}>SED</th>
+              </tr>
+            </thead>
             <tbody>
               {t.bracing.map((b) => (
                 <tr key={b.wall}>
@@ -202,7 +244,9 @@ export function MaterialsPanel() {
                   <td style={TDR}>{b.available_mm}</td>
                   <td style={TDR}>{b.panels}</td>
                   <td style={TDR}>{b.bu}</td>
-                  <td style={TD}>{b.sed ? <span style={{ color: "var(--astral-warn, #c25a3a)" }}>SED</span> : ""}</td>
+                  <td style={TD}>
+                    {b.sed ? <span style={{ color: "var(--astral-warn, #c25a3a)" }}>SED</span> : ""}
+                  </td>
                 </tr>
               ))}
               <tr>
@@ -217,12 +261,14 @@ export function MaterialsPanel() {
 
         {tab === "Fixings" && (
           <table style={{ width: "100%", borderCollapse: "collapse" }}>
-            <thead><tr>
-              <th style={TH}>Item</th>
-              <th style={{ ...TH, textAlign: "right" }}>Qty</th>
-              <th style={TH}>Unit</th>
-              <th style={TH}>Note</th>
-            </tr></thead>
+            <thead>
+              <tr>
+                <th style={TH}>Item</th>
+                <th style={{ ...TH, textAlign: "right" }}>Qty</th>
+                <th style={TH}>Unit</th>
+                <th style={TH}>Note</th>
+              </tr>
+            </thead>
             <tbody>
               {t.fixings.map((f, i) => (
                 <tr key={i}>
@@ -238,15 +284,17 @@ export function MaterialsPanel() {
 
         {tab === "Cladding" && (
           <table style={{ width: "100%", borderCollapse: "collapse" }}>
-            <thead><tr>
-              <th style={TH}>Item</th>
-              <th style={{ ...TH, textAlign: "right" }}>Gross (m²)</th>
-              <th style={{ ...TH, textAlign: "right" }}>Openings</th>
-              <th style={{ ...TH, textAlign: "right" }}>Net</th>
-              <th style={{ ...TH, textAlign: "right" }}>Waste %</th>
-              <th style={{ ...TH, textAlign: "right" }}>Order</th>
-              <th style={TH}>Spec</th>
-            </tr></thead>
+            <thead>
+              <tr>
+                <th style={TH}>Item</th>
+                <th style={{ ...TH, textAlign: "right" }}>Gross (m²)</th>
+                <th style={{ ...TH, textAlign: "right" }}>Openings</th>
+                <th style={{ ...TH, textAlign: "right" }}>Net</th>
+                <th style={{ ...TH, textAlign: "right" }}>Waste %</th>
+                <th style={{ ...TH, textAlign: "right" }}>Order</th>
+                <th style={TH}>Spec</th>
+              </tr>
+            </thead>
             <tbody>
               {t.areas.map((a, i) => (
                 <tr key={i}>

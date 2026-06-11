@@ -181,10 +181,11 @@ export const renderSiteConcept = createServerFn({ method: "POST" })
       if (!res.ok) {
         const body = await res.text().catch(() => "");
         if (res.status === 429) return { error: "Rate limit — try again shortly." };
-        if (res.status === 402) return { error: "AI credits exhausted — add credits in Settings → Workspace → Usage." };
+        if (res.status === 402)
+          return { error: "AI credits exhausted — add credits in Settings → Workspace → Usage." };
         return { error: `Render failed (${res.status}): ${body.slice(0, 240)}` };
       }
-      const json = await res.json() as { data?: Array<{ b64_json?: string }>; choices?: unknown };
+      const json = (await res.json()) as { data?: Array<{ b64_json?: string }>; choices?: unknown };
       const b64 = json?.data?.[0]?.b64_json;
       if (!b64) return { error: "No image returned by the model." };
       return { imageBase64: b64 };

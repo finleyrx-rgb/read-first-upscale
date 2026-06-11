@@ -22,10 +22,14 @@ function Bubble({ m, onRewind }: { m: ChatMessage; onRewind: (id: string) => voi
       </div>
       {m.actions && m.actions.length > 0 && (
         <details className="astral-acts" open>
-          <summary>{m.actions.length} action{m.actions.length === 1 ? "" : "s"} applied</summary>
+          <summary>
+            {m.actions.length} action{m.actions.length === 1 ? "" : "s"} applied
+          </summary>
           <ul>
             {m.actions.map((a, i) => (
-              <li key={i}><code>{actionLabel(a as never)}</code></li>
+              <li key={i}>
+                <code>{actionLabel(a as never)}</code>
+              </li>
             ))}
           </ul>
           {m.snapshot && (
@@ -57,8 +61,12 @@ export function AstralDrawer({ projectKey }: { projectKey: string }) {
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   // Per-project history persistence.
-  useEffect(() => { loadHistory(projectKey); }, [projectKey, loadHistory]);
-  useEffect(() => { saveHistory(projectKey); }, [messages, projectKey, saveHistory]);
+  useEffect(() => {
+    loadHistory(projectKey);
+  }, [projectKey, loadHistory]);
+  useEffect(() => {
+    saveHistory(projectKey);
+  }, [messages, projectKey, saveHistory]);
 
   // Autoscroll on new message.
   useEffect(() => {
@@ -66,7 +74,9 @@ export function AstralDrawer({ projectKey }: { projectKey: string }) {
   }, [messages.length, busy]);
 
   // Focus textarea when drawer opens.
-  useEffect(() => { if (open) inputRef.current?.focus(); }, [open]);
+  useEffect(() => {
+    if (open) inputRef.current?.focus();
+  }, [open]);
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -88,7 +98,9 @@ export function AstralDrawer({ projectKey }: { projectKey: string }) {
       <aside className={`astral-drawer ${open ? "is-open" : ""}`} aria-hidden={!open}>
         <header className="astral-drawer-h">
           <div>
-            <div className="astral-drawer-t">Astral · {mode === "dream" ? "Dream partner" : "AI agent"}</div>
+            <div className="astral-drawer-t">
+              Astral · {mode === "dream" ? "Dream partner" : "AI agent"}
+            </div>
             <div className="astral-muted" style={{ fontSize: 11 }}>
               {mode === "dream"
                 ? "Thinking-with · spatial qualities · no model edits"
@@ -96,8 +108,12 @@ export function AstralDrawer({ projectKey }: { projectKey: string }) {
             </div>
           </div>
           <div className="astral-drawer-tools">
-            <button className="astral-btn ghost sm" onClick={clear} title="Clear chat">⟲</button>
-            <button className="astral-btn ghost sm" onClick={() => toggle(false)} title="Close">✕</button>
+            <button className="astral-btn ghost sm" onClick={clear} title="Clear chat">
+              ⟲
+            </button>
+            <button className="astral-btn ghost sm" onClick={() => toggle(false)} title="Close">
+              ✕
+            </button>
           </div>
         </header>
         <div className="astral-drawer-scroll" ref={scrollRef}>
@@ -105,7 +121,10 @@ export function AstralDrawer({ projectKey }: { projectKey: string }) {
             <div className="astral-empty">
               {mode === "dream" ? (
                 <>
-                  <p>Hi — I'm Astral. Tell me what you'd like to build, sketch a feeling, or describe the place. I'll think it through with you.</p>
+                  <p>
+                    Hi — I'm Astral. Tell me what you'd like to build, sketch a feeling, or describe
+                    the place. I'll think it through with you.
+                  </p>
                   <ul>
                     <li>"A small bach for two, facing the sea"</li>
                     <li>"I want it to feel held and warm in winter"</li>
@@ -115,7 +134,10 @@ export function AstralDrawer({ projectKey }: { projectKey: string }) {
                 </>
               ) : (
                 <>
-                  <p>Ask Astral to change the model — every action lands as a confirmable patch in the timeline.</p>
+                  <p>
+                    Ask Astral to change the model — every action lands as a confirmable patch in
+                    the timeline.
+                  </p>
                   <ul>
                     <li>"Make this a 6×4 sleepout"</li>
                     <li>"Add a 1500mm window on the north wall at 2000mm"</li>
@@ -126,7 +148,9 @@ export function AstralDrawer({ projectKey }: { projectKey: string }) {
               )}
             </div>
           )}
-          {messages.map((m) => <Bubble key={m.id} m={m} onRewind={rewindTo} />)}
+          {messages.map((m) => (
+            <Bubble key={m.id} m={m} onRewind={rewindTo} />
+          ))}
         </div>
         <form className="astral-drawer-form" onSubmit={submit}>
           <textarea

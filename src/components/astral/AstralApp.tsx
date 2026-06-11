@@ -29,12 +29,18 @@ export function AstralApp() {
     if (stored !== useAstral.getState().unit) patch({ unit: stored });
     try {
       if (!window.localStorage.getItem(WELCOME_KEY) && !boot) setShowWelcome(true);
-    } catch { /* noop */ }
+    } catch {
+      /* noop */
+    }
   }, [patch]);
 
   function dismissWelcome() {
     setShowWelcome(false);
-    try { window.localStorage.setItem(WELCOME_KEY, "1"); } catch { /* noop */ }
+    try {
+      window.localStorage.setItem(WELCOME_KEY, "1");
+    } catch {
+      /* noop */
+    }
   }
 
   const currentProjectId = useProjectSession((s) => s.currentProjectId);
@@ -43,19 +49,25 @@ export function AstralApp() {
     <div className={`astral-root mode-${mode}`}>
       <header className="astral-top">
         <div className="astral-brand">
-          <span className="mark">Project <em>Astral</em></span>
+          <span className="mark">
+            Project <em>Astral</em>
+          </span>
         </div>
         <div className="astral-mode-toggle" role="tablist" aria-label="Mode">
           <button
             type="button"
             className={mode === "dream" ? "on" : ""}
             onClick={() => patch({ mode: "dream" })}
-          >✦ Dream</button>
+          >
+            ✦ Dream
+          </button>
           <button
             type="button"
             className={mode === "build" ? "on" : ""}
             onClick={() => patch({ mode: "build" })}
-          >▢ Build</button>
+          >
+            ▢ Build
+          </button>
         </div>
         <div className="astral-topnote">
           {mode === "build"

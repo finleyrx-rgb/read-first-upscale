@@ -37,8 +37,15 @@ function SharedPage() {
         setMeta({ name: row.name, address: row.address });
         setStatus("ready");
       })
-      .catch((e: Error) => { if (!cancelled) { setErr(e.message); setStatus("error"); } });
-    return () => { cancelled = true; };
+      .catch((e: Error) => {
+        if (!cancelled) {
+          setErr(e.message);
+          setStatus("error");
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [token]);
 
   if (status === "loading") return <div style={{ padding: 32 }}>Loading shared project…</div>;
@@ -46,15 +53,27 @@ function SharedPage() {
 
   return (
     <div>
-      <div style={{
-        padding: "8px 14px", background: "#fff7e0", borderBottom: "1px solid #e3d59e",
-        fontFamily: "var(--astral-mono, ui-sans-serif)", fontSize: 12,
-        display: "flex", alignItems: "center", gap: 12,
-      }}>
+      <div
+        style={{
+          padding: "8px 14px",
+          background: "#fff7e0",
+          borderBottom: "1px solid #e3d59e",
+          fontFamily: "var(--astral-mono, ui-sans-serif)",
+          fontSize: 12,
+          display: "flex",
+          alignItems: "center",
+          gap: 12,
+        }}
+      >
         <strong>Read-only share</strong>
-        <span>· {meta?.name}{meta?.address ? ` · ${meta.address}` : ""}</span>
+        <span>
+          · {meta?.name}
+          {meta?.address ? ` · ${meta.address}` : ""}
+        </span>
         <span style={{ flex: 1 }} />
-        <Link to="/" style={{ opacity: 0.7 }}>Open the configurator →</Link>
+        <Link to="/" style={{ opacity: 0.7 }}>
+          Open the configurator →
+        </Link>
       </div>
       <AstralApp />
     </div>

@@ -1,6 +1,7 @@
 // Inspector — shows the selected model node with editable params + derived info.
 
 import { useAstral } from "@/lib/astral/store";
+import { useShallow } from "zustand/react/shallow";
 import { buildModel } from "@/lib/astral/model";
 import { useMemo } from "react";
 import { DimInput, OptRow } from "./form-primitives";
@@ -11,9 +12,15 @@ import { WALL_TYPES, WALL_TYPE_STYLES } from "@/lib/astral/wallTypes";
 import { useAgent } from "@/lib/astral/agent/client";
 
 export function Inspector() {
-  const S = useAstral((s) => s);
+  const S = useAstral(useShallow((s) => s));
   const sel = S.sel;
-  const M = useMemo(() => buildModel(S), [S]);
+  // buildModel is heavy — depend only on the geometry/finish keys it reads.
+  const M = useMemo(() => buildModel(S), [
+    S.type, S.L, S.W, S.studH, S.spacing, S.eave, S.roof, S.pitch, S.cover, S.struct,
+    S.found, S.units, S.parapet, S.storeys, S.subfloor, S.floorDepth,
+    S.wallTypes, S.openings, S.parts, S.clad, S.cladCol, S.lining, S.floor, S.insul,
+    S.wind, S.roofCol, S.joinery,
+  ]);
   const agentToggle = useAgent((s) => s.toggle);
   const agentSetDraft = useAgent((s) => s.setDraft);
   if (!sel || !M.byId[sel]) return null;

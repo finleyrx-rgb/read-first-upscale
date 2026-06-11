@@ -269,50 +269,39 @@ export function DreamWorkspace() {
   );
 }
 
-export function WelcomeCard({ onDismiss }: { onDismiss: () => void }) {
-  const patch = useAstral((s) => s.patch);
-  const loadTemplate = useAstral((s) => s.loadTemplate);
+export function WelcomeCard({
+  onDismiss,
+  onAction,
+}: {
+  onDismiss: () => void;
+  onAction?: (kind: "template" | "upload" | "sketch") => void;
+}) {
+  const handle = (kind: "template" | "upload" | "sketch") => {
+    if (onAction) onAction(kind);
+    else onDismiss();
+  };
   return (
     <div className="dream-welcome-backdrop" onClick={onDismiss}>
       <div className="dream-welcome" onClick={(e) => e.stopPropagation()}>
         <h1>
           Welcome to <em>Astral</em>.
         </h1>
-        <p>Start from a feeling, a sketch, or a template.</p>
+        <p>Pick a way in. You can switch to Dream mode any time from the header.</p>
         <div className="dream-welcome-opts">
-          <button
-            type="button"
-            onClick={() => {
-              patch({ mode: "dream" });
-              onDismiss();
-            }}
-          >
-            <span className="ic">✦</span>
-            <span className="t">I'm dreaming</span>
-            <span className="s">Open a moodboard and explore</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              patch({ mode: "build" });
-              onDismiss();
-            }}
-          >
-            <span className="ic">✎</span>
-            <span className="t">I have a sketch</span>
-            <span className="s">Upload and transcribe it</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              loadTemplate(0);
-              patch({ mode: "build" });
-              onDismiss();
-            }}
-          >
+          <button type="button" onClick={() => handle("template")}>
             <span className="ic">▢</span>
-            <span className="t">I want to start building</span>
-            <span className="s">Loads a default 10×8 garage</span>
+            <span className="t">Start from a template</span>
+            <span className="s">Default 10×8 garage — refine from there</span>
+          </button>
+          <button type="button" onClick={() => handle("upload")}>
+            <span className="ic">📄</span>
+            <span className="t">Upload existing plans</span>
+            <span className="s">PDF / image — extract & elaborate</span>
+          </button>
+          <button type="button" onClick={() => handle("sketch")}>
+            <span className="ic">✎</span>
+            <span className="t">Sketch a quick idea</span>
+            <span className="s">Photograph a napkin sketch</span>
           </button>
         </div>
         <button type="button" className="dream-welcome-skip" onClick={onDismiss}>

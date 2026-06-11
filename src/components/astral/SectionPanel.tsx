@@ -1,6 +1,7 @@
 // SectionPanel — step rail + per-step forms (Site, Footprint, Roof, Openings,
 // Layout, Finishes, Resolve, Outputs). Reads/writes the Zustand store.
 
+import { useState } from "react";
 import { useAstral } from "@/lib/astral/store";
 import { useShallow } from "zustand/react/shallow";
 import {

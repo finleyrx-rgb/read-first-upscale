@@ -233,6 +233,25 @@ export type AstralStore = AstralState & Actions;
 
 let nid = 100;
 
+/** Reseed the local ID counter past any externally supplied openings/parts. */
+function reseedNid(s: Pick<AstralState, "openings" | "parts">) {
+  const maxOpen = s.openings.reduce((m, o) => Math.max(m, o.id), 0);
+  const maxPart = s.parts.reduce((m, p) => Math.max(m, p.id), 0);
+  const next = Math.max(maxOpen, maxPart) + 1;
+  if (next > nid) nid = next;
+}
+
+/** Clamp a partition's geometry to the current footprint. Mirrors clampToDims. */
+function clampPartition(p: Partition, L: number, W: number): Partition {
+  const runMax = p.dir === "Across width" ? W : L;
+  const posMax = p.dir === "Across width" ? L : W;
+  const off = Math.max(0, Math.min(posMax, p.off));
+  const start = Math.max(0, Math.min(Math.max(0, runMax - 200), p.start));
+  const len = Math.max(200, Math.min(runMax - start, p.len));
+  const doorOff = Math.max(0, Math.min(runMax, p.doorOff));
+  return { ...p, off, start, len, doorOff };
+}
+
 const dimKeys = new Set(["L", "W"]);
 
 /** Read URL share param (?p=...) or localStorage. Browser-only — never call in SSR. */

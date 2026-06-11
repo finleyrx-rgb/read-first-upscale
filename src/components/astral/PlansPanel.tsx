@@ -168,7 +168,7 @@ export function PlansPanel({ projectId }: { projectId: string | null }) {
       if (!action) return;
       try {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        applyAction(store as void as any, action);
+        applyAction(store as unknown as Parameters<typeof applyAction>[0], action);
         applied++;
       } catch (e) {
         console.error("apply failed", action, e);

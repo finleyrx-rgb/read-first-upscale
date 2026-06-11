@@ -454,6 +454,7 @@ function StepFinishes() {
 }
 
 function ResCard({ label, r }: { label: string; r: RuleResult }) {
+  const [showTech, setShowTech] = useState(false);
   return (
     <div className="astral-res">
       <div className="rh">
@@ -465,7 +466,17 @@ function ResCard({ label, r }: { label: string; r: RuleResult }) {
         )}
       </div>
       <div className="rv">{r.v}</div>
-      <div className="rn">{r.n}</div>
+      {showTech ? (
+        <div className="rn">{r.n}</div>
+      ) : (
+        <button
+          type="button"
+          className="astral-res-tech"
+          onClick={() => setShowTech(true)}
+        >
+          show technical details
+        </button>
+      )}
     </div>
   );
 }

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { useAgent, type ChatMessage } from "@/lib/astral/agent/client";
+import { useAstral } from "@/lib/astral/store";
 
 function actionLabel(a: { verb: string } & Record<string, unknown>): string {
   const parts: string[] = [a.verb];

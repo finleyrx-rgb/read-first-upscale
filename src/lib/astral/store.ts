@@ -367,13 +367,7 @@ export const useAstral = create<AstralStore>((set, get) => ({
 }));
 
 // Bump the local ID counter past anything we just loaded.
-{
-  const s = useAstral.getState();
-  const maxOpen = s.openings.reduce((m, o) => Math.max(m, o.id), 0);
-  const maxPart = s.parts.reduce((m, p) => Math.max(m, p.id), 0);
-  if (maxOpen + 1 > nid) nid = maxOpen + 1;
-  if (maxPart + 1 > nid) nid = maxPart + 1;
-}
+reseedNid(useAstral.getState());
 
 // Autosave: debounced write of the current project to localStorage. Skips UI fields.
 if (typeof window !== "undefined") {

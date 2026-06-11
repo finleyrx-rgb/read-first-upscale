@@ -289,7 +289,7 @@ function StepResolve() {
 }
 
 function StepOutputs() {
-  const S = useAstral((s) => s);
+  const S = useAstral(useShallow((s) => s));
   const q = qtys(S);
   return (
     <>
